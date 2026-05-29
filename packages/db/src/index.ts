@@ -31,6 +31,9 @@ export type {
     BillSource,
     CompanionNudgeKind,
     AuditActorKind,
+    TwoFactorKind,
+    TwoFactorVerifyKind,
+    WebAuthnDeviceType,
     BillingSubscriptionStatus,
     AlterEgoPersonality,
     AlterEgoBriefing,
@@ -49,3 +52,15 @@ export {
     verifyAuditChain,
     writeDailyAuditCheckpoint,
 } from './admin.js';
+
+export {
+    extractJwtClaims,
+    tryExtractJwtClaims,
+    JwtMalformedError,
+    type JwtClaims,
+} from './jwt.js';
+
+export {
+    logAuditEvent,
+    type LogAuditEventArgs,
+} from './audit.js';

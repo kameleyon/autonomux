@@ -1,52 +1,22 @@
 /**
- * Structured logger for @autonomux/worker.
+ * apps/worker — logger shim.
  *
- * Pino JSON output → Axiom in prod (per PRD §8.2).
- * Redaction rules ported from studio-zero `lib/sentry-redaction.ts`
- * intent: never let secrets, auth headers, or PII trace into logs.
+ * Phase 1.0-B5: the worker now uses the shared `@autonomux/logger`
+ * factory. This file is a thin compatibility wrapper that preserves
+ * the historical `createLogger({ service, env, level })` call shape
+ * used in `src/index.ts` so we didn't have to rewrite the boot path.
  *
- * Add new redaction paths here, NOT at the call site.
+ * Add new redaction paths in `packages/logger/src/logger.ts`, NOT here.
+ *
+ * Owner: [Watch]
  */
 
-import { pino, type Logger, type LoggerOptions } from "pino";
+import {
+  createLogger as createSharedLogger,
+  type Logger,
+} from "@autonomux/logger";
 
-/** Paths Pino will replace with [Redacted] before serialization. */
-const REDACT_PATHS: readonly string[] = [
-  // Top-level keys
-  "password",
-  "token",
-  "api_key",
-  "apiKey",
-  "secret",
-  "authorization",
-  "Authorization",
-  "cookie",
-  "Cookie",
-  "set-cookie",
-  "Set-Cookie",
-  // Nested HTTP headers (express/fetch/node style)
-  "*.password",
-  "*.token",
-  "*.api_key",
-  "*.apiKey",
-  "*.secret",
-  "headers.authorization",
-  "headers.Authorization",
-  "headers.cookie",
-  "headers.Cookie",
-  "headers['set-cookie']",
-  "headers['Set-Cookie']",
-  "req.headers.authorization",
-  "req.headers.cookie",
-  "res.headers['set-cookie']",
-  // Common BullMQ job payload shapes
-  "job.data.password",
-  "job.data.token",
-  "job.data.api_key",
-  "job.data.apiKey",
-  "job.data.secret",
-  "job.data.authorization",
-];
+export type { Logger };
 
 export type LoggerContext = {
   readonly service: string;
@@ -55,30 +25,20 @@ export type LoggerContext = {
 };
 
 /**
- * Build the root logger. Call once at boot in `index.ts` and pass
- * child loggers (`logger.child({ component: "..." })`) into queues
+ * Build the worker's root logger. Call once at boot in `index.ts` and
+ * pass child loggers (`logger.child({ component: "..." })`) into queues
  * and workers.
  */
 export function createLogger(ctx: LoggerContext): Logger {
-  const options: LoggerOptions = {
-    level: ctx.level ?? "info",
-    base: {
-      service: ctx.service,
-      env: ctx.env,
-      pid: process.pid,
-    },
-    redact: {
-      paths: [...REDACT_PATHS],
-      censor: "[Redacted]",
-      remove: false,
-    },
-    timestamp: pino.stdTimeFunctions.isoTime,
-    formatters: {
-      level(label: string): { level: string } {
-        return { level: label };
-      },
-    },
-  };
-
-  return pino(options);
+  return createSharedLogger({
+    service: ctx.service,
+    env: ctx.env,
+    ...(ctx.level !== undefined ? { level: ctx.level } : {}),
+    ...(process.env["AXIOM_TOKEN"] !== undefined
+      ? { axiomToken: process.env["AXIOM_TOKEN"] }
+      : {}),
+    ...(process.env["AXIOM_DATASET"] !== undefined
+      ? { axiomDataset: process.env["AXIOM_DATASET"] }
+      : {}),
+  });
 }

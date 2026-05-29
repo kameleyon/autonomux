@@ -84,8 +84,8 @@ export default function HomePage(): React.ReactElement {
             color: "var(--muted)",
           }}
         >
-          The platform is in Foundation build. Public waitlist opens at
-          v1.7 — see the{" "}
+          Foundation build in progress. Public waitlist opens at v1.7 —
+          see the{" "}
           <a href="https://github.com/kameleyon/autonomux/blob/main/docs/ROADMAP.md">
             roadmap
           </a>{" "}

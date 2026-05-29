@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 
+import "@autonomux/ui/tokens.css";
+import "@autonomux/ui/Button.css";
+import "@autonomux/ui/Dialog.css";
 import "./globals.css";
+
+import { CookieBannerSlot } from "@/components/CookieBannerSlot";
 
 export const metadata: Metadata = {
   title: {
@@ -52,6 +57,7 @@ export default function RootLayout({
           Skip to content
         </a>
         {children}
+        <CookieBannerSlot />
       </body>
     </html>
   );

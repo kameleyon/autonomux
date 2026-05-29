@@ -1,0 +1,32 @@
+{
+  "name": "@autonomux/logger",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Autonomux — shared structured logger. Pino JSON → Axiom (prod) / pretty (dev), PII redaction ported from @autonomux/cipher, request-id middleware, audit-log wrapper. Owned by [Watch].",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./logger": "./src/logger.ts",
+    "./middleware": "./src/middleware.ts",
+    "./audit": "./src/audit.ts"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "echo '(no lint configured for @autonomux/logger yet)'",
+    "clean": "rm -rf .turbo dist"
+  },
+  "dependencies": {
+    "@autonomux/cipher": "*",
+    "pino": "9.5.0",
+    "pino-pretty": "11.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.5",
+    "typescript": "5.8.2",
+    "vitest": "2.1.8"
+  }
+}

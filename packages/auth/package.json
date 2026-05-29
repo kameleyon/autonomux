@@ -1,0 +1,40 @@
+{
+  "name": "@autonomux/auth",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Autonomux — TOTP + WebAuthn 2FA primitives. Owned by [Cipher + Shield].",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./totp": "./src/totp.ts",
+    "./webauthn": "./src/webauthn.ts",
+    "./backup-codes": "./src/backup-codes.ts",
+    "./rate-limit": "./src/rate-limit.ts",
+    "./step-up": "./src/step-up.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "echo '(no lint configured for @autonomux/auth yet)'",
+    "clean": "rm -rf .turbo dist"
+  },
+  "dependencies": {
+    "@autonomux/cipher": "*",
+    "@autonomux/db": "*",
+    "@otplib/core": "12.0.1",
+    "@simplewebauthn/server": "11.0.0",
+    "@simplewebauthn/types": "11.0.0",
+    "otplib": "12.0.1",
+    "qrcode": "1.5.4",
+    "zod": "3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.5",
+    "@types/qrcode": "1.5.5",
+    "typescript": "5.8.2",
+    "vitest": "2.1.8"
+  }
+}

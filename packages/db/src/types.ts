@@ -99,6 +99,12 @@ export type CompanionNudgeKind =
 
 export type AuditActorKind = 'user' | 'service' | 'admin' | 'system' | 'webhook';
 
+export type TwoFactorKind = 'totp' | 'webauthn';
+
+export type TwoFactorVerifyKind = 'totp' | 'backup_code' | 'webauthn';
+
+export type WebAuthnDeviceType = 'singleDevice' | 'multiDevice';
+
 export type BillingSubscriptionStatus =
     | 'trialing'
     | 'active'
@@ -744,6 +750,74 @@ export interface Database {
                     updated_at?: string;
                 };
                 Update: Partial<Database['public']['Tables']['usage_meters']['Insert']>;
+                Relationships: [];
+            };
+            user_2fa_factors: {
+                Row: {
+                    id: string;
+                    user_id: string;
+                    tenant_id: string;
+                    kind: TwoFactorKind;
+                    /** Cipher envelope JSON (null for webauthn rows). */
+                    secret_encrypted: Json | null;
+                    /** JSONB string[] of sha256 hex hashes (null for webauthn rows). */
+                    backup_codes_encrypted: Json | null;
+                    backup_codes_displayed_at: string | null;
+                    credential_id: string | null;
+                    credential_public_key: string | null;
+                    credential_counter: number | null;
+                    credential_transports: string[] | null;
+                    credential_device_type: WebAuthnDeviceType | null;
+                    credential_backed_up: boolean | null;
+                    credential_nickname: string | null;
+                    enrolled_at: string;
+                    last_used_at: string | null;
+                    revoked_at: string | null;
+                } & Timestamps;
+                Insert: {
+                    id?: string;
+                    user_id: string;
+                    tenant_id: string;
+                    kind: TwoFactorKind;
+                    secret_encrypted?: Json | null;
+                    backup_codes_encrypted?: Json | null;
+                    backup_codes_displayed_at?: string | null;
+                    credential_id?: string | null;
+                    credential_public_key?: string | null;
+                    credential_counter?: number | null;
+                    credential_transports?: string[] | null;
+                    credential_device_type?: WebAuthnDeviceType | null;
+                    credential_backed_up?: boolean | null;
+                    credential_nickname?: string | null;
+                    enrolled_at?: string;
+                    last_used_at?: string | null;
+                    revoked_at?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: Partial<Database['public']['Tables']['user_2fa_factors']['Insert']>;
+                Relationships: [];
+            };
+            user_2fa_verify_attempts: {
+                Row: {
+                    id: string;
+                    user_id: string;
+                    kind: TwoFactorVerifyKind;
+                    success: boolean;
+                    ip_address: string | null;
+                    user_agent: string | null;
+                    created_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    user_id: string;
+                    kind: TwoFactorVerifyKind;
+                    success: boolean;
+                    ip_address?: string | null;
+                    user_agent?: string | null;
+                    created_at?: string;
+                };
+                Update: Partial<Database['public']['Tables']['user_2fa_verify_attempts']['Insert']>;
                 Relationships: [];
             };
         };

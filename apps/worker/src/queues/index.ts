@@ -22,6 +22,8 @@ import { Queue, Worker, type Job, type JobsOptions } from "bullmq";
 import type { Redis } from "ioredis";
 import type { Logger } from "pino";
 
+import { withSpan } from "@autonomux/telemetry";
+
 import { acquireIdempotencyLock } from "../lib/redis.js";
 
 // ---------------------------------------------------------------------------
@@ -141,7 +143,25 @@ function createQueueHandle(name: QueueName, deps: QueueDeps): QueueHandle {
   const worker = new Worker<BaseJobPayload, BaseJobResult>(
     name,
     async (job: Job<BaseJobPayload, BaseJobResult>): Promise<BaseJobResult> => {
-      return processStubJob(job, deps, name);
+      // Wrap every job in a span — Axiom queries like
+      // `job.${name}` give per-queue p95 latency + error rate.
+      // Attribute hygiene: job.id, tenant.id, request_id are safe;
+      // job.data payloads are NOT added (may contain PII per PRD §8.2).
+      return withSpan(
+        `job.${name}`,
+        () => processStubJob(job, deps, name),
+        {
+          tracer: "@autonomux/worker",
+          attributes: {
+            "queue.name": name,
+            "job.id": job.id ?? "unknown",
+            "job.name": job.name,
+            "job.attempts_made": job.attemptsMade,
+            "tenant.id": job.data.tenantId,
+            "request.id": job.data.requestId,
+          },
+        },
+      );
     },
     {
       connection: deps.workerConnection,
