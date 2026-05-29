@@ -1,0 +1,108 @@
+/*
+ * EmptyState — centered placeholder block.
+ */
+.az-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--sp-12);
+  padding: var(--sp-48) var(--sp-24);
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r-xl);
+  color: var(--ink-soft);
+}
+
+.az-empty__eyebrow {
+  font-family: "DM Mono", ui-monospace, monospace;
+  font-size: var(--fs-mono-meta);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 0;
+}
+
+.az-empty__heading {
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 500;
+  font-size: var(--fs-h-card);
+  line-height: var(--lh-h);
+  color: var(--ink);
+  margin: 0;
+}
+
+.az-empty__body {
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--ink-soft);
+  max-width: 56ch;
+}
+
+.az-empty__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-12);
+  justify-content: center;
+  margin-top: var(--sp-8);
+}
+
+.az-empty__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: var(--sp-10) var(--sp-20);
+  border-radius: var(--r-xl);
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-size: var(--fs-body);
+  font-weight: 500;
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease,
+    border-color 120ms ease;
+}
+
+.az-empty__cta:focus-visible {
+  outline: var(--focus-width) solid var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.az-empty__cta--primary {
+  background: var(--brand-orange);
+  color: var(--brand-white);
+  border-color: var(--brand-orange);
+}
+
+.az-empty__cta--primary:hover {
+  background: var(--brand-red);
+  border-color: var(--brand-red);
+  text-decoration: none;
+}
+
+.az-empty__cta--secondary {
+  background: var(--brand-white);
+  color: var(--brand-red-deep);
+  border-color: var(--border-strong);
+}
+
+.az-empty__cta--secondary:hover {
+  background: var(--surface-warm);
+  border-color: var(--brand-orange);
+  text-decoration: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .az-empty__cta {
+    transition: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .az-empty {
+    padding: var(--sp-24) var(--sp-12);
+  }
+}

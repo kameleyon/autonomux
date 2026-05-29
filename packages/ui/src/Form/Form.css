@@ -1,0 +1,83 @@
+/*
+ * Form + Field — accessible form patterns.
+ * - Error summary: tabIndex=-1 + role=alert so we can focus() after submit.
+ * - Warm-only: errors use --brand-red-deep, not standard red.
+ */
+.az-form__error-summary {
+  border: 1px solid var(--brand-red);
+  background: var(--push-bg);
+  color: var(--brand-red-deep);
+  border-radius: var(--r-xl);
+  padding: var(--sp-16);
+  margin-bottom: var(--sp-24);
+}
+
+.az-form__error-summary:focus-visible {
+  outline: var(--focus-width) solid var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.az-form__error-summary-title {
+  font-weight: 600;
+  margin-bottom: var(--sp-8);
+  font-size: var(--fs-body);
+}
+
+.az-form__error-summary-list {
+  margin: 0;
+  padding-left: var(--sp-20);
+}
+
+.az-form__error-summary-list a {
+  color: var(--brand-red-deep);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.az-form__error-summary-list a:hover {
+  color: var(--brand-wine);
+}
+
+.az-form__error-summary-list a:focus-visible {
+  outline: var(--focus-width) solid var(--focus-ring);
+  outline-offset: var(--focus-offset);
+  border-radius: var(--r-sm);
+}
+
+/* ─── Field ─── */
+.az-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  margin-bottom: var(--sp-16);
+}
+
+.az-field__label {
+  font-size: var(--fs-body-sm);
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+.az-field__required {
+  color: var(--brand-red);
+}
+
+.az-field__help {
+  font-size: var(--fs-body-sm);
+  color: var(--muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.az-field__error {
+  font-size: var(--fs-body-sm);
+  color: var(--brand-red-deep);
+  font-weight: 500;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.az-field--error .az-field__label {
+  color: var(--brand-red-deep);
+}

@@ -1,0 +1,52 @@
+{
+  "name": "@autonomux/ui",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Autonomux — shared UI primitives. Warm-only palette, WCAG 2.2 AA. Owned by [Vega + Halo].",
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "exports": {
+    ".": "./src/index.ts",
+    "./tokens.css": "./src/tokens.css",
+    "./Button": "./src/Button/Button.tsx",
+    "./Button.css": "./src/Button/Button.css",
+    "./Card": "./src/Card/Card.tsx",
+    "./Card.css": "./src/Card/Card.css",
+    "./Form": "./src/Form/Form.tsx",
+    "./Form/Field": "./src/Form/Field.tsx",
+    "./Form.css": "./src/Form/Form.css",
+    "./Input": "./src/Input/Input.tsx",
+    "./Input.css": "./src/Input/Input.css",
+    "./Select": "./src/Select/Select.tsx",
+    "./Select.css": "./src/Select/Select.css",
+    "./Dialog": "./src/Dialog/Dialog.tsx",
+    "./Dialog.css": "./src/Dialog/Dialog.css",
+    "./Chip": "./src/Chip/Chip.tsx",
+    "./Chip.css": "./src/Chip/Chip.css",
+    "./SkipLink": "./src/SkipLink/SkipLink.tsx",
+    "./Nav": "./src/Nav/Nav.tsx",
+    "./Nav.css": "./src/Nav/Nav.css",
+    "./Footer": "./src/Footer/Footer.tsx",
+    "./Footer.css": "./src/Footer/Footer.css",
+    "./EmptyState": "./src/EmptyState/EmptyState.tsx",
+    "./EmptyState.css": "./src/EmptyState/EmptyState.css"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo '(no lint configured for @autonomux/ui yet)'",
+    "test": "echo '(no tests yet for @autonomux/ui)'",
+    "clean": "rm -rf .turbo dist"
+  },
+  "peerDependencies": {
+    "react": "^19",
+    "react-dom": "^19"
+  },
+  "devDependencies": {
+    "@types/react": "19.0.4",
+    "@types/react-dom": "19.0.2",
+    "typescript": "5.8.2"
+  }
+}

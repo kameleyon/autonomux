@@ -115,8 +115,8 @@ The product thesis: existing "AI assistants" are conversational toys. Autonomux 
 
 ### 4.2 Orchestration kernel
 
-- **Single agent loop** running Claude Sonnet 4.6 with tool-calling
-- **Routine triage** (Mailroom rank, Scheduler conflict check) runs on Haiku 4.5 to keep cost low
+- **Single agent loop** running Claude Sonnet 4.6 with tool-calling — via `packages/llm` pluggable adapter (OpenRouter default; one env var swaps to Anthropic direct)
+- **Routine triage** (Mailroom rank, Scheduler conflict check) runs on Haiku 4.5 to keep cost low (same adapter, just different model name)
 - **Tools = sub-agents** — each sub-agent exposes a Claude-formatted tool schema; AlterEgo calls them as tools
 - **Decision tree:**
   1. User opens app → AlterEgo runs "morning briefing" composite (Mailroom rank + Scheduler today + Oracle pull + Treasurer alerts + Companion nudge → single rendered briefing)
@@ -155,7 +155,7 @@ Three tiers — all encrypted at rest with per-tenant data keys:
 | YouTube | Composio | Upload, update metadata, comments | Future (motionmax sync potential) |
 | Plaid | Direct (no Composio) | Account balance · transactions · category · bill detection | US Open Banking · production needs Plaid agreement |
 | Astrology data | Direct (Astrodienst / Swiss Ephemeris) | Natal + transit calc | Library: `swisseph` or Astrodienst API |
-| Anthropic | Direct (`@anthropic-ai/sdk`) | All LLM calls | Sonnet 4.6 + Haiku 4.5 |
+| LLM | **Pluggable adapter** (`packages/llm`) — OpenRouter default, Anthropic direct via 1-env-var switch | All LLM calls | Sonnet 4.6 + Haiku 4.5 |
 | Resend | Direct | Transactional email (briefing email, password reset, billing) | — |
 
 ### Integrations explicitly out of Phase 1

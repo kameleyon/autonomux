@@ -1,0 +1,170 @@
+/*
+ * Button — warm-only palette, WCAG 2.2 AA.
+ * - Hit target 44×44 on md/lg (SC 2.5.8).
+ * - Focus 2px / 3:1 (SC 2.4.13).
+ * - Respects prefers-reduced-motion.
+ */
+.az-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-8);
+  border-radius: var(--r-xl);
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ink);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease,
+    box-shadow 120ms ease;
+  position: relative;
+}
+
+.az-btn:focus-visible {
+  outline: var(--focus-width) solid var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.az-btn:disabled,
+.az-btn[aria-disabled="true"],
+.az-btn.az-btn--loading {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.az-btn__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.az-btn__label {
+  display: inline-block;
+}
+
+/* ─── Sizes ─── */
+.az-btn--sm {
+  min-height: 24px;
+  padding: var(--sp-4) var(--sp-10);
+  font-size: var(--fs-body-sm);
+  line-height: 1.2;
+}
+
+.az-btn--md {
+  min-height: 44px;
+  padding: var(--sp-10) var(--sp-16);
+  font-size: var(--fs-body);
+  line-height: 1.25;
+}
+
+.az-btn--lg {
+  min-height: 48px;
+  padding: var(--sp-12) var(--sp-24);
+  font-size: var(--fs-body-lg);
+  line-height: 1.25;
+}
+
+/* ─── Primary — chameleon orange ─── */
+.az-btn--primary {
+  background: var(--brand-orange);
+  color: var(--brand-white);
+  border-color: var(--brand-orange);
+}
+
+.az-btn--primary:hover:not(:disabled):not(.az-btn--loading) {
+  background: var(--brand-red);
+  border-color: var(--brand-red);
+}
+
+.az-btn--primary:active:not(:disabled):not(.az-btn--loading) {
+  background: var(--brand-red-deep);
+  border-color: var(--brand-red-deep);
+}
+
+/* ─── Secondary — outline ─── */
+.az-btn--secondary {
+  background: var(--brand-white);
+  color: var(--brand-red-deep);
+  border-color: var(--border-strong);
+}
+
+.az-btn--secondary:hover:not(:disabled):not(.az-btn--loading) {
+  background: var(--surface-warm);
+  border-color: var(--brand-orange);
+  color: var(--brand-red);
+}
+
+.az-btn--secondary:active:not(:disabled):not(.az-btn--loading) {
+  background: var(--surface);
+  border-color: var(--brand-red);
+}
+
+/* ─── Ghost — transparent surface ─── */
+.az-btn--ghost {
+  background: transparent;
+  color: var(--ink-soft);
+  border-color: transparent;
+}
+
+.az-btn--ghost:hover:not(:disabled):not(.az-btn--loading) {
+  background: var(--surface-warm);
+  color: var(--brand-red);
+}
+
+.az-btn--ghost:active:not(:disabled):not(.az-btn--loading) {
+  background: var(--surface);
+}
+
+/* ─── Destructive — warm wine ─── */
+.az-btn--destructive {
+  background: var(--brand-wine);
+  color: var(--brand-white);
+  border-color: var(--brand-wine);
+}
+
+.az-btn--destructive:hover:not(:disabled):not(.az-btn--loading) {
+  background: var(--brand-red-deep);
+  border-color: var(--brand-red-deep);
+}
+
+.az-btn--destructive:active:not(:disabled):not(.az-btn--loading) {
+  background: var(--brand-wine);
+  border-color: var(--brand-wine);
+}
+
+/* ─── Loading spinner ─── */
+.az-btn__spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  display: inline-block;
+  animation: az-btn-spin 700ms linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .az-btn {
+    transition: none;
+  }
+  .az-btn__spinner {
+    animation: none;
+    border-right-color: currentColor;
+    opacity: 0.5;
+  }
+}
+
+@keyframes az-btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

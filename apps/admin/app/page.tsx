@@ -1,13 +1,13 @@
 /**
- * Autonomux landing — placeholder for Phase 1.0 Foundation.
+ * Admin landing — Phase 1.0-A scaffold.
  *
- * Replaced by the real landing during Phase 1.7 (multi-tenant launch).
- * Until then this surface establishes brand + design-token coverage so
- * Halo + Vega + Canon can audit the foundation against the bar.
+ * This is the unauthenticated entry point. The only thing you can do
+ * from here is move to /sign-in. Real auth wires in Phase 1.0-B.
  */
 import Image from "next/image";
+import Link from "next/link";
 
-export default function HomePage(): React.ReactElement {
+export default function AdminLandingPage(): React.ReactElement {
   return (
     <main id="main" tabIndex={-1} className="wrap">
       <header
@@ -25,17 +25,8 @@ export default function HomePage(): React.ReactElement {
           height={44}
           priority
         />
-        <div
-          style={{
-            fontFamily: "Inter, system-ui, sans-serif",
-            fontSize: "var(--fs-mono-meta)",
-            fontWeight: 600,
-            letterSpacing: "0.32em",
-            textTransform: "uppercase",
-            color: "var(--ink)",
-          }}
-        >
-          Autonom<em style={{ color: "var(--brand-orange)", fontStyle: "normal" }}>ux</em>
+        <div className="adm-brand">
+          Autonom<em>ux</em> Admin
         </div>
       </header>
 
@@ -56,7 +47,7 @@ export default function HomePage(): React.ReactElement {
             marginBottom: "var(--sp-16)",
           }}
         >
-          Phase 1.0 · Foundation
+          Phase 1.0 · Foundation · Scaffold
         </p>
         <h1
           id="page-h1"
@@ -65,31 +56,36 @@ export default function HomePage(): React.ReactElement {
             marginBottom: "var(--sp-24)",
           }}
         >
-          Your <em>AlterEgo</em>, almost ready.
+          Autonom<em>ux</em> Admin
         </h1>
         <p
           style={{
             fontSize: "var(--fs-body-lg)",
             color: "var(--ink-soft)",
-            marginBottom: "var(--sp-24)",
+            marginBottom: "var(--sp-32)",
           }}
         >
-          Autonomux gives you a personal AI orchestrator that lives in your
-          inbox, your calendar, your money, and your writing — so you can run
-          the rest.
+          Operator console for tenants, costs, integrations health, queue,
+          audit, activity, compliance, billing, feature flags, support, and
+          health. Operators only.
         </p>
+
+        <Link
+          href="/sign-in"
+          className="adm-cta"
+          aria-label="Sign in to continue to admin console"
+        >
+          Sign in to continue
+        </Link>
+
         <p
           style={{
-            fontSize: "var(--fs-body)",
+            marginTop: "var(--sp-48)",
+            fontSize: "var(--fs-body-sm)",
             color: "var(--muted)",
           }}
         >
-          The platform is in Foundation build. Public waitlist opens at
-          v1.7 — see the{" "}
-          <a href="https://github.com/kameleyon/autonomux/blob/main/docs/ROADMAP.md">
-            roadmap
-          </a>{" "}
-          for the path.
+          Internal &middot; access restricted to operators.
         </p>
       </section>
     </main>

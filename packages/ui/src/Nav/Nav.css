@@ -1,0 +1,154 @@
+/*
+ * Nav — top navigation with mobile drawer ≤ 880px.
+ * - Single <nav> landmark.
+ * - .az-nav__link--active uses aria-current="page" for SR.
+ */
+.az-nav {
+  position: relative;
+  width: 100%;
+  background: var(--brand-white);
+  border-bottom: 1px solid var(--border);
+  z-index: 10;
+}
+
+.az-nav__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-16);
+  padding: var(--sp-12) var(--sp-24);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.az-nav__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-8);
+  color: var(--ink);
+  text-decoration: none;
+  font-family: "Cormorant Garamond", serif;
+  font-size: var(--fs-body-lg);
+  font-weight: 500;
+  border-radius: var(--r-sm);
+}
+
+.az-nav__brand:hover {
+  color: var(--brand-red);
+  text-decoration: none;
+}
+
+.az-nav__brand:focus-visible {
+  outline: var(--focus-width) solid var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.az-nav__desktop-links {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-20);
+  flex: 1 1 auto;
+  margin-left: var(--sp-24);
+}
+
+.az-nav__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--sp-8) var(--sp-12);
+  color: var(--ink-soft);
+  font-size: var(--fs-body);
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: var(--r-md);
+}
+
+.az-nav__link:hover {
+  color: var(--brand-red);
+  background: var(--surface-warm);
+  text-decoration: none;
+}
+
+.az-nav__link:focus-visible {
+  outline: var(--focus-width) solid var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.az-nav__link--active {
+  color: var(--brand-red-deep);
+  background: var(--surface-warm);
+}
+
+.az-nav__auth-slot {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-8);
+}
+
+.az-nav__toggle {
+  display: none;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--sp-12);
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  color: var(--ink);
+  font-size: var(--fs-body-sm);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.az-nav__toggle:hover {
+  background: var(--surface-warm);
+}
+
+.az-nav__toggle:focus-visible {
+  outline: var(--focus-width) solid var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.az-nav__drawer {
+  display: none;
+  border-top: 1px solid var(--border);
+  background: var(--brand-white);
+}
+
+.az-nav__drawer-list {
+  list-style: none;
+  margin: 0;
+  padding: var(--sp-12) var(--sp-24);
+}
+
+.az-nav__drawer-item {
+  padding: var(--sp-4) 0;
+}
+
+.az-nav__drawer-item .az-nav__link {
+  width: 100%;
+}
+
+/* ─── Breakpoint: ≤ 880px → drawer mode ─── */
+@media (max-width: 880px) {
+  .az-nav__desktop-links {
+    display: none;
+  }
+  .az-nav__auth-slot {
+    display: none;
+  }
+  .az-nav__toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+  }
+  .az-nav__drawer--open {
+    display: block;
+  }
+}
+
+/* Reflow ≤ 320px: shrink padding */
+@media (max-width: 360px) {
+  .az-nav__row {
+    padding: var(--sp-8) var(--sp-12);
+  }
+}

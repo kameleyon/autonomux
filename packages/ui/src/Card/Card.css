@@ -1,0 +1,68 @@
+/*
+ * Card — warm surface, optional interactive.
+ * - --r-xl on every rounded surface (PRD §13.2).
+ * - Reflows ≥320px (SC 1.4.10) — no fixed widths.
+ */
+.az-card {
+  display: block;
+  background: var(--brand-white);
+  border-radius: var(--r-xl);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  text-decoration: none;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.az-card--default {
+  background: var(--brand-white);
+  border-color: var(--border);
+}
+
+.az-card--warm {
+  background: var(--surface-warm);
+  border-color: var(--border);
+}
+
+.az-card--bordered {
+  background: var(--brand-white);
+  border-color: var(--border-strong);
+}
+
+/* ─── Padding scale ─── */
+.az-card--pad-sm {
+  padding: var(--sp-12);
+}
+
+.az-card--pad-md {
+  padding: var(--sp-20);
+}
+
+.az-card--pad-lg {
+  padding: var(--sp-32);
+}
+
+/* ─── Interactive (a-tag card) ─── */
+.az-card--interactive {
+  cursor: pointer;
+  color: var(--ink);
+}
+
+.az-card--interactive:hover {
+  border-color: var(--brand-orange);
+  background: var(--surface);
+  text-decoration: none;
+}
+
+.az-card--interactive:focus-visible {
+  outline: var(--focus-width) solid var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .az-card {
+    transition: none;
+  }
+}

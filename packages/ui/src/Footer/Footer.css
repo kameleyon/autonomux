@@ -1,0 +1,116 @@
+/*
+ * Footer — multi-column with copyright + version row.
+ * Reflows to single column ≤ 880px; legible to 320px.
+ */
+.az-footer {
+  width: 100%;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  color: var(--ink-soft);
+  padding: var(--sp-32) var(--sp-24);
+}
+
+.az-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-32);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.az-footer__brand {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.az-footer__columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-32);
+  flex: 3 1 600px;
+  min-width: 0;
+}
+
+.az-footer__col {
+  min-width: 140px;
+}
+
+.az-footer__col-heading {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-size: var(--fs-mono-meta);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 0 0 var(--sp-12) 0;
+}
+
+.az-footer__col-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.az-footer__col-item {
+  margin: var(--sp-6) 0;
+}
+
+.az-footer__link {
+  display: inline-block;
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-size: var(--fs-body-sm);
+  padding: var(--sp-2) 0;
+  border-radius: var(--r-sm);
+}
+
+.az-footer__link:hover {
+  color: var(--brand-red);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.az-footer__link:focus-visible {
+  outline: var(--focus-width) solid var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.az-footer__legal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-12);
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: var(--sp-32) auto 0;
+  padding-top: var(--sp-16);
+  border-top: 1px solid var(--border);
+}
+
+.az-footer__copyright {
+  font-size: var(--fs-body-sm);
+  color: var(--muted);
+  margin: 0;
+}
+
+.az-footer__version {
+  font-family: "DM Mono", ui-monospace, monospace;
+  font-size: var(--fs-mono-data);
+  color: var(--muted-soft);
+  margin: 0;
+}
+
+@media (max-width: 720px) {
+  .az-footer__columns {
+    gap: var(--sp-20);
+  }
+  .az-footer__col {
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  .az-footer {
+    padding: var(--sp-20) var(--sp-12);
+  }
+}

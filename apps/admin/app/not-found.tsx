@@ -14,7 +14,7 @@ export default function NotFound(): React.ReactElement {
           marginBottom: "var(--sp-16)",
         }}
       >
-        404 · Not Found
+        404 &middot; Not Found
       </p>
       <h1 style={{ fontSize: "var(--fs-display-s)" }}>
         That page <em>doesn&rsquo;t exist</em>.
@@ -26,7 +26,7 @@ export default function NotFound(): React.ReactElement {
           marginTop: "var(--sp-16)",
         }}
       >
-        <a href="/">Back to home →</a>
+        <a href="/">Back to admin home &rarr;</a>
       </p>
     </main>
   );

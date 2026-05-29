@@ -1,0 +1,49 @@
+/*
+ * Chip — warm-only PPPS palette + mono-meta.
+ * All severity tokens are pre-validated for contrast in tokens.css.
+ */
+.az-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-4);
+  border-radius: var(--r-pill);
+  padding: var(--sp-2) var(--sp-10);
+  font-size: var(--fs-mono-meta);
+  font-weight: 600;
+  line-height: 1.4;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.az-chip--mono-meta {
+  font-family: "DM Mono", ui-monospace, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--surface-warm);
+  color: var(--ink-soft);
+  border-color: var(--border);
+}
+
+.az-chip--push {
+  background: var(--push-bg);
+  color: var(--push-c);
+  border-color: var(--push-border);
+}
+
+.az-chip--pitch {
+  background: var(--pitch-bg);
+  color: var(--pitch-c);
+  border-color: var(--pitch-border);
+}
+
+.az-chip--pause {
+  background: var(--pause-bg);
+  color: var(--pause-c);
+  border-color: var(--pause-border);
+}
+
+.az-chip--save {
+  background: var(--save-bg);
+  color: var(--save-c);
+  border-color: var(--save-border);
+}

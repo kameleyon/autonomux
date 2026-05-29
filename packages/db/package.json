@@ -1,0 +1,33 @@
+{
+  "name": "@autonomux/db",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Autonomux — Supabase schema, RLS, audit chain, pgvector. Owned by [Atlas].",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts",
+    "./types": "./src/types.ts",
+    "./admin": "./src/admin.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "migrate:gen": "supabase migration new",
+    "migrate:apply": "supabase db push",
+    "migrate:reset": "supabase db reset",
+    "lint": "echo '(no lint configured for @autonomux/db yet)'",
+    "clean": "rm -rf .turbo dist"
+  },
+  "dependencies": {
+    "@supabase/ssr": "0.5.2",
+    "@supabase/supabase-js": "2.47.10"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.5",
+    "typescript": "5.8.2",
+    "vitest": "2.1.8"
+  }
+}

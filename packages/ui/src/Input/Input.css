@@ -1,0 +1,98 @@
+/*
+ * Input — accessible text control.
+ * - Min-height 44px on control (SC 2.5.8).
+ * - Border 1px var(--border-strong) for 3:1 contrast (SC 1.4.11).
+ */
+.az-input {
+  display: flex;
+  align-items: stretch;
+  position: relative;
+  width: 100%;
+  background: var(--brand-white);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-xl);
+  transition: border-color 120ms ease;
+}
+
+.az-input:focus-within {
+  border-color: var(--brand-orange);
+  outline: var(--focus-width) solid var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.az-input--with-trailing {
+  padding-right: 0;
+}
+
+.az-input__control {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 44px;
+  padding: var(--sp-10) var(--sp-16);
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-size: var(--fs-body);
+  line-height: 1.4;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-xl);
+  outline: none;
+}
+
+.az-input__control::placeholder {
+  color: var(--muted-soft);
+}
+
+.az-input__control:disabled {
+  cursor: not-allowed;
+  color: var(--muted);
+}
+
+.az-input--text .az-input__control,
+.az-input--email .az-input__control,
+.az-input--password .az-input__control {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+.az-input--number .az-input__control {
+  font-family: "DM Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Trailing button (password visibility) ─── */
+.az-input__trailing-btn {
+  flex: 0 0 auto;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--sp-12);
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-size: var(--fs-body-sm);
+  font-weight: 500;
+  color: var(--brand-red-deep);
+  background: transparent;
+  border: 0;
+  border-left: 1px solid var(--border);
+  cursor: pointer;
+  border-radius: 0 var(--r-xl) var(--r-xl) 0;
+}
+
+.az-input__trailing-btn:hover {
+  color: var(--brand-red);
+  background: var(--surface-warm);
+}
+
+.az-input__trailing-btn:focus-visible {
+  outline: var(--focus-width) solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
+/* Error state (set via aria-invalid on input — Field controls it) */
+.az-input:has(.az-input__control[aria-invalid="true"]) {
+  border-color: var(--brand-red-deep);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .az-input {
+    transition: none;
+  }
+}

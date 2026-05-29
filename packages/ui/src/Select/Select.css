@@ -1,0 +1,68 @@
+/*
+ * Select — native <select> wrapped for visual consistency.
+ * - Min-height 44px (SC 2.5.8).
+ * - Border 3:1 vs background (SC 1.4.11) via --border-strong.
+ */
+.az-select {
+  position: relative;
+  display: block;
+  width: 100%;
+  background: var(--brand-white);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-xl);
+  transition: border-color 120ms ease;
+}
+
+.az-select:focus-within {
+  border-color: var(--brand-orange);
+  outline: var(--focus-width) solid var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.az-select__control {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: var(--sp-10) var(--sp-40) var(--sp-10) var(--sp-16);
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-size: var(--fs-body);
+  line-height: 1.4;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-xl);
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.az-select--mono .az-select__control {
+  font-family: "DM Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.az-select__chevron {
+  position: absolute;
+  right: var(--sp-16);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+  font-size: var(--fs-body-sm);
+}
+
+.az-select:has(.az-select__control[aria-invalid="true"]) {
+  border-color: var(--brand-red-deep);
+}
+
+.az-select__control:disabled {
+  cursor: not-allowed;
+  color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .az-select {
+    transition: none;
+  }
+}
