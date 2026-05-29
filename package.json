@@ -1,0 +1,28 @@
+{
+  "name": "autonomux",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Autonomux — your AlterEgo runs your inbox, your calendar, your money, and your writing — so you can run the rest.",
+  "type": "module",
+  "engines": {
+    "node": ">=20.18.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.1",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "clean": "turbo run clean && rm -rf node_modules .turbo",
+    "preflight": "node scripts/preflight.mjs",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,css}\" --ignore-path .gitignore"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.5",
+    "prettier": "3.4.2",
+    "turbo": "2.3.4",
+    "typescript": "5.8.2"
+  }
+}

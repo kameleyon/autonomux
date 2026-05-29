@@ -529,12 +529,12 @@ Three tiers — all encrypted at rest with per-tenant data keys:
 
 1. **GitHub repo location + visibility** — private under `kameleyon` org assumed; confirm
 2. **Hosting accounts** — confirm Vercel + Supabase + Railway + Doppler + Axiom + Sentry + Vanta + AWS (KMS) + Upstash (Redis) all under `josinsidevoice@gmail.com`; provision in week 1 of Foundation
-3. **Phase 1 success criteria number** — what's the specific DAU number Phase 1 needs to hit before Phase 2 budget gets approved? (Penny call)
+3. ~~**Phase 1 success criteria number**~~ → **LOCKED 2026-05-29:** Phase 1 = founder-dogfood only (DAB = 1). Phase 1.7 multi-tenant exit gate = **`DAB / paying users ≥ 50%` by month 2 post-launch.**
 4. **AlterEgo voice samples** — does the founder want her own writing samples pre-loaded into Scribe at launch (yes / no) — affects v1.3 Scribe scope
 5. **Companion content library** — meditation scripts, journal prompts, exercise sequences — source licensed library, original content, or both? Affects v1.5+ scope
 6. **Apple Sign In support** — required for native iOS App Store submission. Add to Phase 1.5 (Capacitor) or earlier?
 7. **Native push notification provider** — Vercel/Web Push for PWA Phase 1.1+; OneSignal vs Firebase for Capacitor Phase 1.5
-8. **Astrology engine** — Astrodienst API (paid) vs `swisseph` library (free, on our infra) — affects cost + latency + complexity
+8. ~~**Astrology engine** — Astrodienst API (paid) vs `swisseph` library (free, on our infra)~~ → **LOCKED 2026-05-29:** `swisseph` on our own infra. Runs in `apps/worker`. Zero per-call cost.
 9. **Subscription billing day** — calendar-month vs subscription-anniversary — affects MRR reporting
 10. **Cookie consent provider** — self-built (cheap, ours to maintain) vs Cookiebot / OneTrust (paid, compliance-cleaner)
 

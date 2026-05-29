@@ -42,14 +42,6 @@ pnpm-debug.log*
 # ── typescript ──
 *.tsbuildinfo
 
-# ── legacy autonomux-backend (pre-platform pivot, kept on disk for reference) ──
-# These files predate the autonomux platform plan in PRD.md. They live here
-# locally only; the new monorepo (Phase 1.0) will replace them with
-# apps/web/, apps/admin/, apps/worker/, packages/*. Until Phase 1.0
-# kicks off, ignore them so the repo starts clean.
-/src/
-/frontend/
-/workspaces/
-/schema.sql
-/package.json
-/package-lock.json
+# ── pnpm workspace lockfiles (committed via root, not nested) ──
+**/pnpm-lock.yaml
+!/pnpm-lock.yaml
