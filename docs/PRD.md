@@ -230,14 +230,21 @@ Three tiers — all encrypted at rest with per-tenant data keys:
 
 ## 7 · Security model (locked by [Cipher + Shield])
 
-### 7.1 Authentication
+### 7.1 Authentication (locked 2026-05-29 — email/password)
 
 | Vector | Standard |
 |---|---|
-| Web auth | Supabase Auth (Email + Google + Apple) |
-| 2FA | TOTP mandatory at signup · WebAuthn/Passkeys offered at signup |
-| Session | 24h access token · 7d refresh · device fingerprint + revoke-all-sessions in Settings |
-| Admin auth | Separate Supabase project · TOTP + WebAuthn mandatory · IP allowlist + WireGuard mesh |
+| Web auth | Supabase Auth · **email + password** (primary) · password ≥ 12 chars · zxcvbn strength meter at signup |
+| Email verification | Mandatory before first agent connection · verification link expires 24h |
+| 2FA | **TOTP mandatory** at signup · authenticator app of user's choice (Google Authenticator, 1Password, Authy) · backup codes generated + downloadable |
+| Optional 2nd factor | WebAuthn / Passkeys offered after first sign-in for users who prefer |
+| Step-up auth | TOTP re-prompt for sensitive actions: banking changes, account deletion, plan downgrade, revoke-all-sessions |
+| Session | 24h access token · 7d refresh · device fingerprint · revoke-all-sessions in Settings |
+| Admin auth | Separate Supabase project · email + password + TOTP mandatory · IP allowlist + WireGuard mesh |
+
+**OAuth providers — optional add-ons (deferred):** Google + GitHub + Microsoft (Outlook) can be enabled with ~5 min config each, no review process — add when convenient. Apple (requires Developer Program enrollment) + Facebook (requires Meta app review, 4-8 weeks) deferred to post-launch.
+
+**Composio is NOT used for identity.** Composio handles agent action OAuth separately (Mailroom reading Gmail, Scheduler writing to Calendar, etc.) — different scope grants, different storage, different purpose.
 
 ### 7.2 Encryption
 

@@ -5,10 +5,12 @@
   "description": "Autonomux — your AlterEgo runs your inbox, your calendar, your money, and your writing — so you can run the rest.",
   "type": "module",
   "engines": {
-    "node": ">=20.18.0",
-    "pnpm": ">=9.0.0"
+    "node": ">=20.18.0"
   },
-  "packageManager": "pnpm@9.15.1",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",

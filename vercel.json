@@ -1,8 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm --filter=@autonomux/web build",
-  "installCommand": "corepack enable && pnpm install --frozen-lockfile=false",
+  "buildCommand": "npm run build --workspace=@autonomux/web",
+  "installCommand": "npm install --legacy-peer-deps",
   "outputDirectory": "apps/web/.next",
   "framework": "nextjs",
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- apps/web packages docs README.md package.json pnpm-workspace.yaml turbo.json vercel.json && exit 0 || exit 1"
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- apps/web packages docs README.md package.json turbo.json vercel.json && exit 0 || exit 1"
 }
