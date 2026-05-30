@@ -86,6 +86,20 @@ export function initTelemetry(opts: InitTelemetryOptions): TelemetryHandle {
     process.env["NODE_ENV"] ??
     "development";
 
+  /* Escape hatch for production deploys that haven't wired Axiom yet
+   * (e.g. early Railway/Vercel boots). Set OTEL_ENABLED=false to
+   * intentionally skip the production hard-fail. Default behavior
+   * (enabled in prod) is unchanged so silent observability loss
+   * still requires an explicit operator decision.
+   * 2026-05-30 — co-evolves with apps/web/instrumentation.ts gate. */
+  if (process.env["OTEL_ENABLED"] === "false") {
+    activeHandle = {
+      enabled: false,
+      async shutdown(): Promise<void> {},
+    };
+    return activeHandle;
+  }
+
   const endpoint =
     opts.endpoint ?? process.env["OTEL_EXPORTER_OTLP_ENDPOINT"];
 
