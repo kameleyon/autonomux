@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "cd ../.. && npm run build --workspace=@autonomux/admin",
+  "installCommand": "cd ../.. && npm install --legacy-peer-deps",
+  "outputDirectory": ".next",
+  "framework": "nextjs"
+}

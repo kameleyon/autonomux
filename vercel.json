@@ -3,6 +3,5 @@
   "buildCommand": "npm run build --workspace=@autonomux/web",
   "installCommand": "npm install --legacy-peer-deps",
   "outputDirectory": "apps/web/.next",
-  "framework": "nextjs",
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- apps/web packages docs README.md package.json turbo.json vercel.json && exit 0 || exit 1"
+  "framework": "nextjs"
 }
