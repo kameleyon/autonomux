@@ -36,18 +36,29 @@ import {
 } from "@autonomux/auth/two-fa-session";
 import type { Database } from "@autonomux/db/types";
 import { tryExtractJwtClaims } from "@autonomux/db/jwt";
-import {
-  createNextRequestLogger,
-  REQUEST_ID_HEADER_NAME,
-} from "@autonomux/logger";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
-
-import { logger } from "@/lib/logger";
 
 const APP_PREFIX = "/app";
 const AUTH_PAGES = new Set(["/sign-in", "/sign-up"]);
+const REQUEST_ID_HEADER_NAME = "x-request-id";
 
-const requestLogger = createNextRequestLogger(logger);
+/* Edge-runtime middleware does NOT import @/lib/logger / @autonomux/logger
+ * — pino uses worker_threads + process internals that aren't available
+ * in Vercel's Edge runtime. Request-id minting is the only logger
+ * responsibility middleware needs, so we do it inline with Web Crypto.
+ * Server Components, Route Handlers, and Server Actions still use the
+ * full pino-based logger via @/lib/logger (they run in Node runtime).
+ * (Vercel build fix 2026-05-29 — MIDDLEWARE_INVOCATION_FAILED.) */
+const UUID_V4_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+function mintRequestId(inbound: string | null): string {
+  return inbound !== null && UUID_V4_RE.test(inbound)
+    ? inbound
+    : crypto.randomUUID();
+}
+function attachRequestId(res: NextResponse, id: string): void {
+  res.headers.set(REQUEST_ID_HEADER_NAME, id);
+}
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -62,19 +73,18 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   const pathname = url.pathname;
 
   // ── 0. Request-id generation + propagation (Phase 1.0-B5) ────────────
-  // begin() reuses an inbound x-request-id when it's a well-formed UUID
-  // v4; otherwise mints a fresh one. We stamp it on every response below.
-  const reqCtx = requestLogger.begin(request);
-  // Forward the id into the downstream request headers so Server
-  // Components / Route Handlers can read it via
-  // `headers().get("x-request-id")` and bind it to their child logger.
-  request.headers.set(REQUEST_ID_HEADER_NAME, reqCtx.request_id);
+  // Reuse inbound x-request-id when it's a well-formed UUID v4;
+  // otherwise mint a fresh one. Forward into downstream request
+  // headers so Server Components / Route Handlers can bind it to
+  // their child logger via `headers().get("x-request-id")`.
+  const requestId = mintRequestId(request.headers.get(REQUEST_ID_HEADER_NAME));
+  request.headers.set(REQUEST_ID_HEADER_NAME, requestId);
 
   // Build the response we'll mutate cookies / headers on.
   let response = NextResponse.next({
     request: { headers: new Headers(request.headers) },
   });
-  requestLogger.attach(response, reqCtx.request_id);
+  attachRequestId(response, requestId);
 
   const supabaseUrl = requireEnv("NEXT_PUBLIC_SUPABASE_URL");
   const anonKey = requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
@@ -104,7 +114,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
         response = NextResponse.next({
           request: { headers: new Headers(request.headers) },
         });
-        requestLogger.attach(response, reqCtx.request_id);
+        attachRequestId(response, requestId);
         for (const { name, value, options } of cookiesToSet) {
           response.cookies.set({
             name,
@@ -154,7 +164,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     redirectUrl.pathname = "/sign-in";
     redirectUrl.searchParams.set("next", pathname);
     const redirect = NextResponse.redirect(redirectUrl);
-    requestLogger.attach(redirect, reqCtx.request_id);
+    attachRequestId(redirect, requestId);
     return redirect;
   }
 
@@ -164,7 +174,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     redirectUrl.pathname = "/sign-in";
     redirectUrl.searchParams.set("check_email", "1");
     const redirect = NextResponse.redirect(redirectUrl);
-    requestLogger.attach(redirect, reqCtx.request_id);
+    attachRequestId(redirect, requestId);
     return redirect;
   }
 
@@ -214,7 +224,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
           redirectUrl.pathname = "/sign-in/totp";
           redirectUrl.searchParams.set("next", pathname);
           const redirect = NextResponse.redirect(redirectUrl);
-          requestLogger.attach(redirect, reqCtx.request_id);
+          attachRequestId(redirect, requestId);
           return redirect;
         }
       }
@@ -227,7 +237,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     redirectUrl.pathname = "/app";
     redirectUrl.search = "";
     const redirect = NextResponse.redirect(redirectUrl);
-    requestLogger.attach(redirect, reqCtx.request_id);
+    attachRequestId(redirect, requestId);
     return redirect;
   }
 
