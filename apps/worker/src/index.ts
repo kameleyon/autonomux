@@ -37,6 +37,7 @@ import {
   type SampleWorkerHandle,
 } from "./workers/sample.js";
 import { registerCronJobs } from "./jobs/cron.js";
+import { startHealthServer, type HealthServer } from "./lib/health.js";
 
 import type { TelemetryHandle } from "@autonomux/telemetry";
 
@@ -46,6 +47,7 @@ type Shutdownable = {
   sample: SampleWorkerHandle;
   closeRedis: () => Promise<void>;
   telemetry: TelemetryHandle;
+  health: HealthServer;
 };
 
 async function main(): Promise<void> {
@@ -117,6 +119,9 @@ async function main(): Promise<void> {
     // Cron registration is best-effort at boot; do not abort the worker.
   }
 
+  // ---- Health endpoint (Railway/Vercel/etc require a bound port) ----
+  const health = startHealthServer(logger);
+
   // ---- Shutdown wiring ----
   const state: Shutdownable = {
     shuttingDown: false,
@@ -124,6 +129,7 @@ async function main(): Promise<void> {
     sample,
     closeRedis,
     telemetry,
+    health,
   };
 
   installShutdownHandlers(state, logger);
@@ -143,6 +149,12 @@ function installShutdownHandlers(
     state.shuttingDown = true;
 
     logger.info({ signal }, "shutting down");
+
+    try {
+      await state.health.close();
+    } catch (err) {
+      logger.error({ err }, "health server close failed");
+    }
 
     try {
       await state.sample.close();
