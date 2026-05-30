@@ -15,7 +15,8 @@
   ],
   "scripts": {
     "start": "npm run start --workspace=@autonomux/worker",
-    "build": "turbo run build",
+    "build": "echo 'autonomux root build: no-op (each workspace has its own build cmd)'",
+    "build:all": "npx turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
