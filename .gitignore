@@ -45,3 +45,7 @@ pnpm-debug.log*
 # ── pnpm workspace lockfiles (committed via root, not nested) ──
 **/pnpm-lock.yaml
 !/pnpm-lock.yaml
+
+# scratch SQL exports
+.tmp/
+.tmp_*
