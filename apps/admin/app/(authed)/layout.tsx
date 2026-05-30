@@ -37,7 +37,7 @@ export default function AuthedLayout({
     <div className="adm-shell">
       <header className="adm-shell__header">
         <Link
-          href="/"
+          href="/dashboard"
           aria-label="Autonomux admin home"
           style={{
             display: "flex",
