@@ -60,25 +60,54 @@ function attachRequestId(res: NextResponse, id: string): void {
   res.headers.set(REQUEST_ID_HEADER_NAME, id);
 }
 
-function requireEnv(name: string): string {
-  const value = process.env[name];
-  if (value === undefined || value.length === 0) {
-    throw new Error(`[middleware] Missing required env: ${name}`);
-  }
-  return value;
+/* Defensive middleware (Vercel deploy hardening 2026-05-29):
+ * If anything inside the gate/refresh logic throws — missing env vars,
+ * Supabase outage, malformed cookie — we MUST NOT 500 the whole site.
+ * Edge MIDDLEWARE_INVOCATION_FAILED takes every route down, including
+ * the public marketing pages. So we fail-open: return `NextResponse.
+ * next()` with diagnostic headers, and surface the reason via
+ * `x-mw-degraded` so Vercel logs + DevTools show it without leaking
+ * to end users.
+ *
+ * The downstream auth-required pages still gate themselves via the
+ * Supabase server-component client, so fail-open here doesn't grant
+ * access to /app/*.
+ */
+function failOpen(
+  request: NextRequest,
+  requestId: string,
+  reason: string,
+): NextResponse {
+  const res = NextResponse.next({
+    request: { headers: new Headers(request.headers) },
+  });
+  attachRequestId(res, requestId);
+  res.headers.set("x-mw-degraded", reason);
+  return res;
 }
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
-  const url = request.nextUrl;
-  const pathname = url.pathname;
-
   // ── 0. Request-id generation + propagation (Phase 1.0-B5) ────────────
-  // Reuse inbound x-request-id when it's a well-formed UUID v4;
-  // otherwise mint a fresh one. Forward into downstream request
-  // headers so Server Components / Route Handlers can bind it to
-  // their child logger via `headers().get("x-request-id")`.
   const requestId = mintRequestId(request.headers.get(REQUEST_ID_HEADER_NAME));
   request.headers.set(REQUEST_ID_HEADER_NAME, requestId);
+
+  try {
+    return await runMiddleware(request, requestId);
+  } catch (err) {
+    return failOpen(
+      request,
+      requestId,
+      `crashed:${(err as Error)?.message ?? "unknown"}`.slice(0, 200),
+    );
+  }
+}
+
+async function runMiddleware(
+  request: NextRequest,
+  requestId: string,
+): Promise<NextResponse> {
+  const url = request.nextUrl;
+  const pathname = url.pathname;
 
   // Build the response we'll mutate cookies / headers on.
   let response = NextResponse.next({
@@ -86,8 +115,14 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   });
   attachRequestId(response, requestId);
 
-  const supabaseUrl = requireEnv("NEXT_PUBLIC_SUPABASE_URL");
-  const anonKey = requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  const supabaseUrl = process.env["NEXT_PUBLIC_SUPABASE_URL"] ?? "";
+  const anonKey = process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"] ?? "";
+  if (supabaseUrl.length === 0 || anonKey.length === 0) {
+    // Missing Supabase env vars — fail open. The downstream pages will
+    // either render their public content or redirect to /sign-in via
+    // their own auth check.
+    return failOpen(request, requestId, "missing-supabase-env");
+  }
 
   const supabase = createSSRServerClient<Database>(supabaseUrl, anonKey, {
     cookies: {
