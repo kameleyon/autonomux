@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @autonomux/auth/webauthn
  *
  * Wrappers around `@simplewebauthn/server` 11.x. We isolate the SDK behind
@@ -7,7 +7,7 @@
  *
  * Flow recap (RP = relying party = our server):
  *   Registration:
- *     1. RP calls generateRegistrationOptions() â†’ returns {challenge, ...}.
+ *     1. RP calls generateRegistrationOptions() → returns {challenge, ...}.
  *     2. RP stores the challenge in an encrypted cookie (5-min TTL, single-use).
  *     3. Browser calls navigator.credentials.create({publicKey: opts}).
  *     4. RP calls verifyRegistration({challenge, response, ...}). On success,
@@ -45,7 +45,7 @@ import type {
 } from "@simplewebauthn/types";
 
 // ---------------------------------------------------------------------------
-// Public types â€” narrowed to what callers actually need.
+// Public types — narrowed to what callers actually need.
 // ---------------------------------------------------------------------------
 
 export interface WebAuthnUser {
@@ -117,7 +117,7 @@ export interface VerifiedRegistration {
 
 export interface VerifiedAuthentication {
   verified: boolean;
-  /** Updated signature counter â€” caller must persist. */
+  /** Updated signature counter — caller must persist. */
   newCounter: number;
 }
 
@@ -152,7 +152,7 @@ export async function generateRegistrationOptions(
       residentKey: "preferred",
       userVerification: "preferred",
     },
-    // Prefer Ed25519 â†’ ES256 â†’ RS256.
+    // Prefer Ed25519 → ES256 → RS256.
     supportedAlgorithmIDs: [-8, -7, -257],
     timeout: 60_000,
   };
@@ -164,7 +164,7 @@ export async function generateRegistrationOptions(
  * Verify the browser's registration response. Returns the public key + counter
  * to persist for future authentication.
  *
- * Throws on ANY verification failure â€” security signal, never swallow.
+ * Throws on ANY verification failure — security signal, never swallow.
  */
 export async function verifyRegistration(
   args: VerifyRegistrationArgs,

@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 
 import "@autonomux/ui/tokens.css";
 import "@autonomux/ui/Button.css";
@@ -10,11 +10,11 @@ import { SiteFooter } from "@/components/SiteFooter";
 
 export const metadata: Metadata = {
   title: {
-    default: "Autonomux â€” your AlterEgo",
-    template: "%s Â· Autonomux",
+    default: "Autonomux — your AlterEgo",
+    template: "%s · Autonomux",
   },
   description:
-    "Your AlterEgo runs your inbox, your calendar, your money, and your writing â€” so you can run the rest.",
+    "Your AlterEgo runs your inbox, your calendar, your money, and your writing — so you can run the rest.",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL ?? "https://autonomux.io",
   ),
@@ -28,9 +28,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "Autonomux",
-    title: "Autonomux â€” your AlterEgo",
+    title: "Autonomux — your AlterEgo",
     description:
-      "Your AlterEgo runs your inbox, your calendar, your money, and your writing â€” so you can run the rest.",
+      "Your AlterEgo runs your inbox, your calendar, your money, and your writing — so you can run the rest.",
   },
 };
 

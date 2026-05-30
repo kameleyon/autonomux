@@ -1,14 +1,14 @@
-﻿/**
+/**
  * apps/web/app/legal/privacy/page.tsx
  *
- * Privacy Policy â€” GDPR Art. 13 / 14 disclosure, plus the CCPA "right to
+ * Privacy Policy — GDPR Art. 13 / 14 disclosure, plus the CCPA "right to
  * know" categories.
  *
  * This is a placeholder template. Counsel review required before launch.
  * Every claim of fact (e.g. retention windows) MUST match the
  * engineering reality before LAST_UPDATED moves to a launch date.
  *
- * Owner: [Comply] Â· Phase 1.0-B9
+ * Owner: [Comply] · Phase 1.0-B9
  */
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -36,7 +36,7 @@ export default function PrivacyPolicyPage(): React.ReactElement {
           marginBottom: "var(--sp-32)",
         }}
       >
-        Last updated Â· {LAST_UPDATED}
+        Last updated · {LAST_UPDATED}
       </p>
 
       <CalloutBox>
@@ -61,20 +61,20 @@ export default function PrivacyPolicyPage(): React.ReactElement {
       <Section title="What data we collect.">
         <ul>
           <li>
-            <strong>Account data</strong> â€” email, hashed password, name (if
+            <strong>Account data</strong> — email, hashed password, name (if
             you provide it), profile preferences.
           </li>
           <li>
-            <strong>Content you give your AlterEgo</strong> â€” messages,
+            <strong>Content you give your AlterEgo</strong> — messages,
             documents, integrations you authorise (Gmail, Calendar, etc.).
             We process these to do the work you asked for.
           </li>
           <li>
-            <strong>Technical data</strong> â€” IP address, user agent, error
+            <strong>Technical data</strong> — IP address, user agent, error
             traces. Used for security, debugging, and abuse prevention.
           </li>
           <li>
-            <strong>Usage data</strong> â€” which features you use, when. Only
+            <strong>Usage data</strong> — which features you use, when. Only
             collected if you opted in to analytics on the cookie banner.
           </li>
         </ul>
@@ -84,21 +84,21 @@ export default function PrivacyPolicyPage(): React.ReactElement {
         <p>Each category of data has a basis under GDPR Art. 6:</p>
         <ul>
           <li>
-            <strong>Contract (Art. 6(1)(b))</strong> â€” account data and
+            <strong>Contract (Art. 6(1)(b))</strong> — account data and
             content you submit; we cannot deliver the service without it.
           </li>
           <li>
-            <strong>Legitimate interest (Art. 6(1)(f))</strong> â€” security
+            <strong>Legitimate interest (Art. 6(1)(f))</strong> — security
             logs, error traces, abuse detection. Our interest is keeping
             the service safe; we weigh this against your rights.
           </li>
           <li>
-            <strong>Consent (Art. 6(1)(a))</strong> â€” analytics, marketing,
+            <strong>Consent (Art. 6(1)(a))</strong> — analytics, marketing,
             and any cookie outside the necessary category. Withdrawable
             anytime at <Link href="/settings/consent">cookie settings</Link>.
           </li>
           <li>
-            <strong>Legal obligation (Art. 6(1)(c))</strong> â€” tax records,
+            <strong>Legal obligation (Art. 6(1)(c))</strong> — tax records,
             response to lawful requests from authorities.
           </li>
         </ul>
@@ -111,27 +111,27 @@ export default function PrivacyPolicyPage(): React.ReactElement {
         </p>
         <ul>
           <li>
-            <strong>Supabase</strong> â€” database, auth, storage (US / EU
+            <strong>Supabase</strong> — database, auth, storage (US / EU
             regions per your tenant).
           </li>
           <li>
-            <strong>Anthropic</strong> â€” Claude API for AlterEgo
+            <strong>Anthropic</strong> — Claude API for AlterEgo
             reasoning. Inputs are not used to train models (zero-data-
             retention enterprise terms).
           </li>
           <li>
-            <strong>Resend</strong> â€” transactional email.
+            <strong>Resend</strong> — transactional email.
           </li>
           <li>
-            <strong>Stripe</strong> â€” payment processing. We never see your
+            <strong>Stripe</strong> — payment processing. We never see your
             card number.
           </li>
           <li>
-            <strong>Sentry</strong> â€” error monitoring. PII scrubbing
+            <strong>Sentry</strong> — error monitoring. PII scrubbing
             enabled at the SDK.
           </li>
           <li>
-            <strong>Vercel</strong> â€” hosting and edge runtime.
+            <strong>Vercel</strong> — hosting and edge runtime.
           </li>
         </ul>
         <p>
@@ -144,49 +144,49 @@ export default function PrivacyPolicyPage(): React.ReactElement {
       <Section title="How long we keep it.">
         <ul>
           <li>
-            <strong>Account data</strong> â€” for the life of your account,
+            <strong>Account data</strong> — for the life of your account,
             plus 30 days after deletion to honor recovery requests.
           </li>
           <li>
-            <strong>Content</strong> â€” until you delete it or close your
+            <strong>Content</strong> — until you delete it or close your
             account.
           </li>
           <li>
-            <strong>Security logs</strong> â€” 13 months, then aggregated.
+            <strong>Security logs</strong> — 13 months, then aggregated.
           </li>
           <li>
-            <strong>Billing records</strong> â€” 7 years (tax-law obligation).
+            <strong>Billing records</strong> — 7 years (tax-law obligation).
           </li>
         </ul>
       </Section>
 
       <Section title="Your rights.">
-        <p>Under GDPR Art. 15â€“22 and CCPA Â§1798.100â€“.150 you may:</p>
+        <p>Under GDPR Art. 15–22 and CCPA §1798.100–.150 you may:</p>
         <ul>
           <li>
-            <strong>Access</strong> â€” request a copy of the data we hold
+            <strong>Access</strong> — request a copy of the data we hold
             about you.
           </li>
           <li>
-            <strong>Rectify</strong> â€” correct inaccurate data.
+            <strong>Rectify</strong> — correct inaccurate data.
           </li>
           <li>
-            <strong>Erase</strong> â€” ask us to delete your account and
+            <strong>Erase</strong> — ask us to delete your account and
             content (&quot;right to be forgotten&quot;).
           </li>
           <li>
-            <strong>Restrict / object</strong> â€” pause specific processing.
+            <strong>Restrict / object</strong> — pause specific processing.
           </li>
           <li>
-            <strong>Portability</strong> â€” get your content in a structured,
+            <strong>Portability</strong> — get your content in a structured,
             machine-readable format.
           </li>
           <li>
-            <strong>Withdraw consent</strong> â€” at{" "}
+            <strong>Withdraw consent</strong> — at{" "}
             <Link href="/settings/consent">cookie settings</Link>, anytime.
           </li>
           <li>
-            <strong>Lodge a complaint</strong> â€” with your local
+            <strong>Lodge a complaint</strong> — with your local
             supervisory authority (EU) or the California Attorney General.
           </li>
         </ul>
@@ -196,7 +196,7 @@ export default function PrivacyPolicyPage(): React.ReactElement {
         </p>
       </Section>
 
-      <Section title="CCPA â€” California residents.">
+      <Section title="CCPA — California residents.">
         <p>
           We do not sell or share personal information for cross-context
           behavioural advertising. If we ever do, you will see a &quot;Do
@@ -234,7 +234,7 @@ export default function PrivacyPolicyPage(): React.ReactElement {
   );
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────
 
 function Section(props: {
   title: string;

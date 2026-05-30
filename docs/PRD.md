@@ -1,35 +1,35 @@
-﻿# Autonomux â€” Product Requirements Document
+# Autonomux — Product Requirements Document
 
 **Version:** 0.1 (draft)
 **Date:** 2026-05-29
 **Owner:** kameleyon (josinsidevoice@gmail.com)
-**Status:** Living document â€” Phase 1 (Foundation) scoped, Phase 2-7 sketched
-**Adjacent docs:** [ROADMAP.md](./ROADMAP.md) Â· [ARCHITECTURE.md] (TBD) Â· [SECURITY.md] (TBD)
+**Status:** Living document — Phase 1 (Foundation) scoped, Phase 2-7 sketched
+**Adjacent docs:** [ROADMAP.md](./ROADMAP.md) · [ARCHITECTURE.md] (TBD) · [SECURITY.md] (TBD)
 
 ---
 
-## 0 Â· Document conventions
+## 0 · Document conventions
 
 - **Locked** in a section header means the decision is final for v1.0. Changing requires founder sign-off.
-- **TBD** means a question we still need to answer â€” listed in Â§17.
-- Studio-zero personas referenced in [BRACKETS] â€” Forge, Atlas, Cipher, etc. See Â§16 for the persona-to-domain map.
+- **TBD** means a question we still need to answer — listed in §17.
+- Studio-zero personas referenced in [BRACKETS] — Forge, Atlas, Cipher, etc. See §16 for the persona-to-domain map.
 
 ---
 
-## 1 Â· Vision (locked)
+## 1 · Vision (locked)
 
-**Autonomux is a SaaS platform that gives every paying user a personal AI orchestrator â€” their AlterEgo â€” that lives inside their digital life and acts on their behalf across email, calendar, finances, writing, and wellness, under explicit ongoing user control.**
+**Autonomux is a SaaS platform that gives every paying user a personal AI orchestrator — their AlterEgo — that lives inside their digital life and acts on their behalf across email, calendar, finances, writing, and wellness, under explicit ongoing user control.**
 
 The product thesis: existing "AI assistants" are conversational toys. Autonomux turns assistance into a persistent, accountable, audit-logged agent that knows you over time and gets measurably better at the things you keep asking it to do. The differentiator is **persistent memory + judgment + provable accountability**, not the integrations themselves (those are commodities).
 
 **One sentence we'd put on the homepage:**
-> Your AlterEgo runs your inbox, your calendar, your money, and your writing â€” so you can run the rest.
+> Your AlterEgo runs your inbox, your calendar, your money, and your writing — so you can run the rest.
 
 ---
 
-## 2 Â· Audience
+## 2 · Audience
 
-### Primary ICP (founder cohort) â€” locked
+### Primary ICP (founder cohort) — locked
 
 **Profile:** Polymath operators with high cognitive load. Multiple roles simultaneously. Need an agent that can context-switch as fast as they do.
 
@@ -37,26 +37,26 @@ The product thesis: existing "AI assistants" are conversational toys. Autonomux 
 |---|---|
 | Roles | Founder-operator OR professional-with-side-hustles (e.g., RN + creator + investor + parent) |
 | Income | $100k-300k household |
-| Tech comfort | High â€” uses Notion, Linear, Stripe, has self-hosted something |
+| Tech comfort | High — uses Notion, Linear, Stripe, has self-hosted something |
 | Pain | "Too many lanes. None getting the attention they deserve." |
 | Willingness to delegate | High for repeatable tasks (email triage, bill paying), low for irreversible decisions |
-| Privacy posture | Cares â€” won't hand bank access to a no-name SaaS without proof |
+| Privacy posture | Cares — won't hand bank access to a no-name SaaS without proof |
 
-**Founder is the prototype (single mom Â· RN Â· content creator Â· sport Â· coding Â· woo-woo Â· studying).** Building for her first means the surface organically supports the polymath ICP. [Compass owns ICP refinement at Phase 3.]
+**Founder is the prototype (single mom · RN · content creator · sport · coding · woo-woo · studying).** Building for her first means the surface organically supports the polymath ICP. [Compass owns ICP refinement at Phase 3.]
 
-### Secondary ICPs (Phase 3+ â€” not designed for yet)
+### Secondary ICPs (Phase 3+ — not designed for yet)
 - Indie founders / solo SaaS operators
 - Creator-economy operators (newsletter + Substack + podcast)
 - Family CFOs (managing household finance + scheduling)
 
 ### Out of audience (explicit)
-- Enterprise teams â€” different product
-- "Casual ChatGPT users" â€” won't pay our price
-- Users in regulated industries needing HIPAA/SOX-compliant data handling for **patient/employer** data (the founder is an RN â€” see Â§10.3 HIPAA refusal contract)
+- Enterprise teams — different product
+- "Casual ChatGPT users" — won't pay our price
+- Users in regulated industries needing HIPAA/SOX-compliant data handling for **patient/employer** data (the founder is an RN — see §10.3 HIPAA refusal contract)
 
 ---
 
-## 3 Â· Product surfaces
+## 3 · Product surfaces
 
 ### 3.1 User-facing surfaces (locked surfaces, scope per phase in ROADMAP)
 
@@ -66,40 +66,40 @@ The product thesis: existing "AI assistants" are conversational toys. Autonomux 
 | **Morning Briefing** | Auto-generated daily summary delivered (a) in-app at login and (b) by email at user-configured time (default 6am local). |
 | **Mailroom** | Email triage UI: ranked inbox, AI-proposed actions (draft, snooze, delete, escalate), user approves or overrides |
 | **Scheduler** | Calendar overview, conflict detection, agent-proposed slots, accept-to-write |
-| **Scribe** | Drafting surface for Substack + other outbound content. Plan â†’ draft â†’ approve â†’ publish |
-| **Oracle** | Cardology (weekly + daily) + astrology (natal + transits + derivative) + tarot pulls â€” daily reading + on-demand |
-| **Treasurer** | Plaid-fed dashboard: balance Â· upcoming bills Â· spend categories Â· agent insights ("you spent 40% more on takeout this month") |
+| **Scribe** | Drafting surface for Substack + other outbound content. Plan → draft → approve → publish |
+| **Oracle** | Cardology (weekly + daily) + astrology (natal + transits + derivative) + tarot pulls — daily reading + on-demand |
+| **Treasurer** | Plaid-fed dashboard: balance · upcoming bills · spend categories · agent insights ("you spent 40% more on takeout this month") |
 | **Voice** | Chat surface: long-running conversation with AlterEgo + topic broadcast (record + publish) |
-| **Companion** | Wellness lane: reading reminder Â· exercise nudge Â· meditation timer Â· gratitude/journal capture. Soft-touch, not gamified. |
+| **Companion** | Wellness lane: reading reminder · exercise nudge · meditation timer · gratitude/journal capture. Soft-touch, not gamified. |
 | **Settings** | Connected accounts, notification rules, AlterEgo personality dial, data export, account deletion |
 
-### 3.2 Admin cPanel (locked) â€” separate Next.js app, separate auth, separate domain
+### 3.2 Admin cPanel (locked) — separate Next.js app, separate auth, separate domain
 
 | Section | Contents |
 |---|---|
-| **Tenants** | List Â· drill-down per tenant Â· usage Â· cost Â· errors Â· sub-agent runs Â· last-activity |
-| **Costs** | LLM cost per tenant / per model / per sub-agent Â· budget alerts Â· margin per tier |
-| **Integrations health** | Composio per-tool status Â· Plaid per-tenant status Â· OAuth refresh failures |
-| **Queue** | Railway worker + BullMQ mirror â€” pending / running / failed / retries |
-| **Audit log** | Searchable Â· exportable Â· 7-year retention Â· signed-chain verification |
-| **Activity log** | User-facing log mirror â€” what we'd show the user |
-| **Compliance** | GDPR export queue Â· deletion queue Â· DPA generator Â· CASA audit trail Â· SOC 2 evidence |
-| **Billing** | Stripe MRR / churn / LTV Â· cohort retention Â· refund processing |
-| **Feature flags** | GrowthBook console Â· % rollouts Â· per-tenant overrides |
-| **Support** | Impersonate-with-audit Â· force re-OAuth Â· reset agent memory Â· resend briefing |
-| **Health** | Per-service SLO board Â· uptime Â· error budgets |
+| **Tenants** | List · drill-down per tenant · usage · cost · errors · sub-agent runs · last-activity |
+| **Costs** | LLM cost per tenant / per model / per sub-agent · budget alerts · margin per tier |
+| **Integrations health** | Composio per-tool status · Plaid per-tenant status · OAuth refresh failures |
+| **Queue** | Railway worker + BullMQ mirror — pending / running / failed / retries |
+| **Audit log** | Searchable · exportable · 7-year retention · signed-chain verification |
+| **Activity log** | User-facing log mirror — what we'd show the user |
+| **Compliance** | GDPR export queue · deletion queue · DPA generator · CASA audit trail · SOC 2 evidence |
+| **Billing** | Stripe MRR / churn / LTV · cohort retention · refund processing |
+| **Feature flags** | GrowthBook console · % rollouts · per-tenant overrides |
+| **Support** | Impersonate-with-audit · force re-OAuth · reset agent memory · resend briefing |
+| **Health** | Per-service SLO board · uptime · error budgets |
 
-### 3.3 Out of product (Phase 1) â€” explicit
-- Native voice (calling on phone), full-day always-listening â€” Phase 5+
-- Multi-user shared AlterEgos (couple, family) â€” Phase 5+
-- Browser-use / web automation â€” Phase 4+ (use Composio actions where possible)
-- Custom workflows / Zapier-style flow builder â€” never (would change the product)
+### 3.3 Out of product (Phase 1) — explicit
+- Native voice (calling on phone), full-day always-listening — Phase 5+
+- Multi-user shared AlterEgos (couple, family) — Phase 5+
+- Browser-use / web automation — Phase 4+ (use Composio actions where possible)
+- Custom workflows / Zapier-style flow builder — never (would change the product)
 
 ---
 
-## 4 Â· AlterEgo orchestration model (locked)
+## 4 · AlterEgo orchestration model (locked)
 
-**AlterEgo = single persistent agent.** The user always talks to AlterEgo by name. Sub-agents are implementation details â€” never surfaced as separate identities to the user.
+**AlterEgo = single persistent agent.** The user always talks to AlterEgo by name. Sub-agents are implementation details — never surfaced as separate identities to the user.
 
 ### 4.1 Sub-agent roster (Phase 1 launch set)
 
@@ -108,26 +108,26 @@ The product thesis: existing "AI assistants" are conversational toys. Autonomux 
 | **Mailroom** | [Forge] | Gmail messages, threads, labels | Drafts, snooze, delete, label | Composio Gmail / Outlook |
 | **Scheduler** | [Forge] | Google Calendar events, free/busy | Event creation, response, cancel | Composio Google Calendar |
 | **Scribe** | [Forge + Herald] | User's writing samples, briefings, prior posts | Substack draft (publish-by-email), X thread, LinkedIn post | Composio Substack-via-email + X + LinkedIn |
-| **Oracle** | [Forge + Herald] | Calendar (date context), cardology data, astrology API, tarot deck | Daily reading rendered to UI | Internal (cardology Â· already ported in autonomux2), Astrology API (Astrodienst/Swiss Ephemeris), tarot deck table |
-| **Treasurer** | [Forge + Cipher] | Plaid transactions, balances, bill rules | Bill reminders to inbox Â· category-tag spend | Plaid (US Open Banking) |
-| **Voice** | [Forge] | Chat history, broadcast topics | Saved chats, broadcast outputs | Internal Â· LLM only |
-| **Companion** | [Forge + Compass] | Wellness setpoints, journal entries | Nudges, journal entries, log timers | Internal Â· LLM + scheduled triggers |
+| **Oracle** | [Forge + Herald] | Calendar (date context), cardology data, astrology API, tarot deck | Daily reading rendered to UI | Internal (cardology · already ported in autonomux2), Astrology API (Astrodienst/Swiss Ephemeris), tarot deck table |
+| **Treasurer** | [Forge + Cipher] | Plaid transactions, balances, bill rules | Bill reminders to inbox · category-tag spend | Plaid (US Open Banking) |
+| **Voice** | [Forge] | Chat history, broadcast topics | Saved chats, broadcast outputs | Internal · LLM only |
+| **Companion** | [Forge + Compass] | Wellness setpoints, journal entries | Nudges, journal entries, log timers | Internal · LLM + scheduled triggers |
 
 ### 4.2 Orchestration kernel
 
-- **Single agent loop** running Claude Sonnet 4.6 with tool-calling â€” via `packages/llm` pluggable adapter (OpenRouter default; one env var swaps to Anthropic direct)
+- **Single agent loop** running Claude Sonnet 4.6 with tool-calling — via `packages/llm` pluggable adapter (OpenRouter default; one env var swaps to Anthropic direct)
 - **Routine triage** (Mailroom rank, Scheduler conflict check) runs on Haiku 4.5 to keep cost low (same adapter, just different model name)
-- **Tools = sub-agents** â€” each sub-agent exposes a Claude-formatted tool schema; AlterEgo calls them as tools
+- **Tools = sub-agents** — each sub-agent exposes a Claude-formatted tool schema; AlterEgo calls them as tools
 - **Decision tree:**
-  1. User opens app â†’ AlterEgo runs "morning briefing" composite (Mailroom rank + Scheduler today + Oracle pull + Treasurer alerts + Companion nudge â†’ single rendered briefing)
-  2. User opens a sub-agent surface (e.g., Mailroom) â†’ that surface's sub-agent runs in conversational mode within AlterEgo
-  3. User types in Voice â†’ free-form chat; AlterEgo decides which sub-agent(s) to invoke as tools
+  1. User opens app → AlterEgo runs "morning briefing" composite (Mailroom rank + Scheduler today + Oracle pull + Treasurer alerts + Companion nudge → single rendered briefing)
+  2. User opens a sub-agent surface (e.g., Mailroom) → that surface's sub-agent runs in conversational mode within AlterEgo
+  3. User types in Voice → free-form chat; AlterEgo decides which sub-agent(s) to invoke as tools
 - **Idempotency:** every sub-agent action carries `request_id`. Retries are safe.
 - **Confirmation gate:** any write action with **reversibility = false** (sending email, paying bill, posting Substack) requires explicit user confirmation. Per-tenant configurable "trusted action" rules can auto-approve certain reversible writes.
 
 ### 4.3 Memory architecture (locked, owned by [Atlas + Cipher])
 
-Three tiers â€” all encrypted at rest with per-tenant data keys:
+Three tiers — all encrypted at rest with per-tenant data keys:
 
 | Tier | Storage | Contents | Retention |
 |---|---|---|---|
@@ -136,46 +136,46 @@ Three tiers â€” all encrypted at rest with per-tenant data keys:
 | **Structured facts** | Supabase `agent_facts` JSONB | Stable profile: name, relationships, preferences, recurring obligations, brand voice samples, AlterEgo personality settings | Permanent until user-deleted |
 
 **Privacy guarantees:**
-- Memory NEVER leaves user's tenant â€” no cross-tenant learning, ever
-- User can view, edit, delete any fact at any time via Settings â†’ Memory
+- Memory NEVER leaves user's tenant — no cross-tenant learning, ever
+- User can view, edit, delete any fact at any time via Settings → Memory
 - Deletion is hard delete + audit log entry (no soft delete on memory; GDPR Art. 17)
 
 ---
 
-## 5 Â· Integrations (Phase 1 set â€” locked)
+## 5 · Integrations (Phase 1 set — locked)
 
 | Integration | Via | Scope (Phase 1) | Notes |
 |---|---|---|---|
-| Gmail | Composio | Read messages Â· drafts Â· labels Â· send | Restricted scope Â· CASA Tier 2 required |
-| Outlook | Composio | Read messages Â· drafts Â· send | Phase 1.2 â€” Microsoft Graph Tier 2 verification |
-| Google Calendar | Composio | Read events Â· free/busy Â· write events | Standard scope |
+| Gmail | Composio | Read messages · drafts · labels · send | Restricted scope · CASA Tier 2 required |
+| Outlook | Composio | Read messages · drafts · send | Phase 1.2 — Microsoft Graph Tier 2 verification |
+| Google Calendar | Composio | Read events · free/busy · write events | Standard scope |
 | Substack | Composio (Substack-via-email) | Publish drafts via author email-to-post address | Substack lacks public posting API |
-| X / Twitter | Composio | Read user posts Â· post threads Â· DMs | Standard API |
+| X / Twitter | Composio | Read user posts · post threads · DMs | Standard API |
 | LinkedIn | Composio | Post personal updates | Standard API |
 | YouTube | Composio | Upload, update metadata, comments | Future (motionmax sync potential) |
-| Plaid | Direct (no Composio) | Account balance Â· transactions Â· category Â· bill detection | US Open Banking Â· production needs Plaid agreement |
+| Plaid | Direct (no Composio) | Account balance · transactions · category · bill detection | US Open Banking · production needs Plaid agreement |
 | Astrology data | Direct (Astrodienst / Swiss Ephemeris) | Natal + transit calc | Library: `swisseph` or Astrodienst API |
-| LLM | **Pluggable adapter** (`packages/llm`) â€” OpenRouter default, Anthropic direct via 1-env-var switch | All LLM calls | Sonnet 4.6 + Haiku 4.5 |
-| Resend | Direct | Transactional email (briefing email, password reset, billing) | â€” |
+| LLM | **Pluggable adapter** (`packages/llm`) — OpenRouter default, Anthropic direct via 1-env-var switch | All LLM calls | Sonnet 4.6 + Haiku 4.5 |
+| Resend | Direct | Transactional email (briefing email, password reset, billing) | — |
 
 ### Integrations explicitly out of Phase 1
 - iMessage / WhatsApp / Telegram (Apple sandbox + WhatsApp Business too heavy for v1)
 - Notion (planned Phase 2)
 - Slack (planned Phase 3)
-- Stripe (we use Stripe for billing autonomux itself â€” Phase 1 â€” but Treasurer doesn't surface user's own Stripe yet)
+- Stripe (we use Stripe for billing autonomux itself — Phase 1 — but Treasurer doesn't surface user's own Stripe yet)
 
 ---
 
-## 6 Â· Data model (high-level; full schema in `packages/db/schema.sql`)
+## 6 · Data model (high-level; full schema in `packages/db/schema.sql`)
 
 ### 6.1 Tenant / user identity
 
 | Table | Purpose |
 |---|---|
-| `tenants` | One row per paying account Â· plan Â· billing status Â· per-tenant master encryption key reference |
-| `users` | Auth identity â€” Supabase Auth-managed |
+| `tenants` | One row per paying account · plan · billing status · per-tenant master encryption key reference |
+| `users` | Auth identity — Supabase Auth-managed |
 | `user_sessions` | Supabase Auth-managed |
-| `tenant_members` | M:M users â†” tenants (Phase 5+ for shared AlterEgos) |
+| `tenant_members` | M:M users ↔ tenants (Phase 5+ for shared AlterEgos) |
 
 ### 6.2 AlterEgo state
 
@@ -185,13 +185,13 @@ Three tiers â€” all encrypted at rest with per-tenant data keys:
 | `agent_facts` | Structured user-profile facts (encrypted JSONB) |
 | `agent_memory_episodes` | Episodic memory (pgvector embeddings + summary text, encrypted) |
 | `agent_runs` | Every orchestrator invocation: trigger, tools called, LLM tokens, duration, status |
-| `sub_agent_runs` | Per-sub-agent invocation log (FK â†’ `agent_runs`) |
+| `sub_agent_runs` | Per-sub-agent invocation log (FK → `agent_runs`) |
 
 ### 6.3 Connected accounts
 
 | Table | Purpose |
 |---|---|
-| `connected_accounts` | One row per (tenant, integration) â€” Composio account id, OAuth status, scope grants |
+| `connected_accounts` | One row per (tenant, integration) — Composio account id, OAuth status, scope grants |
 | `connected_account_events` | Token refresh log, scope changes, disconnections |
 
 ### 6.4 Sub-agent state
@@ -208,69 +208,69 @@ Three tiers â€” all encrypted at rest with per-tenant data keys:
 
 | Table | Purpose |
 |---|---|
-| `activity_log` | User-facing â€” what AlterEgo did + chain-of-thought |
-| `audit_log` | Compliance â€” every write to user data, signed chain (Merkle-style) |
+| `activity_log` | User-facing — what AlterEgo did + chain-of-thought |
+| `audit_log` | Compliance — every write to user data, signed chain (Merkle-style) |
 | `system_log_meta` | Pointers to Axiom log streams (not stored in DB) |
 
 ### 6.6 Billing
 
 | Table | Purpose |
 |---|---|
-| `billing_subscriptions` | Stripe sub mirror â€” plan, status, MRR, period dates |
+| `billing_subscriptions` | Stripe sub mirror — plan, status, MRR, period dates |
 | `billing_events` | Webhook event log (signed) |
-| `usage_meters` | Per-tenant LLM tokens, Plaid calls, Composio calls â€” for cost roll-up and overage billing |
+| `usage_meters` | Per-tenant LLM tokens, Plaid calls, Composio calls — for cost roll-up and overage billing |
 
 ### 6.7 RLS posture (locked by [Atlas])
 
 - **Every** tenant-scoped table has `tenant_id uuid not null` + RLS policy `using (tenant_id = auth.jwt() ->> 'tenant_id')`
-- Service-role queries restricted to specific helpers in `packages/db/admin.ts` â€” never exposed to web app
+- Service-role queries restricted to specific helpers in `packages/db/admin.ts` — never exposed to web app
 - Admin cpanel uses a separate JWT claim (`admin_role`) and a separate RLS policy set
 
 ---
 
-## 7 Â· Security model (locked by [Cipher + Shield])
+## 7 · Security model (locked by [Cipher + Shield])
 
-### 7.1 Authentication (locked 2026-05-29 â€” email/password)
+### 7.1 Authentication (locked 2026-05-29 — email/password)
 
 | Vector | Standard |
 |---|---|
-| Web auth | Supabase Auth Â· **email + password** (primary) Â· password â‰¥ 12 chars Â· zxcvbn strength meter at signup |
-| Email verification | Mandatory before first agent connection Â· verification link expires 24h |
-| 2FA | **TOTP mandatory** at signup Â· authenticator app of user's choice (Google Authenticator, 1Password, Authy) Â· backup codes generated + downloadable |
+| Web auth | Supabase Auth · **email + password** (primary) · password ≥ 12 chars · zxcvbn strength meter at signup |
+| Email verification | Mandatory before first agent connection · verification link expires 24h |
+| 2FA | **TOTP mandatory** at signup · authenticator app of user's choice (Google Authenticator, 1Password, Authy) · backup codes generated + downloadable |
 | Optional 2nd factor | WebAuthn / Passkeys offered after first sign-in for users who prefer |
 | Step-up auth | TOTP re-prompt for sensitive actions: banking changes, account deletion, plan downgrade, revoke-all-sessions |
-| Session | 24h access token Â· 7d refresh Â· device fingerprint Â· revoke-all-sessions in Settings |
-| Admin auth | Separate Supabase project Â· email + password + TOTP mandatory Â· IP allowlist + WireGuard mesh |
+| Session | 24h access token · 7d refresh · device fingerprint · revoke-all-sessions in Settings |
+| Admin auth | Separate Supabase project · email + password + TOTP mandatory · IP allowlist + WireGuard mesh |
 
-**OAuth providers â€” optional add-ons (deferred):** Google + GitHub + Microsoft (Outlook) can be enabled with ~5 min config each, no review process â€” add when convenient. Apple (requires Developer Program enrollment) + Facebook (requires Meta app review, 4-8 weeks) deferred to post-launch.
+**OAuth providers — optional add-ons (deferred):** Google + GitHub + Microsoft (Outlook) can be enabled with ~5 min config each, no review process — add when convenient. Apple (requires Developer Program enrollment) + Facebook (requires Meta app review, 4-8 weeks) deferred to post-launch.
 
-**Composio is NOT used for identity.** Composio handles agent action OAuth separately (Mailroom reading Gmail, Scheduler writing to Calendar, etc.) â€” different scope grants, different storage, different purpose.
+**Composio is NOT used for identity.** Composio handles agent action OAuth separately (Mailroom reading Gmail, Scheduler writing to Calendar, etc.) — different scope grants, different storage, different purpose.
 
 ### 7.2 Encryption
 
 | Surface | Scheme |
 |---|---|
-| Data at rest (PII) | Envelope encryption â€” AWS KMS master key wraps per-tenant data keys; libsodium for app-side AEAD |
+| Data at rest (PII) | Envelope encryption — AWS KMS master key wraps per-tenant data keys; libsodium for app-side AEAD |
 | Data at rest (OAuth tokens) | Same envelope scheme, separate key namespace, key rotation 90d |
-| Data in transit | HTTPS only Â· HSTS preload Â· TLS 1.3 min |
-| LLM payloads | Anthropic API over HTTPS Â· zero data retention contract on file |
+| Data in transit | HTTPS only · HSTS preload · TLS 1.3 min |
+| LLM payloads | Anthropic API over HTTPS · zero data retention contract on file |
 
 ### 7.3 Secrets
 
-- All secrets in Doppler Â· synced to runtime via env at deploy time
+- All secrets in Doppler · synced to runtime via env at deploy time
 - No secret in code, no secret in logs (Sentry redaction rules from studio-zero ported)
 - AWS access via IAM roles, not static keys, wherever possible
 
 ### 7.4 OAuth handling
 
-- Composio holds OAuth tokens â€” we hold only Composio's reference id
-- For Plaid: we hold Plaid `item_id` + access_token (envelope-encrypted) â€” Plaid doesn't have a Composio proxy
+- Composio holds OAuth tokens — we hold only Composio's reference id
+- For Plaid: we hold Plaid `item_id` + access_token (envelope-encrypted) — Plaid doesn't have a Composio proxy
 - Re-OAuth flows on token expiry are surfaced in-app + admin cpanel alert
 
 ### 7.5 Audit + tamper-evidence
 
 - `audit_log` is append-only at the DB level (RLS denies UPDATE/DELETE)
-- Every entry includes `prev_hash` (sha256 of prior row) â€” Merkle chain
+- Every entry includes `prev_hash` (sha256 of prior row) — Merkle chain
 - Daily checkpoint signs the chain head + posts to a verifiable timestamp service (OpenTimestamps)
 - Admin cpanel verify button replays the chain
 
@@ -282,18 +282,18 @@ Three tiers â€” all encrypted at rest with per-tenant data keys:
 
 ---
 
-## 8 Â· Logging system (locked) â€” three tiers
+## 8 · Logging system (locked) — three tiers
 
 ### 8.1 Activity log (user-facing)
 - Stored in `activity_log` table
 - Contents: human-readable summary of every AlterEgo action + reasoning chain
-- Surfaces in user app at Settings â†’ Activity + Admin cpanel
+- Surfaces in user app at Settings → Activity + Admin cpanel
 - Retention: 90d hot in DB, 2yr archived encrypted to S3
 - User can export full activity log as JSON via GDPR export
-- Tone: written by [Herald] copy â€” explanatory, not jargon
+- Tone: written by [Herald] copy — explanatory, not jargon
 
 ### 8.2 System log (engineering)
-- Pino-formatted JSON â†’ Axiom
+- Pino-formatted JSON → Axiom
 - Contents: structured logs from every service (web, worker, api routes)
 - Includes: request_id, tenant_id (NEVER user-identifying PII), span context
 - Redaction rules (port from studio-zero `lib/sentry-redaction.ts`)
@@ -301,10 +301,10 @@ Three tiers â€” all encrypted at rest with per-tenant data keys:
 
 ### 8.3 Audit log (compliance)
 - Stored in `audit_log` (Postgres, signed chain)
-- Contents: every write to user data â€” who, what, when, what changed
+- Contents: every write to user data — who, what, when, what changed
 - Required by SOC 2 (CC6.1), GDPR Art. 30
 - Retention: 7 years
-- Exposed: admin cpanel only Â· GDPR export only Â· subpoena response only
+- Exposed: admin cpanel only · GDPR export only · subpoena response only
 
 ### 8.4 LLM-specific logging
 
@@ -320,45 +320,45 @@ Three tiers â€” all encrypted at rest with per-tenant data keys:
 
 ---
 
-## 9 Â· Non-functional requirements (locked)
+## 9 · Non-functional requirements (locked)
 
 | Class | Target |
 |---|---|
-| **Uptime (web)** | 99.5% SLO Â· 99.9% stretch Â· status.autonomux.io public board |
-| **Uptime (briefing delivery)** | 99% â€” briefing email arrives within Â±15min of user-configured time |
+| **Uptime (web)** | 99.5% SLO · 99.9% stretch · status.autonomux.io public board |
+| **Uptime (briefing delivery)** | 99% — briefing email arrives within ±15min of user-configured time |
 | **TTFB (dashboard)** | < 500ms p95 from cold cache |
 | **Briefing generation latency** | < 90s p95 |
-| **Accessibility** | WCAG 2.2 AA Â· all surfaces Â· automated + manual audit |
+| **Accessibility** | WCAG 2.2 AA · all surfaces · automated + manual audit |
 | **Lighthouse** | 90+ on all 4 axes for marketing + 80+ for app |
 | **Reflow** | 320px width minimum |
 | **Browsers** | Last 2 Chrome / Safari / Firefox / Edge |
-| **Mobile** | iOS 16+ Safari Â· Android 11+ Chrome Â· PWA-installable |
-| **Performance budget** | First Load JS â‰¤ 200kB per route |
-| **i18n** | en-US locked v1 Â· en-GB + en-CA Phase 3 Â· es Phase 4 |
-| **Region** | US East primary Â· US West DR Â· EU expansion Phase 5+ |
+| **Mobile** | iOS 16+ Safari · Android 11+ Chrome · PWA-installable |
+| **Performance budget** | First Load JS ≤ 200kB per route |
+| **i18n** | en-US locked v1 · en-GB + en-CA Phase 3 · es Phase 4 |
+| **Region** | US East primary · US West DR · EU expansion Phase 5+ |
 
 ---
 
-## 10 Â· Compliance scope (locked by [Comply])
+## 10 · Compliance scope (locked by [Comply])
 
 ### 10.1 In scope for v1.0 launch
-- **GDPR** â€” even US-only, applies to EU citizens Â· Data Export Â· Deletion Â· DPA template Â· Cookie consent
-- **CCPA** â€” California "Do not sell" signal honored Â· annual disclosure
-- **SOC 2 Type II** â€” in audit by month 6 post-launch Â· Vanta from Day 1
-- **Google CASA Tier 2** â€” required for restricted Gmail scopes Â· submit in parallel with Foundation sprint
-- **Microsoft 365 verification** â€” Tier 2 for Outlook Â· Phase 1.2
-- **Plaid agreement** â€” production access tier Â· ongoing security questionnaire
+- **GDPR** — even US-only, applies to EU citizens · Data Export · Deletion · DPA template · Cookie consent
+- **CCPA** — California "Do not sell" signal honored · annual disclosure
+- **SOC 2 Type II** — in audit by month 6 post-launch · Vanta from Day 1
+- **Google CASA Tier 2** — required for restricted Gmail scopes · submit in parallel with Foundation sprint
+- **Microsoft 365 verification** — Tier 2 for Outlook · Phase 1.2
+- **Plaid agreement** — production access tier · ongoing security questionnaire
 
 ### 10.2 Out of scope (explicit)
-- **HIPAA** â€” we do NOT accept PHI Â· refusal contract below
-- **PCI** â€” Stripe handles card data Â· we never see PAN
-- **FERPA, GLBA, SOX** â€” not in scope
-- **EU PSD2 Open Banking** â€” Phase 5+ when EU expansion lands
+- **HIPAA** — we do NOT accept PHI · refusal contract below
+- **PCI** — Stripe handles card data · we never see PAN
+- **FERPA, GLBA, SOX** — not in scope
+- **EU PSD2 Open Banking** — Phase 5+ when EU expansion lands
 
-### 10.3 HIPAA refusal contract (founder is RN â€” non-negotiable)
+### 10.3 HIPAA refusal contract (founder is RN — non-negotiable)
 - Terms of Service explicit: "Do not paste patient information into AlterEgo. We do not have a BAA. We are not a covered entity."
 - AlterEgo system prompt refuses to summarize / draft about patient-identifiable content
-- Mailroom triage flags inbound mail with detected PHI patterns (SSN, MRN-like, "patient" + name) â€” auto-redacts before LLM call, logs incident
+- Mailroom triage flags inbound mail with detected PHI patterns (SSN, MRN-like, "patient" + name) — auto-redacts before LLM call, logs incident
 - Penalty for breach: account suspension + breach notification
 
 ### 10.4 Compliance documents to ship pre-launch
@@ -366,77 +366,77 @@ Three tiers â€” all encrypted at rest with per-tenant data keys:
 - Terms of Service
 - Data Processing Agreement (DPA)
 - Cookie Policy + banner
-- AI System Card (per EU AI Act Art. 50 / California SB 942) â€” published
-- Subprocessor list â€” published, change-notified
-- Security page (security.autonomux.io) â€” controls + certifications
+- AI System Card (per EU AI Act Art. 50 / California SB 942) — published
+- Subprocessor list — published, change-notified
+- Security page (security.autonomux.io) — controls + certifications
 - DMCA agent registration
 - Accessibility statement
 
 ---
 
-## 11 Â· Pricing + monetization (draft â€” [Penny] owns)
+## 11 · Pricing + monetization (draft — [Penny] owns)
 
-### 11.1 Subscription tiers (v1.0 â€” directional, not locked)
+### 11.1 Subscription tiers (v1.0 — directional, not locked)
 
 | Tier | Price | LLM budget | Integrations | Differentiator |
 |---|---|---|---|---|
-| **Free** | $0 | 100k tokens/mo (Haiku only) | Read-only Gmail Â· Read-only Calendar Â· Oracle | Trial â€” limits enforce upgrade |
-| **AlterEgo Personal** | $29/mo | 1M tokens (Haiku + Sonnet mixed) | + Gmail write Â· Scribe drafts only Â· Companion | Daily briefing + write actions |
-| **AlterEgo Pro** | $79/mo | 5M tokens | + Scribe publishing Â· Treasurer (Plaid) Â· Outlook Â· X/LinkedIn cross-post | Full agent â€” "your AlterEgo runs your stuff" |
-| **AlterEgo Founder** | $199/mo | 20M tokens | + Multi-account Â· custom integrations Â· priority queue Â· monthly 1:1 with team | For the polymath ICP |
+| **Free** | $0 | 100k tokens/mo (Haiku only) | Read-only Gmail · Read-only Calendar · Oracle | Trial — limits enforce upgrade |
+| **AlterEgo Personal** | $29/mo | 1M tokens (Haiku + Sonnet mixed) | + Gmail write · Scribe drafts only · Companion | Daily briefing + write actions |
+| **AlterEgo Pro** | $79/mo | 5M tokens | + Scribe publishing · Treasurer (Plaid) · Outlook · X/LinkedIn cross-post | Full agent — "your AlterEgo runs your stuff" |
+| **AlterEgo Founder** | $199/mo | 20M tokens | + Multi-account · custom integrations · priority queue · monthly 1:1 with team | For the polymath ICP |
 
 ### 11.2 Annual discount
 - 20% off annual prepay across all paid tiers
 
 ### 11.3 Overage policy
 - Soft: in-app warning at 80%, 90%, 100% of monthly token budget
-- Hard: 110% â†’ auto-throttle to Haiku-only for routine ops; 150% â†’ pause non-essential sub-agents until next cycle or top-up
+- Hard: 110% → auto-throttle to Haiku-only for routine ops; 150% → pause non-essential sub-agents until next cycle or top-up
 - Top-up packs: $10 = +500k tokens
 
 ### 11.4 Unit economics target
-- **Per-user gross margin â‰¥ 70%** at Pro tier (target the founder cohort)
+- **Per-user gross margin ≥ 70%** at Pro tier (target the founder cohort)
 - LLM cost ceiling at Pro: $15/user/mo
 - Composio + Plaid + infra: ~$4/user/mo amortized
-- Target LTV/CAC â‰¥ 4:1 within 18 months
+- Target LTV/CAC ≥ 4:1 within 18 months
 
 ### 11.5 Revenue surfaces beyond subscription (Phase 4+)
-- Integration marketplace (future) â€” share % with third-party integration authors
+- Integration marketplace (future) — share % with third-party integration authors
 - White-label AlterEgo for creators (Phase 5+)
 
 ---
 
-## 12 Â· Success metrics (locked by [Hook + Compass])
+## 12 · Success metrics (locked by [Hook + Compass])
 
 ### 12.1 North Star
-**Daily Active Briefings** â€” the count of users who opened or received-and-read their morning briefing yesterday.
+**Daily Active Briefings** — the count of users who opened or received-and-read their morning briefing yesterday.
 
 ### 12.2 Activation funnel
 | Step | Metric | Target by month 6 |
 |---|---|---|
-| Sign up | `signup_completed` | â€” |
-| Connect first integration | Within 24h of signup | â‰¥ 70% |
-| Receive first briefing | Within 7d of signup | â‰¥ 85% |
-| Approve first agent action | Within 7d | â‰¥ 60% |
-| First paid month | Within 30d | â‰¥ 25% (free â†’ paid conversion) |
+| Sign up | `signup_completed` | — |
+| Connect first integration | Within 24h of signup | ≥ 70% |
+| Receive first briefing | Within 7d of signup | ≥ 85% |
+| Approve first agent action | Within 7d | ≥ 60% |
+| First paid month | Within 30d | ≥ 25% (free → paid conversion) |
 
 ### 12.3 Retention
 - Day-7 retention: 60%
 - Day-30 retention: 45%
 - Day-90 retention: 35%
-- Monthly logo churn (paid): â‰¤ 5%
+- Monthly logo churn (paid): ≤ 5%
 
 ### 12.4 Trust signals
-- NPS â‰¥ 50 by month 12
-- "I trust AlterEgo with my [email / money / calendar]" â€” survey monthly, target +5 NPS quarter-over-quarter
+- NPS ≥ 50 by month 12
+- "I trust AlterEgo with my [email / money / calendar]" — survey monthly, target +5 NPS quarter-over-quarter
 
 ### 12.5 Operating health
-- Briefing delivery success rate â‰¥ 99%
+- Briefing delivery success rate ≥ 99%
 - Failed sub-agent rate < 2% (errored / total runs)
 - Cost per active user trending down month-over-month
 
 ---
 
-## 13 Â· Brand + voice (draft â€” [Herald + Canon])
+## 13 · Brand + voice (draft — [Herald + Canon])
 
 ### 13.1 AlterEgo personality (locked direction)
 - **Voice:** calm, competent, never anxious. Knows things; doesn't show off knowing them.
@@ -445,41 +445,41 @@ Three tiers â€” all encrypted at rest with per-tenant data keys:
 - **Boundary:** explicit when refusing (HIPAA, illegal, harmful). No moralizing on legitimate requests.
 
 ### 13.2 Brand identity
-- **Logo:** autonomux chameleon (orange â†’ red gradient on white)
-- **Palette:** warm-only â€” red Â· orange Â· gold Â· yellow. No greens / blues / purples. Semantic distinction via value ladder.
-- **Type:** Cormorant Garamond (display) Â· DM Mono (data) Â· Inter (body)
+- **Logo:** autonomux chameleon (orange → red gradient on white)
+- **Palette:** warm-only — red · orange · gold · yellow. No greens / blues / purples. Semantic distinction via value ladder.
+- **Type:** Cormorant Garamond (display) · DM Mono (data) · Inter (body)
 - **Radius:** `--r-xl` = 12px on every rounded surface
-- **Mood:** intelligent Â· warm Â· accountable Â· not sterile Â· not chatty
+- **Mood:** intelligent · warm · accountable · not sterile · not chatty
 
-### 13.3 Banned words (initial â€” [Proof] owns)
-- "platform" â€” we're an AlterEgo, not a platform (even though technically we are one)
+### 13.3 Banned words (initial — [Proof] owns)
+- "platform" — we're an AlterEgo, not a platform (even though technically we are one)
 - "unlock," "fastest," "best-in-class," "synergy," "leverage," "world-class"
-- "magical" â€” we earn it; we don't claim it
+- "magical" — we earn it; we don't claim it
 
-### 13.4 Substantiation rule (port from studio-zero brand voice Â§8)
+### 13.4 Substantiation rule (port from studio-zero brand voice §8)
 - Every quantitative claim has a `marketing/claims-substantiation/*.md` file with `Status: VERIFIED` and pinned commit
 - Preflight gate blocks releases with STUB-status claims shipping live
 
 ---
 
-## 14 Â· Risks + mitigations (top 10, ranked)
+## 14 · Risks + mitigations (top 10, ranked)
 
 | # | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|---|
 | 1 | CASA Tier 2 review delayed > 6mo | High | Critical | Submit during Foundation; have non-restricted Gmail fallback (`gmail.metadata` scope) for v1.1 |
-| 2 | LLM cost spikes per user > tier budget | Medium | Critical | Hard token budget per tenant Â· Haiku fallback for routine Â· cpanel cost alerts |
-| 3 | Composio outage cascades across sub-agents | Medium | High | Per-tool circuit breakers Â· degrade gracefully ("Mailroom unavailable, briefing without email today") |
-| 4 | Plaid agreement rejected / delayed | Medium | High | Build Treasurer behind a feature flag Â· ship v1.4 without it if blocked |
-| 5 | Founder churn (one-person dependency) | High | High | Document everything Â· pair on critical decisions with studio-zero agents Â· hire first eng by month 3 |
-| 6 | SOC 2 audit failure | Low | Critical | Vanta from Day 1 Â· monthly internal audits Â· external pen-test before audit kicks off |
-| 7 | User-perceived "AI made a mistake" trust loss | Medium | High | Confirmation gate on all irreversible writes Â· explainable chain-of-thought visible Â· easy undo |
+| 2 | LLM cost spikes per user > tier budget | Medium | Critical | Hard token budget per tenant · Haiku fallback for routine · cpanel cost alerts |
+| 3 | Composio outage cascades across sub-agents | Medium | High | Per-tool circuit breakers · degrade gracefully ("Mailroom unavailable, briefing without email today") |
+| 4 | Plaid agreement rejected / delayed | Medium | High | Build Treasurer behind a feature flag · ship v1.4 without it if blocked |
+| 5 | Founder churn (one-person dependency) | High | High | Document everything · pair on critical decisions with studio-zero agents · hire first eng by month 3 |
+| 6 | SOC 2 audit failure | Low | Critical | Vanta from Day 1 · monthly internal audits · external pen-test before audit kicks off |
+| 7 | User-perceived "AI made a mistake" trust loss | Medium | High | Confirmation gate on all irreversible writes · explainable chain-of-thought visible · easy undo |
 | 8 | Substack policy change blocks email-to-publish | Low | Medium | Monitor; fall back to in-app draft + manual copy if needed |
-| 9 | Multi-tenant RLS leak | Low | Catastrophic | RLS proof tests in CI Â· quarterly external pen-test scoped to tenancy Â· `tenant_id` in every JWT claim |
-| 10 | Vector memory data exfiltration | Low | Catastrophic | pgvector encrypted at column level Â· embeddings include tenant salt Â· no cross-tenant search ever |
+| 9 | Multi-tenant RLS leak | Low | Catastrophic | RLS proof tests in CI · quarterly external pen-test scoped to tenancy · `tenant_id` in every JWT claim |
+| 10 | Vector memory data exfiltration | Low | Catastrophic | pgvector encrypted at column level · embeddings include tenant salt · no cross-tenant search ever |
 
 ---
 
-## 15 Â· Out-of-scope decisions (explicit no's)
+## 15 · Out-of-scope decisions (explicit no's)
 
 | Topic | Decision | Reason |
 |---|---|---|
@@ -494,7 +494,7 @@ Three tiers â€” all encrypted at rest with per-tenant data keys:
 
 ---
 
-## 16 Â· Studio-zero persona map (locked)
+## 16 · Studio-zero persona map (locked)
 
 | Persona | Domain | Phase 1 surface |
 |---|---|---|
@@ -532,32 +532,32 @@ Three tiers â€” all encrypted at rest with per-tenant data keys:
 
 ---
 
-## 17 Â· Open questions / TBD
+## 17 · Open questions / TBD
 
-1. **GitHub repo location + visibility** â€” private under `kameleyon` org assumed; confirm
-2. **Hosting accounts** â€” confirm Vercel + Supabase + Railway + Doppler + Axiom + Sentry + Vanta + AWS (KMS) + Upstash (Redis) all under `josinsidevoice@gmail.com`; provision in week 1 of Foundation
-3. ~~**Phase 1 success criteria number**~~ â†’ **LOCKED 2026-05-29:** Phase 1 = founder-dogfood only (DAB = 1). Phase 1.7 multi-tenant exit gate = **`DAB / paying users â‰¥ 50%` by month 2 post-launch.**
-4. **AlterEgo voice samples** â€” does the founder want her own writing samples pre-loaded into Scribe at launch (yes / no) â€” affects v1.3 Scribe scope
-5. **Companion content library** â€” meditation scripts, journal prompts, exercise sequences â€” source licensed library, original content, or both? Affects v1.5+ scope
-6. **Apple Sign In support** â€” required for native iOS App Store submission. Add to Phase 1.5 (Capacitor) or earlier?
-7. **Native push notification provider** â€” Vercel/Web Push for PWA Phase 1.1+; OneSignal vs Firebase for Capacitor Phase 1.5
-8. ~~**Astrology engine** â€” Astrodienst API (paid) vs `swisseph` library (free, on our infra)~~ â†’ **LOCKED 2026-05-29:** `swisseph` on our own infra. Runs in `apps/worker`. Zero per-call cost.
-9. **Subscription billing day** â€” calendar-month vs subscription-anniversary â€” affects MRR reporting
-10. **Cookie consent provider** â€” self-built (cheap, ours to maintain) vs Cookiebot / OneTrust (paid, compliance-cleaner)
+1. **GitHub repo location + visibility** — private under `kameleyon` org assumed; confirm
+2. **Hosting accounts** — confirm Vercel + Supabase + Railway + Doppler + Axiom + Sentry + Vanta + AWS (KMS) + Upstash (Redis) all under `josinsidevoice@gmail.com`; provision in week 1 of Foundation
+3. ~~**Phase 1 success criteria number**~~ → **LOCKED 2026-05-29:** Phase 1 = founder-dogfood only (DAB = 1). Phase 1.7 multi-tenant exit gate = **`DAB / paying users ≥ 50%` by month 2 post-launch.**
+4. **AlterEgo voice samples** — does the founder want her own writing samples pre-loaded into Scribe at launch (yes / no) — affects v1.3 Scribe scope
+5. **Companion content library** — meditation scripts, journal prompts, exercise sequences — source licensed library, original content, or both? Affects v1.5+ scope
+6. **Apple Sign In support** — required for native iOS App Store submission. Add to Phase 1.5 (Capacitor) or earlier?
+7. **Native push notification provider** — Vercel/Web Push for PWA Phase 1.1+; OneSignal vs Firebase for Capacitor Phase 1.5
+8. ~~**Astrology engine** — Astrodienst API (paid) vs `swisseph` library (free, on our infra)~~ → **LOCKED 2026-05-29:** `swisseph` on our own infra. Runs in `apps/worker`. Zero per-call cost.
+9. **Subscription billing day** — calendar-month vs subscription-anniversary — affects MRR reporting
+10. **Cookie consent provider** — self-built (cheap, ours to maintain) vs Cookiebot / OneTrust (paid, compliance-cleaner)
 
 ---
 
-## 18 Â· Glossary
+## 18 · Glossary
 
-- **AlterEgo** â€” the orchestrator persona the user interacts with. Single name, single voice, single relationship.
-- **Sub-agent** â€” internal worker module (Mailroom, Scheduler, etc.) the orchestrator delegates to. Never surfaced as a separate identity to the user.
-- **Briefing** â€” the daily summary AlterEgo produces (in-app + email).
-- **Activity log** â€” user-facing log of what AlterEgo did + why.
-- **Audit log** â€” compliance-grade immutable write log.
-- **Tenant** â€” a billing entity. v1 = one user per tenant. v1.7+ = shared AlterEgos = multi-user tenants.
-- **Reversible / irreversible action** â€” confirmation-gate classification. Sending an email = irreversible. Saving a draft = reversible.
-- **Trusted-action rule** â€” user-defined auto-approval for specific repeated actions.
-- **Daily Active Briefings (DAB)** â€” the North Star metric. Users who engaged with their briefing yesterday.
+- **AlterEgo** — the orchestrator persona the user interacts with. Single name, single voice, single relationship.
+- **Sub-agent** — internal worker module (Mailroom, Scheduler, etc.) the orchestrator delegates to. Never surfaced as a separate identity to the user.
+- **Briefing** — the daily summary AlterEgo produces (in-app + email).
+- **Activity log** — user-facing log of what AlterEgo did + why.
+- **Audit log** — compliance-grade immutable write log.
+- **Tenant** — a billing entity. v1 = one user per tenant. v1.7+ = shared AlterEgos = multi-user tenants.
+- **Reversible / irreversible action** — confirmation-gate classification. Sending an email = irreversible. Saving a draft = reversible.
+- **Trusted-action rule** — user-defined auto-approval for specific repeated actions.
+- **Daily Active Briefings (DAB)** — the North Star metric. Users who engaged with their briefing yesterday.
 
 ---
 

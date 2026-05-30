@@ -1,11 +1,11 @@
-﻿/**
+/**
  * apps/web/components/SiteFooter.tsx
  *
- * Site footer â€” links to legal + trust surfaces. Server component, no
+ * Site footer — links to legal + trust surfaces. Server component, no
  * client-side JS. Wired into the root layout so every public page surfaces
  * the trust pages (Security, AI System Card, Subprocessors, etc.).
  *
- * Owner: [Comply + Herald] Â· Phase 1.0-C10
+ * Owner: [Comply + Herald] · Phase 1.0-C10
  */
 import Link from "next/link";
 
@@ -146,8 +146,8 @@ export function SiteFooter(): React.ReactElement {
             color: "var(--muted)",
           }}
         >
-          <span>Â© {new Date().getFullYear()} Autonomux, Inc.</span>
-          <span>Made with care Â· Delaware, USA</span>
+          <span>© {new Date().getFullYear()} Autonomux, Inc.</span>
+          <span>Made with care · Delaware, USA</span>
         </div>
       </div>
     </footer>

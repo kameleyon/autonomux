@@ -1,12 +1,12 @@
-﻿/**
+/**
  * apps/web/app/system-card/page.tsx
  *
- * AI System Card â€” published per EU AI Act Art. 50 (transparency) and
+ * AI System Card — published per EU AI Act Art. 50 (transparency) and
  * California SB 942 (AI disclosure). Describes which models we use, what
  * tools the agents may invoke, how user data is handled, and how a person
  * stays in the loop.
  *
- * Owner: [Comply + Herald] Â· Phase 1.0-C10
+ * Owner: [Comply + Herald] · Phase 1.0-C10
  */
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -35,8 +35,8 @@ export default function SystemCardPage(): React.ReactElement {
           marginBottom: "var(--sp-32)",
         }}
       >
-        Last updated Â·{" "}
-        <time dateTime={LAST_UPDATED}>{LAST_UPDATED}</time> Â· v{VERSION}
+        Last updated ·{" "}
+        <time dateTime={LAST_UPDATED}>{LAST_UPDATED}</time> · v{VERSION}
       </p>
 
       <Section title="Why this document exists.">
@@ -53,16 +53,16 @@ export default function SystemCardPage(): React.ReactElement {
 
       <Section title="Model providers.">
         <p>
-          Autonomux is a consumer of foundation models â€” we do not train
+          Autonomux is a consumer of foundation models — we do not train
           our own. Inference runs on:
         </p>
         <ul>
           <li>
-            <strong>Anthropic â€” Claude Sonnet 4.6.</strong> Primary
+            <strong>Anthropic — Claude Sonnet 4.6.</strong> Primary
             reasoning model for orchestration and most sub-agent work.
           </li>
           <li>
-            <strong>Anthropic â€” Claude Haiku 4.5.</strong> Fast model for
+            <strong>Anthropic — Claude Haiku 4.5.</strong> Fast model for
             classification, routing, and short-context follow-ups.
           </li>
         </ul>
@@ -84,39 +84,39 @@ export default function SystemCardPage(): React.ReactElement {
         </p>
         <ul>
           <li>
-            <strong>Orchestrator</strong> â€” decides which sub-agent answers,
+            <strong>Orchestrator</strong> — decides which sub-agent answers,
             holds the user&rsquo;s long-term preferences, never sends an
             irreversible action without an explicit confirmation.
           </li>
           <li>
-            <strong>Mailroom</strong> â€” reads and triages email; drafts
+            <strong>Mailroom</strong> — reads and triages email; drafts
             replies for human review; auto-redacts detected health
             identifiers before any LLM call.
           </li>
           <li>
-            <strong>Scheduler</strong> â€” proposes calendar holds and meeting
+            <strong>Scheduler</strong> — proposes calendar holds and meeting
             slots; only commits after user confirmation.
           </li>
           <li>
-            <strong>Scribe</strong> â€” drafts long-form writing in your
+            <strong>Scribe</strong> — drafts long-form writing in your
             voice; never publishes without your review.
           </li>
           <li>
-            <strong>Oracle</strong> â€” answers questions over your knowledge
+            <strong>Oracle</strong> — answers questions over your knowledge
             base; cites sources from your own corpus.
           </li>
           <li>
-            <strong>Treasurer</strong> â€” reads bank balances and
+            <strong>Treasurer</strong> — reads bank balances and
             transactions via Plaid (when this surface ships); proposes
             categorisation and budgets. Never initiates payments.
           </li>
           <li>
-            <strong>Voice</strong> â€” handles voice input and produces voice
+            <strong>Voice</strong> — handles voice input and produces voice
             output for hands-free use. No audio is retained after
             transcription unless you explicitly save it.
           </li>
           <li>
-            <strong>Companion</strong> â€” conversational layer that holds
+            <strong>Companion</strong> — conversational layer that holds
             tone and continuity. Refuses medical, legal, and personalised
             financial advice; routes those to the explicit refusal
             patterns documented in our Terms of service.
@@ -157,8 +157,8 @@ export default function SystemCardPage(): React.ReactElement {
             response.
           </li>
           <li>
-            We log the <em>shape</em> of each call â€” model, token counts,
-            latency, cost â€” for billing and observability. We do not log
+            We log the <em>shape</em> of each call — model, token counts,
+            latency, cost — for billing and observability. We do not log
             the prompt body to our long-term log store.
           </li>
         </ul>
@@ -171,23 +171,23 @@ export default function SystemCardPage(): React.ReactElement {
         </p>
         <ul>
           <li>
-            <strong>Composio integrations</strong> â€” Gmail (read, draft,
+            <strong>Composio integrations</strong> — Gmail (read, draft,
             label, send), Google Calendar (read, propose, commit), Google
             Drive (read, organise). Each integration is OAuth-scoped to
             exactly what is needed.
           </li>
           <li>
-            <strong>Plaid</strong> â€” bank account balances and
+            <strong>Plaid</strong> — bank account balances and
             transactions, read-only. Initiated only when the Treasurer
             surface ships and the user links an account.
           </li>
           <li>
-            <strong>Internal database queries</strong> â€” scoped to the
+            <strong>Internal database queries</strong> — scoped to the
             calling user&rsquo;s row-level-security context. The agent
             cannot read another tenant&rsquo;s data even if asked.
           </li>
           <li>
-            <strong>Resend</strong> â€” transactional email for
+            <strong>Resend</strong> — transactional email for
             user-confirmed sends only.
           </li>
         </ul>
@@ -214,7 +214,7 @@ export default function SystemCardPage(): React.ReactElement {
           <li>
             <strong>HIPAA refusal.</strong> Mailroom auto-detects PHI
             patterns in inbound mail and redacts before any LLM call. The
-            Terms of service Â§4 prohibit submitting identifiable health
+            Terms of service §4 prohibit submitting identifiable health
             data; repeat violations may suspend the account.
           </li>
           <li>
@@ -249,9 +249,9 @@ export default function SystemCardPage(): React.ReactElement {
             produce drafts you can edit before any external action.
           </li>
           <li>
-            <strong>Confirmation gates.</strong> Any irreversible action â€”
+            <strong>Confirmation gates.</strong> Any irreversible action —
             sending an email, committing a calendar event, deleting data,
-            changing billing â€” requires an explicit user confirmation
+            changing billing — requires an explicit user confirmation
             inside the product.
           </li>
           <li>
@@ -314,7 +314,7 @@ export default function SystemCardPage(): React.ReactElement {
           </li>
           <li>
             <Link href="/legal/terms">Terms of service</Link> (HIPAA
-            refusal contract â€” Â§4)
+            refusal contract — §4)
           </li>
         </ul>
       </Section>
@@ -322,7 +322,7 @@ export default function SystemCardPage(): React.ReactElement {
   );
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────
 
 function Section(props: {
   title: string;

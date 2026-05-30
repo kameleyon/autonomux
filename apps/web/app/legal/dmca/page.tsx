@@ -1,13 +1,13 @@
-﻿/**
+/**
  * apps/web/app/legal/dmca/page.tsx
  *
  * DMCA policy + designated agent + takedown / counter-notice procedure +
  * repeat-infringer policy. Required surface for OCILLA safe-harbour
- * (17 U.S.C. Â§512). Counsel review required before launch; agent
+ * (17 U.S.C. §512). Counsel review required before launch; agent
  * registration with the U.S. Copyright Office (eDMCA) must be completed
  * before this page goes live.
  *
- * Owner: [Comply + Herald] Â· Phase 1.0-C10
+ * Owner: [Comply + Herald] · Phase 1.0-C10
  */
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -36,20 +36,20 @@ export default function DMCAPage(): React.ReactElement {
           marginBottom: "var(--sp-32)",
         }}
       >
-        Last updated Â·{" "}
-        <time dateTime={LAST_UPDATED}>{LAST_UPDATED}</time> Â· v{VERSION}
+        Last updated ·{" "}
+        <time dateTime={LAST_UPDATED}>{LAST_UPDATED}</time> · v{VERSION}
       </p>
 
       <CalloutBox>
         Autonomux respects the rights of copyright holders. If you believe
         content stored or processed through our service infringes your
         copyright, please follow the takedown procedure below. Knowingly
-        false reports may result in liability under 17 U.S.C. Â§512(f).
+        false reports may result in liability under 17 U.S.C. §512(f).
       </CalloutBox>
 
       <Section title="Designated agent.">
         <p>
-          Under the Digital Millennium Copyright Act (17 U.S.C. Â§512(c)(2)),
+          Under the Digital Millennium Copyright Act (17 U.S.C. §512(c)(2)),
           notifications of claimed infringement should be sent to our
           designated agent:
         </p>
@@ -67,12 +67,12 @@ export default function DMCAPage(): React.ReactElement {
           <br />
           Autonomux, Inc.
           <br />
-          Postal address â€” to be confirmed before public launch.
+          Postal address — to be confirmed before public launch.
           <br />
           Email:{" "}
           <a href="mailto:dmca@autonomux.io">dmca@autonomux.io</a>
           <br />
-          Phone â€” to be confirmed before public launch.
+          Phone — to be confirmed before public launch.
         </address>
         <p>
           The agent will be registered with the U.S. Copyright Office via
@@ -83,7 +83,7 @@ export default function DMCAPage(): React.ReactElement {
 
       <Section title="How to file a takedown notice.">
         <p>
-          To be effective under Â§512(c)(3), your written notice must
+          To be effective under §512(c)(3), your written notice must
           include all of the following:
         </p>
         <ol style={{ paddingLeft: "var(--sp-24)" }}>
@@ -93,7 +93,7 @@ export default function DMCAPage(): React.ReactElement {
           </li>
           <li>
             Identification of the copyrighted work claimed to have been
-            infringed, or â€” for multiple works at a single site â€” a
+            infringed, or — for multiple works at a single site — a
             representative list.
           </li>
           <li>
@@ -102,7 +102,7 @@ export default function DMCAPage(): React.ReactElement {
             (URL, account identifier, message identifier, etc.).
           </li>
           <li>
-            Your contact information â€” name, postal address, telephone
+            Your contact information — name, postal address, telephone
             number, and email address.
           </li>
           <li>
@@ -125,7 +125,7 @@ export default function DMCAPage(): React.ReactElement {
       <Section title="Counter-notice.">
         <p>
           If you believe your content was removed in error or
-          misidentified, you may file a counter-notice under Â§512(g)(3). It
+          misidentified, you may file a counter-notice under §512(g)(3). It
           must include:
         </p>
         <ol style={{ paddingLeft: "var(--sp-24)" }}>
@@ -173,7 +173,7 @@ export default function DMCAPage(): React.ReactElement {
         <p>
           Knowingly material misrepresentation that material is infringing
           (or that material was removed by mistake) creates liability under
-          17 U.S.C. Â§512(f) for damages, including costs and attorneys&rsquo;
+          17 U.S.C. §512(f) for damages, including costs and attorneys&rsquo;
           fees. Please send accurate notices.
         </p>
       </Section>
@@ -192,7 +192,7 @@ export default function DMCAPage(): React.ReactElement {
   );
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────
 
 function Section(props: {
   title: string;

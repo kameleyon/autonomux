@@ -1,13 +1,13 @@
-﻿/**
+/**
  * apps/web/app/security/page.tsx
  *
- * Public security page â€” the trust surface auditors, prospects, and
+ * Public security page — the trust surface auditors, prospects, and
  * counsel will read. Every claim must match engineering reality. Where a
  * control is planned but not yet shipped, we say so on the row instead of
- * implying steady-state. PRD Â§7 (security model), Â§8 (logging), Â§10
- * (compliance), Â§13 (voice) govern this surface.
+ * implying steady-state. PRD §7 (security model), §8 (logging), §10
+ * (compliance), §13 (voice) govern this surface.
  *
- * Owner: [Comply + Herald] Â· Phase 1.0-C10
+ * Owner: [Comply + Herald] · Phase 1.0-C10
  */
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -36,8 +36,8 @@ export default function SecurityPage(): React.ReactElement {
           marginBottom: "var(--sp-32)",
         }}
       >
-        Last updated Â·{" "}
-        <time dateTime={LAST_UPDATED}>{LAST_UPDATED}</time> Â· v{VERSION}
+        Last updated ·{" "}
+        <time dateTime={LAST_UPDATED}>{LAST_UPDATED}</time> · v{VERSION}
       </p>
 
       <Section title="Overview.">
@@ -64,36 +64,36 @@ export default function SecurityPage(): React.ReactElement {
         </p>
         <dl style={dlStyle}>
           <ArchRow
-            stage="1 Â· Edge"
-            body="User â†’ Vercel edge runtime. Handles TLS termination, geo routing, static asset delivery. Receives IP and request metadata; never receives unencrypted customer secrets."
+            stage="1 · Edge"
+            body="User → Vercel edge runtime. Handles TLS termination, geo routing, static asset delivery. Receives IP and request metadata; never receives unencrypted customer secrets."
           />
           <ArchRow
-            stage="2 Â· App"
-            body="Vercel â†’ Next.js Server Components and API routes. Authenticates the request against Supabase Auth, enforces RLS context, performs encryption and decryption with KMS-wrapped DEKs before any read or write."
+            stage="2 · App"
+            body="Vercel → Next.js Server Components and API routes. Authenticates the request against Supabase Auth, enforces RLS context, performs encryption and decryption with KMS-wrapped DEKs before any read or write."
           />
           <ArchRow
-            stage="3 Â· Data"
-            body="App â†’ Supabase (Postgres + Auth + Storage, US-East). Customer PII, agent state, audit log, billing references. RLS on every tenant-scoped table; service role isolated to a small set of server-side helpers."
+            stage="3 · Data"
+            body="App → Supabase (Postgres + Auth + Storage, US-East). Customer PII, agent state, audit log, billing references. RLS on every tenant-scoped table; service role isolated to a small set of server-side helpers."
           />
           <ArchRow
-            stage="4 Â· Cache + queue"
-            body="App â†’ Upstash Redis. Idempotency keys, request IDs, short-term agent working memory, rate-limit counters. No long-lived PII; eviction by TTL."
+            stage="4 · Cache + queue"
+            body="App → Upstash Redis. Idempotency keys, request IDs, short-term agent working memory, rate-limit counters. No long-lived PII; eviction by TTL."
           />
           <ArchRow
-            stage="5 Â· Worker"
-            body="Job dispatch â†’ Railway BullMQ worker. Long-running agent tasks (send email, schedule meeting, run a draft). Payloads are PII-redacted before enqueue; the worker re-fetches sensitive fields from Supabase under its own service identity."
+            stage="5 · Worker"
+            body="Job dispatch → Railway BullMQ worker. Long-running agent tasks (send email, schedule meeting, run a draft). Payloads are PII-redacted before enqueue; the worker re-fetches sensitive fields from Supabase under its own service identity."
           />
           <ArchRow
-            stage="6 Â· Model"
-            body="Worker â†’ Anthropic (Claude Sonnet 4.6 + Haiku 4.5), routed via OpenRouter by default or direct when LLM_PROVIDER=anthropic. Anthropic is contracted under Zero-Data-Retention; prompts and responses are never used to train models."
+            stage="6 · Model"
+            body="Worker → Anthropic (Claude Sonnet 4.6 + Haiku 4.5), routed via OpenRouter by default or direct when LLM_PROVIDER=anthropic. Anthropic is contracted under Zero-Data-Retention; prompts and responses are never used to train models."
           />
           <ArchRow
-            stage="7 Â· Integrations"
-            body="Worker â†’ Composio (Gmail, Calendar, Drive OAuth broker), Plaid (banking â€” when Treasurer ships), Resend (transactional email). Composio stores OAuth tokens in its own KMS; Plaid item tokens are envelope-encrypted in our database."
+            stage="7 · Integrations"
+            body="Worker → Composio (Gmail, Calendar, Drive OAuth broker), Plaid (banking — when Treasurer ships), Resend (transactional email). Composio stores OAuth tokens in its own KMS; Plaid item tokens are envelope-encrypted in our database."
           />
           <ArchRow
-            stage="8 Â· Observability"
-            body="App + worker â†’ Sentry (errors, PII-redacted) and Axiom (logs, PII-redacted). AWS KMS wraps the per-tenant data keys; Doppler holds env vars and secret references."
+            stage="8 · Observability"
+            body="App + worker → Sentry (errors, PII-redacted) and Axiom (logs, PII-redacted). AWS KMS wraps the per-tenant data keys; Doppler holds env vars and secret references."
           />
         </dl>
       </Section>
@@ -117,7 +117,7 @@ export default function SecurityPage(): React.ReactElement {
           </li>
           <li>
             <strong>OAuth tokens (Gmail, Calendar, Drive).</strong> Stored
-            inside Composio under their KMS â€” we hold a Composio
+            inside Composio under their KMS — we hold a Composio
             connection-ID, not the raw token. Composio is in scope for the
             DPA and SOC 2.
           </li>
@@ -156,8 +156,8 @@ export default function SecurityPage(): React.ReactElement {
             users who prefer hardware-backed authentication.
           </li>
           <li>
-            <strong>Step-up.</strong> Sensitive actions â€” banking changes,
-            account deletion, plan downgrade, revoke-all-sessions â€”
+            <strong>Step-up.</strong> Sensitive actions — banking changes,
+            account deletion, plan downgrade, revoke-all-sessions —
             re-prompt for TOTP regardless of session age.
           </li>
         </ul>
@@ -181,7 +181,7 @@ export default function SecurityPage(): React.ReactElement {
             <strong>Admin surface.</strong> The internal control panel
             lives on a separate domain and a separate Supabase project.
             Admin TOTP enforcement and IP allowlist are wired in
-            Phase 1.0-D â€” until they ship, only the engineering team has
+            Phase 1.0-D — until they ship, only the engineering team has
             credentials and access is logged via the same audit chain.
           </li>
           <li>
@@ -204,7 +204,7 @@ export default function SecurityPage(): React.ReactElement {
           A daily chain-head checkpoint table is in place; the operator
           can replay the chain at any time via the admin console. Posting
           checkpoints to an external verifiable timestamp service
-          (OpenTimestamps) is on the roadmap for Phase 1.7 â€” until that
+          (OpenTimestamps) is on the roadmap for Phase 1.7 — until that
           ships, the chain is internally verifiable but not externally
           notarised.
         </p>
@@ -238,7 +238,7 @@ export default function SecurityPage(): React.ReactElement {
         <p>
           A coordinated disclosure programme is planned for Phase 1.7,
           either via HackerOne or a self-managed surface. Until that opens,
-          please report findings to the address below â€” we acknowledge
+          please report findings to the address below — we acknowledge
           within two business days and will credit you in our security
           changelog if you would like.
         </p>
@@ -264,24 +264,24 @@ export default function SecurityPage(): React.ReactElement {
       <Section title="Related documents.">
         <ul>
           <li>
-            <Link href="/system-card">AI system card</Link> â€” model, tools,
+            <Link href="/system-card">AI system card</Link> — model, tools,
             oversight, incident reporting.
           </li>
           <li>
-            <Link href="/legal/subprocessors">Subprocessor list</Link> â€”
+            <Link href="/legal/subprocessors">Subprocessor list</Link> —
             every vendor that touches customer data, what they touch, where
             they sit.
           </li>
           <li>
-            <Link href="/legal/privacy">Privacy policy</Link> â€” what we
+            <Link href="/legal/privacy">Privacy policy</Link> — what we
             collect, why, and your rights.
           </li>
           <li>
-            <Link href="/legal/dpa">Data Processing Agreement</Link> â€” GDPR
+            <Link href="/legal/dpa">Data Processing Agreement</Link> — GDPR
             Art. 28 contract.
           </li>
           <li>
-            <Link href="/legal/terms">Terms of service</Link> â€” including
+            <Link href="/legal/terms">Terms of service</Link> — including
             the HIPAA refusal contract.
           </li>
         </ul>
@@ -290,7 +290,7 @@ export default function SecurityPage(): React.ReactElement {
   );
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────
 
 interface ComplianceRow {
   control: string;
@@ -301,7 +301,7 @@ interface ComplianceRow {
 const COMPLIANCE: ReadonlyArray<ComplianceRow> = [
   {
     control: "SOC 2 Type I",
-    status: "In progress â€” Vanta kickoff Phase 1.0-D",
+    status: "In progress — Vanta kickoff Phase 1.0-D",
     evidence: "Audit readiness assessment available to enterprise on request",
   },
   {
@@ -317,14 +317,14 @@ const COMPLIANCE: ReadonlyArray<ComplianceRow> = [
   {
     control: "CCPA / CPRA",
     status: "Live",
-    evidence: "Privacy policy Â§CCPA, in-product rights workflow, no sale or share",
+    evidence: "Privacy policy §CCPA, in-product rights workflow, no sale or share",
   },
   {
     control: "HIPAA",
     status: "Out of scope by contract",
     evidence: (
       <>
-        See <Link href="/legal/terms">Terms of service</Link> Â§4 â€” we do
+        See <Link href="/legal/terms">Terms of service</Link> §4 — we do
         not accept Protected Health Information and have no Business
         Associate Agreement.
       </>
@@ -332,7 +332,7 @@ const COMPLIANCE: ReadonlyArray<ComplianceRow> = [
   },
   {
     control: "PCI DSS",
-    status: "Out of scope â€” Stripe handles card data",
+    status: "Out of scope — Stripe handles card data",
     evidence: "We never see PAN, CVV, or expiry; tokenised reference only",
   },
   {

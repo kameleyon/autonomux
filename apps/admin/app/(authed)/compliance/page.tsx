@@ -1,7 +1,7 @@
-﻿/**
+/**
  * apps/admin/app/(authed)/compliance/page.tsx
  *
- * Compliance â€” GDPR queue dashboard + admin-initiated request forms.
+ * Compliance — GDPR queue dashboard + admin-initiated request forms.
  *
  *   - Pending requests table (status in pending|processing)
  *   - Recently completed table (last 30d)
@@ -40,7 +40,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * Jury F-Compass-02 fix 2026-05-29: every admin view that surfaces
- * tenant data â€” including audit timelines and compliance queues â€” is
+ * tenant data — including audit timelines and compliance queues — is
  * itself an audit-relevant act. Fire `admin.compliance.viewed` so the
  * audit log captures who looked at this surface and when. Operator
  * identity comes from `AUTONOMUX_ADMIN_USER_ID` until real admin auth
@@ -100,7 +100,7 @@ export default async function CompliancePage(props: {
 
       {sp.ok !== undefined ? (
         <p role="status" aria-live="polite">
-          Queued â€” request id: <code>{sp.id ?? "?"}</code>
+          Queued — request id: <code>{sp.id ?? "?"}</code>
         </p>
       ) : null}
       {sp.err !== undefined ? (
@@ -359,7 +359,7 @@ function RequestsTable(props: {
               ) : null}
             </td>
             <td>
-              <code>{r.tenant_id?.slice(0, 8) ?? "â€”"}</code>
+              <code>{r.tenant_id?.slice(0, 8) ?? "—"}</code>
             </td>
             <td>
               <code>{r.user_id.slice(0, 8)}</code>
@@ -369,7 +369,7 @@ function RequestsTable(props: {
               <td>
                 {r.completed_at !== null
                   ? new Date(r.completed_at).toLocaleString()
-                  : "â€”"}
+                  : "—"}
               </td>
             ) : null}
           </tr>
@@ -405,10 +405,10 @@ function AuditTable(props: {
             </td>
             <td>{e.actor_kind}</td>
             <td>
-              <code>{e.tenant_id?.slice(0, 8) ?? "â€”"}</code>
+              <code>{e.tenant_id?.slice(0, 8) ?? "—"}</code>
             </td>
             <td>
-              <code>{e.resource_id?.slice(0, 8) ?? "â€”"}</code>
+              <code>{e.resource_id?.slice(0, 8) ?? "—"}</code>
             </td>
           </tr>
         ))}
