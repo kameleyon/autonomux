@@ -121,9 +121,23 @@ export async function signUpAction(
     };
   }
 
-  // Compose the callback URL — public; SITE_URL is required even in dev.
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-  if (siteUrl === undefined || siteUrl.length === 0) {
+  /* Resolve + normalize the callback URL.
+   *
+   * NEXT_PUBLIC_SITE_URL on Vercel sometimes ships with a trailing slash
+   * (e.g. `https://autonomux-zmfs.vercel.app/`), which would yield
+   * `https://autonomux-zmfs.vercel.app//auth/callback` (double slash) —
+   * Supabase rejects that with "Invalid path specified in request URL".
+   *
+   * If the env var is missing entirely we fall back to the inferred
+   * origin from request headers — better than failing the signup. */
+  const siteUrlRaw =
+    process.env["NEXT_PUBLIC_SITE_URL"] ??
+    requestHeaders.get("origin") ??
+    `https://${requestHeaders.get("host") ?? ""}`;
+  const siteUrl = siteUrlRaw.replace(/\/+$/, "");
+  const emailRedirectTo = `${siteUrl}/auth/callback`;
+
+  if (siteUrl.length === 0) {
     return {
       ok: false,
       error: "PROVISIONING_FAILED",
@@ -135,10 +149,19 @@ export async function signUpAction(
   const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
     email,
     password,
-    options: { emailRedirectTo: `${siteUrl}/auth/callback` },
+    options: { emailRedirectTo },
   });
 
   if (signUpError !== null) {
+    /* Surface the full Supabase error to runtime logs so operators can
+     * see exactly which validation failed (Supabase error messages are
+     * generic at the UI layer). Vercel runtime logs are operator-only. */
+    console.error("[sign-up] supabase.auth.signUp rejected", {
+      message: signUpError.message,
+      status: signUpError.status,
+      emailRedirectTo,
+      siteUrlRaw,
+    });
     // Supabase returns "User already registered" as a status 400.
     const lower = signUpError.message.toLowerCase();
     if (lower.includes("already") || lower.includes("registered")) {
