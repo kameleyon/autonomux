@@ -283,12 +283,30 @@ create table if not exists public.scribe_voice_samples (
     tenant_id   uuid not null references public.tenants(id) on delete cascade,
     label       text not null,
     content     text not null,
-    word_count  integer generated always as (array_length(regexp_split_to_array(content, '\s+'), 1)) stored,
+    -- Maintained by trigger below — Postgres rejects generated columns whose
+    -- expression depends on STABLE functions like regexp_split_to_array.
+    word_count  integer not null default 0,
     created_at  timestamptz not null default now(),
     updated_at  timestamptz not null default now()
 );
 
 create index if not exists scribe_voice_samples_tenant_idx on public.scribe_voice_samples(tenant_id);
+
+create or replace function public.scribe_voice_samples_set_word_count()
+returns trigger
+language plpgsql
+as $$
+begin
+    new.word_count := coalesce(array_length(regexp_split_to_array(new.content, '\s+'), 1), 0);
+    return new;
+end;
+$$;
+
+drop trigger if exists scribe_voice_samples_word_count on public.scribe_voice_samples;
+create trigger scribe_voice_samples_word_count
+    before insert or update of content on public.scribe_voice_samples
+    for each row
+    execute function public.scribe_voice_samples_set_word_count();
 
 -- ---------------------------------------------------------------------------
 -- 13. oracle_readings — saved daily oracle pulls (cardology/astrology/tarot)
