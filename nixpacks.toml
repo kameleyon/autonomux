@@ -1,0 +1,33 @@
+# Railway / Nixpacks build plan for @autonomux/worker.
+#
+# Why this file exists: the autonomux monorepo uses npm workspaces with a
+# root-level package-lock.json. Nixpacks auto-detection guesses pnpm when
+# no `packageManager` field is present (now pinned to npm@10.9.0 at root,
+# but this file makes the install command explicit so a future pin change
+# doesn't silently re-shuffle the install path).
+#
+# Build sequence:
+#   1. Install deps at the monorepo root via `npm ci`.
+#   2. Build only the worker's dependency closure (cipher, db, logger,
+#      telemetry) and the worker itself — skip apps/web and apps/admin,
+#      which deploy to Vercel and would otherwise lengthen the build.
+#   3. Start runs the worker's compiled entry point.
+#
+# Owner: [Pipeline] — change with care; co-edit with package.json + the
+# Railway service settings (rootDirectory must remain blank / monorepo root).
+
+providers = ["node"]
+
+[phases.setup]
+nixPkgs = ["nodejs_20", "npm-10_x"]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = [
+  "npm run build --workspace=@autonomux/cipher --workspace=@autonomux/db --workspace=@autonomux/logger --workspace=@autonomux/telemetry --workspace=@autonomux/worker"
+]
+
+[start]
+cmd = "node apps/worker/dist/index.js"

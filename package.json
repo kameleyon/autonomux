@@ -4,8 +4,10 @@
   "private": true,
   "description": "Autonomux — your AlterEgo runs your inbox, your calendar, your money, and your writing — so you can run the rest.",
   "type": "module",
+  "packageManager": "npm@10.9.0",
   "engines": {
-    "node": ">=20.18.0"
+    "node": ">=20.18.0",
+    "npm": ">=10.0.0"
   },
   "workspaces": [
     "apps/*",
