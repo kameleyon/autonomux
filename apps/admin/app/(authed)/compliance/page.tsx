@@ -1,7 +1,7 @@
-/**
+﻿/**
  * apps/admin/app/(authed)/compliance/page.tsx
  *
- * Compliance — GDPR queue dashboard + admin-initiated request forms.
+ * Compliance â€” GDPR queue dashboard + admin-initiated request forms.
  *
  *   - Pending requests table (status in pending|processing)
  *   - Recently completed table (last 30d)
@@ -40,7 +40,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * Jury F-Compass-02 fix 2026-05-29: every admin view that surfaces
- * tenant data — including audit timelines and compliance queues — is
+ * tenant data â€” including audit timelines and compliance queues â€” is
  * itself an audit-relevant act. Fire `admin.compliance.viewed` so the
  * audit log captures who looked at this surface and when. Operator
  * identity comes from `AUTONOMUX_ADMIN_USER_ID` until real admin auth
@@ -100,7 +100,7 @@ export default async function CompliancePage(props: {
 
       {sp.ok !== undefined ? (
         <p role="status" aria-live="polite">
-          Queued — request id: <code>{sp.id ?? "?"}</code>
+          Queued â€” request id: <code>{sp.id ?? "?"}</code>
         </p>
       ) : null}
       {sp.err !== undefined ? (
@@ -298,20 +298,20 @@ export default async function CompliancePage(props: {
         <h2 id="docs-h2">Documentation</h2>
         <ul>
           <li>
-            <a href="https://autonomux.app/legal/privacy">Privacy policy</a>
+            <a href="https://autonomux.io/legal/privacy">Privacy policy</a>
           </li>
           <li>
-            <a href="https://autonomux.app/legal/dpa">
+            <a href="https://autonomux.io/legal/dpa">
               Data Processing Agreement
             </a>
           </li>
           <li>
-            <a href="https://autonomux.app/legal/deletion-policy">
+            <a href="https://autonomux.io/legal/deletion-policy">
               Deletion policy (30-day grace period)
             </a>
           </li>
           <li>
-            <a href="https://autonomux.app/legal/retention">
+            <a href="https://autonomux.io/legal/retention">
               Retention table (90d activity, 7yr audit, 30d export, 30d
               deletion grace)
             </a>
@@ -359,7 +359,7 @@ function RequestsTable(props: {
               ) : null}
             </td>
             <td>
-              <code>{r.tenant_id?.slice(0, 8) ?? "—"}</code>
+              <code>{r.tenant_id?.slice(0, 8) ?? "â€”"}</code>
             </td>
             <td>
               <code>{r.user_id.slice(0, 8)}</code>
@@ -369,7 +369,7 @@ function RequestsTable(props: {
               <td>
                 {r.completed_at !== null
                   ? new Date(r.completed_at).toLocaleString()
-                  : "—"}
+                  : "â€”"}
               </td>
             ) : null}
           </tr>
@@ -405,10 +405,10 @@ function AuditTable(props: {
             </td>
             <td>{e.actor_kind}</td>
             <td>
-              <code>{e.tenant_id?.slice(0, 8) ?? "—"}</code>
+              <code>{e.tenant_id?.slice(0, 8) ?? "â€”"}</code>
             </td>
             <td>
-              <code>{e.resource_id?.slice(0, 8) ?? "—"}</code>
+              <code>{e.resource_id?.slice(0, 8) ?? "â€”"}</code>
             </td>
           </tr>
         ))}

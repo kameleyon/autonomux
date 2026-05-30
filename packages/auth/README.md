@@ -1,10 +1,10 @@
-# @autonomux/auth
+﻿# @autonomux/auth
 
 TOTP + WebAuthn 2FA primitives for Autonomux. Wraps `otplib`, `qrcode`, and
-`@simplewebauthn/server` behind a stable interface — no consumer ever imports
+`@simplewebauthn/server` behind a stable interface â€” no consumer ever imports
 those packages directly.
 
-Per PRD §7.1:
+Per PRD Â§7.1:
 
 - TOTP is **mandatory** at signup.
 - WebAuthn / passkeys are an **optional second factor**, offered after first sign-in.
@@ -27,7 +27,7 @@ const ok = verifyTotp(secret, "123456");              // boolean, constant-time
 
 - Never log.
 - Never put in a URL except the provisioning `otpauth://` URI (which is
-  rendered as a QR for the user's authenticator app — it does not travel
+  rendered as a QR for the user's authenticator app â€” it does not travel
   outside that page).
 - Never ship to the client bundle.
 - Always persist via `@autonomux/cipher.encrypt(secret, tenantId, 'totp_secret')`.
@@ -37,7 +37,7 @@ const ok = verifyTotp(secret, "123456");              // boolean, constant-time
 ```ts
 import { generateBackupCodes, hashBackupCodes, verifyBackupCode } from "@autonomux/auth";
 
-const codes = generateBackupCodes(10);    // XXXX-XXXX × 10
+const codes = generateBackupCodes(10);    // XXXX-XXXX Ã— 10
 const hashes = hashBackupCodes(codes);    // sha256 hex, store these
 // ... display codes to user ONCE, then forget ...
 const matched = verifyBackupCode(input, hashes); // null or matched hex
@@ -101,10 +101,10 @@ if (!ok) return new Response("Step-up required", { status: 401 });
 | Name | Default | Notes |
 |---|---|---|
 | `WEBAUTHN_RP_NAME` | `Autonomux` | Brand string shown in the authenticator UI. |
-| `WEBAUTHN_RP_ID` | — | Must be a registrable suffix of the origin. `localhost` in dev. |
-| `WEBAUTHN_ORIGIN` | — | Full origin including scheme — `https://autonomux.app` etc. |
-| `AUTH_STEP_UP_SECRET` | — | ≥32-char random string for HMAC-signing step-up tokens. |
-| `AUTH_CHALLENGE_SECRET` | — | ≥32-char random string for HMAC-signing WebAuthn challenge cookies. |
+| `WEBAUTHN_RP_ID` | â€” | Must be a registrable suffix of the origin. `localhost` in dev. |
+| `WEBAUTHN_ORIGIN` | â€” | Full origin including scheme â€” `https://autonomux.io` etc. |
+| `AUTH_STEP_UP_SECRET` | â€” | â‰¥32-char random string for HMAC-signing step-up tokens. |
+| `AUTH_CHALLENGE_SECRET` | â€” | â‰¥32-char random string for HMAC-signing WebAuthn challenge cookies. |
 
 ## Threat model
 
@@ -116,13 +116,13 @@ if (!ok) return new Response("Step-up required", { status: 401 });
 | TOTP timing oracle on verify | otplib uses constant-time HMAC compare internally |
 | Backup code timing oracle | `timingSafeEqual` loop, no short-circuit |
 | WebAuthn challenge replay | 5-min TTL, single-use, encrypted cookie |
-| WebAuthn cloned authenticator | Signature counter — SimpleWebAuthn throws on regression |
+| WebAuthn cloned authenticator | Signature counter â€” SimpleWebAuthn throws on regression |
 | Step-up token tampering | HMAC-SHA-256 with bound purpose + user |
 | Step-up token replay across ops | `purpose` field included in HMAC body |
 
 | NOT defended | Mitigation owner |
 |---|---|
-| Phishing → real-time TOTP relay | User education + WebAuthn upgrade path (FIDO is phish-resistant) |
+| Phishing â†’ real-time TOTP relay | User education + WebAuthn upgrade path (FIDO is phish-resistant) |
 | Authenticator app compromise (malware on phone) | Out of scope |
 | `AUTH_STEP_UP_SECRET` exfiltration | Doppler-managed; rotate on suspicion |
 
@@ -139,6 +139,6 @@ Covered:
 Deferred to later phases:
 
 - Redis-backed rate limiter (Phase 1.0-C)
-- Backup-code re-generation flow (Phase 1.0-C — manual support ticket today)
+- Backup-code re-generation flow (Phase 1.0-C â€” manual support ticket today)
 - "Trusted device" cookie that skips 2FA for 30 days (Phase 1.7)
 - Hardware-key attestation enforcement for enterprise tier (Phase 3)

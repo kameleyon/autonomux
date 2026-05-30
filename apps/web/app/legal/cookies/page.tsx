@@ -1,12 +1,12 @@
-/**
+﻿/**
  * apps/web/app/legal/cookies/page.tsx
  *
- * Cookie Policy — the full disclosure of every cookie autonomux sets.
+ * Cookie Policy â€” the full disclosure of every cookie autonomux sets.
  * Maintained by [Comply]. Update LAST_UPDATED and add a row whenever a
- * new cookie ships. Preflight will not catch missing rows — this is a
+ * new cookie ships. Preflight will not catch missing rows â€” this is a
  * trust contract, not a lint.
  *
- * Owner: [Comply] · Phase 1.0-B9
+ * Owner: [Comply] Â· Phase 1.0-B9
  */
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -42,7 +42,7 @@ const COOKIES: CookieRow[] = [
   },
   {
     name: "sb-access-token",
-    purpose: "Signed-in session — issued by Supabase Auth.",
+    purpose: "Signed-in session â€” issued by Supabase Auth.",
     ttl: "1 hour (refreshed automatically)",
     category: "Necessary",
     party: "First-party",
@@ -82,7 +82,7 @@ export default function CookiePolicyPage(): React.ReactElement {
           marginBottom: "var(--sp-32)",
         }}
       >
-        Last updated · {LAST_UPDATED}
+        Last updated Â· {LAST_UPDATED}
       </p>
 
       <Section title="What a cookie is, in plain English.">
@@ -94,7 +94,7 @@ export default function CookiePolicyPage(): React.ReactElement {
         </p>
         <p>
           We sort cookies into three categories.{" "}
-          <strong>Necessary</strong> cookies fire without asking — without
+          <strong>Necessary</strong> cookies fire without asking â€” without
           them you can't sign in.{" "}
           <strong>Analytics</strong> and <strong>marketing</strong> cookies
           only fire after you say yes on the banner or in{" "}
@@ -119,7 +119,7 @@ export default function CookiePolicyPage(): React.ReactElement {
       <Section title="Changing your mind.">
         <p>
           Open <Link href="/settings/consent">cookie settings</Link> at any
-          time. Save your new choice — that&apos;s it. We do not require an
+          time. Save your new choice â€” that&apos;s it. We do not require an
           email or a support ticket to withdraw consent (GDPR Art. 7(3)).
         </p>
       </Section>
@@ -134,7 +134,7 @@ export default function CookiePolicyPage(): React.ReactElement {
 
       <Section title="Questions.">
         <p>
-          Email <a href="mailto:privacy@autonomux.app">privacy@autonomux.app</a>
+          Email <a href="mailto:privacy@autonomux.io">privacy@autonomux.io</a>
           . We try to reply within two business days.
         </p>
       </Section>
@@ -142,7 +142,7 @@ export default function CookiePolicyPage(): React.ReactElement {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function Section(props: {
   title: string;
@@ -216,7 +216,7 @@ function CookieTable(props: { rows: CookieRow[] }): React.ReactElement {
               <Td>{row.category}</Td>
               <Td>{row.ttl}</Td>
               <Td>{row.party}</Td>
-              <Td>{row.notes ?? "—"}</Td>
+              <Td>{row.notes ?? "â€”"}</Td>
             </tr>
           ))}
         </tbody>

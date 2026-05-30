@@ -1,10 +1,10 @@
-/**
+﻿/**
  * apps/worker/src/lib/email.ts
  *
  * Minimal transactional-email sender for GDPR notifications.
  *
  * Design: this is a single-purpose Resend client. Resend's HTTP API is small
- * enough that we avoid pulling the `resend` npm package — one fetch() against
+ * enough that we avoid pulling the `resend` npm package â€” one fetch() against
  * https://api.resend.com/emails is enough. Avoiding the dep keeps the worker
  * supply chain tight (no transitive surface area).
  *
@@ -16,8 +16,8 @@
  * Env:
  *   - RESEND_API_KEY: optional. Without it, sends are stubbed (stderr only).
  *     This lets local dev + CI run without external creds.
- *   - GDPR_EMAIL_FROM: address to send from (defaults to noreply@autonomux.app).
- *   - GDPR_EMAIL_REPLY_TO: optional Reply-To (defaults to privacy@autonomux.app).
+ *   - GDPR_EMAIL_FROM: address to send from (defaults to noreply@autonomux.io).
+ *   - GDPR_EMAIL_REPLY_TO: optional Reply-To (defaults to privacy@autonomux.io).
  *
  * Owner: [Comply + Atlas]
  */
@@ -50,18 +50,18 @@ const RESEND_ENDPOINT = "https://api.resend.com/emails";
  * Send a GDPR notification email. Returns true on success, false on any
  * failure (which is logged to stderr).
  *
- * NEVER throws — callers (GDPR job processors) consider email best-effort.
+ * NEVER throws â€” callers (GDPR job processors) consider email best-effort.
  */
 export async function sendGdprEmail(args: SendGdprEmailArgs): Promise<boolean> {
   const apiKey = process.env["RESEND_API_KEY"];
-  const from = process.env["GDPR_EMAIL_FROM"] ?? "noreply@autonomux.app";
+  const from = process.env["GDPR_EMAIL_FROM"] ?? "noreply@autonomux.io";
   const replyTo =
-    process.env["GDPR_EMAIL_REPLY_TO"] ?? "privacy@autonomux.app";
+    process.env["GDPR_EMAIL_REPLY_TO"] ?? "privacy@autonomux.io";
 
   const { subject, text, html } = renderEmail(args);
 
   if (apiKey === undefined || apiKey.length === 0) {
-    emitEmailLog("stub", args, "RESEND_API_KEY not set — email stubbed");
+    emitEmailLog("stub", args, "RESEND_API_KEY not set â€” email stubbed");
     return false;
   }
 
@@ -112,15 +112,15 @@ function renderEmail(args: SendGdprEmailArgs): {
         `Your data export is ready.\n\n` +
         `Download (valid until ${p.expiresAtIso}):\n${p.downloadUrl}\n\n` +
         `The link expires in 30 days. After that, you can request a new export ` +
-        `from Settings → Data.\n\n` +
-        `If you did not request this export, contact privacy@autonomux.app immediately.\n`;
+        `from Settings â†’ Data.\n\n` +
+        `If you did not request this export, contact privacy@autonomux.io immediately.\n`;
       const html =
         `<p>Your data export is ready.</p>` +
         `<p><a href="${escapeAttr(p.downloadUrl)}">Download your archive</a></p>` +
         `<p>Link valid until <strong>${escapeText(p.expiresAtIso)}</strong>. ` +
-        `After that, request a new export from Settings → Data.</p>` +
+        `After that, request a new export from Settings â†’ Data.</p>` +
         `<p>If you did not request this export, ` +
-        `<a href="mailto:privacy@autonomux.app">contact us</a> immediately.</p>`;
+        `<a href="mailto:privacy@autonomux.io">contact us</a> immediately.</p>`;
       return { subject, text, html };
     }
     case "deletion_scheduled": {
@@ -130,14 +130,14 @@ function renderEmail(args: SendGdprEmailArgs): {
         `Your account is marked for deletion.\n\n` +
         `All of your data will be permanently removed on ${p.hardDeleteAtIso}.\n\n` +
         `You can cancel this any time before that date by signing in and ` +
-        `visiting Settings → Data, or by replying to this email.\n\n` +
+        `visiting Settings â†’ Data, or by replying to this email.\n\n` +
         `Reference: ${p.requestId}\n`;
       const html =
         `<p>Your Autonomux account is marked for deletion.</p>` +
         `<p>All of your data will be <strong>permanently removed on ` +
         `${escapeText(p.hardDeleteAtIso)}</strong>.</p>` +
         `<p>You can cancel this any time before that date by signing in and ` +
-        `visiting Settings → Data.</p>` +
+        `visiting Settings â†’ Data.</p>` +
         `<p>Reference: <code>${escapeText(p.requestId)}</code></p>`;
       return { subject, text, html };
     }

@@ -1,20 +1,20 @@
-/**
+﻿/**
  * apps/worker/src/queues/gdpr.ts
  *
  * GDPR Article 20 (export) + Article 17 (erasure) processors.
  *
  * Two job kinds run on the `gdpr` queue:
  *
- *   1. gdpr.export        — collects every tenant-scoped row for the user,
+ *   1. gdpr.export        â€” collects every tenant-scoped row for the user,
  *                            decrypts agent_facts via @autonomux/cipher,
  *                            streams gzip to Supabase Storage, signs a 30d URL,
  *                            updates gdpr_requests + emails the user.
  *
- *   2. gdpr.deletion.soft — marks tenants.deleted_at, scrambles auth email,
+ *   2. gdpr.deletion.soft â€” marks tenants.deleted_at, scrambles auth email,
  *                            schedules the T+30d hard-delete via BullMQ delay,
  *                            emails the user the cancel-link.
  *
- *   3. gdpr.deletion.hard — (T+30d delayed) purges every tenant-scoped row,
+ *   3. gdpr.deletion.hard â€” (T+30d delayed) purges every tenant-scoped row,
  *                            deletes the tenants row, deletes the auth user,
  *                            writes a survivor audit_log row.
  *
@@ -22,13 +22,13 @@
  *   - Every status transition on gdpr_requests fires the SQL trigger which
  *     writes to audit_log (0007_gdpr.sql).
  *   - The hard-delete writes its own audit_log row BEFORE purging the tenant
- *     so the audit row survives (PRD §8.3 7yr retention).
+ *     so the audit row survives (PRD Â§8.3 7yr retention).
  *
  * Failure path:
  *   - On error: status='failed', failure_reason set, audit-log captures it,
  *     job is re-thrown so BullMQ retries (DEFAULT_JOB_OPTS attempts=5).
  *   - On final-retry-failed: BullMQ moves to failed; a Slack alert (admin op)
- *     is wired up in workers/sample.ts pattern — for now we emit structured
+ *     is wired up in workers/sample.ts pattern â€” for now we emit structured
  *     stderr that the Axiom pipeline routes to PagerDuty.
  *
  * Owner: [Atlas + Comply + Cipher]
@@ -80,7 +80,7 @@ function readGdprData(job: Job<BaseJobPayload, BaseJobResult>): GdprJobData {
   const data = job.data.data as unknown as Partial<GdprJobData>;
   if (typeof data?.requestId !== "string" || data.requestId.length === 0) {
     throw new Error(
-      `[gdpr] job ${job.id} missing payload.data.requestId — refusing to run`,
+      `[gdpr] job ${job.id} missing payload.data.requestId â€” refusing to run`,
     );
   }
   return { requestId: data.requestId };
@@ -89,11 +89,11 @@ function readGdprData(job: Job<BaseJobPayload, BaseJobResult>): GdprJobData {
 const STORAGE_BUCKET = "gdpr-exports";
 const EXPORT_EXPIRY_DAYS = 30;
 const HARD_DELETE_DELAY_MS = 30 * 24 * 60 * 60 * 1000;
-/** Public signed-URL lifetime — same as the user-facing expires_at. */
+/** Public signed-URL lifetime â€” same as the user-facing expires_at. */
 const SIGNED_URL_TTL_SECONDS = EXPORT_EXPIRY_DAYS * 24 * 60 * 60;
 
 // ---------------------------------------------------------------------------
-// Public router — wired from queues/index.ts processor
+// Public router â€” wired from queues/index.ts processor
 // ---------------------------------------------------------------------------
 
 /**
@@ -121,7 +121,7 @@ export async function processGdprJob(
 }
 
 // ---------------------------------------------------------------------------
-// 1. Export — Article 20 / right to portability
+// 1. Export â€” Article 20 / right to portability
 // ---------------------------------------------------------------------------
 
 interface GdprRequestRow {
@@ -149,7 +149,7 @@ async function processGdprExportJob(
   }
   if (request.tenant_id === null) {
     throw new Error(
-      `[gdpr.export] request ${request.id} has no tenant_id — cannot export`,
+      `[gdpr.export] request ${request.id} has no tenant_id â€” cannot export`,
     );
   }
   const tenantId = request.tenant_id;
@@ -157,7 +157,7 @@ async function processGdprExportJob(
   // Idempotency on the data layer too: if already completed and not expired,
   // no-op rather than re-export.
   if (request.status === "completed") {
-    log.info({ requestId: request.id }, "export already completed — skipping");
+    log.info({ requestId: request.id }, "export already completed â€” skipping");
     return { requestId: data.requestId, status: "deduped" };
   }
 
@@ -170,7 +170,7 @@ async function processGdprExportJob(
     const exportBlob = await collectTenantExport(sb, tenantId, request.user_id);
     const fileName = `${tenantId}/${request.id}.json.gz`;
 
-    // Stream is gzip-compressed JSON. We use Buffer here — Supabase Storage
+    // Stream is gzip-compressed JSON. We use Buffer here â€” Supabase Storage
     // upload accepts Uint8Array / Buffer directly; for very large tenants the
     // payload could be partitioned across multiple files, but at v1.0 single
     // tenant data sits well under 50MB compressed (Plaid + 90d of agent runs).
@@ -236,15 +236,15 @@ async function processGdprExportJob(
 }
 
 // ---------------------------------------------------------------------------
-// Tenant data collection — what's exported, what's excluded
+// Tenant data collection â€” what's exported, what's excluded
 // ---------------------------------------------------------------------------
 
 /**
  * What's exported (user's data per GDPR Art. 20):
  *   tenants, alterego_settings, agent_facts (DECRYPTED), agent_memory_episodes
- *   (summaries only — embeddings not portable, full plaintext encrypted blob),
+ *   (summaries only â€” embeddings not portable, full plaintext encrypted blob),
  *   agent_runs (last 90d), sub_agent_runs (last 90d), connected_accounts
- *   (WITHOUT oauth tokens — those are credentials, not user data), mailroom_rules,
+ *   (WITHOUT oauth tokens â€” those are credentials, not user data), mailroom_rules,
  *   treasurer_bills, scribe_voice_samples, oracle_readings, companion_nudges,
  *   activity_log, billing_subscriptions, usage_meters.
  *
@@ -252,7 +252,7 @@ async function processGdprExportJob(
  *   - OAuth tokens / KMS-wrapped DEKs / password hashes
  *   - audit_log entries (we surface a metadata-only summary, not the chain)
  *   - chain_of_thought_encrypted on agent_runs (operational, not portable)
- *   - embeddings (not user-supplied — derived data; non-portable per Art. 20)
+ *   - embeddings (not user-supplied â€” derived data; non-portable per Art. 20)
  *   - billing_events (Stripe-owned)
  */
 interface ExportBlob {
@@ -299,21 +299,21 @@ What is included:
   - agent_facts_decrypted (your encrypted profile facts, plaintext)
   - agent_memory_episode_summaries (last 90d of episodic memory summaries)
   - agent_runs + sub_agent_runs (last 90d of orchestrator activity)
-  - connected_accounts (the list — NOT the OAuth tokens themselves)
+  - connected_accounts (the list â€” NOT the OAuth tokens themselves)
   - mailroom_rules, treasurer_bills, scribe_voice_samples
   - oracle_readings, companion_nudges
   - activity_log (last 90d)
   - billing_subscriptions, usage_meters
 
 What is excluded and why:
-  - OAuth tokens, Plaid access tokens, KMS-wrapped DEKs, password hashes —
+  - OAuth tokens, Plaid access tokens, KMS-wrapped DEKs, password hashes â€”
     these are credentials/operational secrets, not "your data" under Art. 20.
-  - Audit-log entries — we are legally required to retain these for 7 years
+  - Audit-log entries â€” we are legally required to retain these for 7 years
     (SOC 2 CC6.1 / GDPR Art. 30). Subpoena response only.
-  - Embeddings (vector(1536)) — derived data, not portable per Art. 20.
-  - Chain-of-thought traces on agent_runs — operational telemetry.
+  - Embeddings (vector(1536)) â€” derived data, not portable per Art. 20.
+  - Chain-of-thought traces on agent_runs â€” operational telemetry.
 
-Questions: privacy@autonomux.app
+Questions: privacy@autonomux.io
 `;
 
 async function collectTenantExport(
@@ -325,7 +325,7 @@ async function collectTenantExport(
     Date.now() - 90 * 24 * 60 * 60 * 1000,
   ).toISOString();
 
-  // Parallel reads — service-role bypasses RLS.
+  // Parallel reads â€” service-role bypasses RLS.
   const [
     tenants,
     tenantMembers,
@@ -390,7 +390,7 @@ async function collectTenantExport(
     sb.from("usage_meters").select("*").eq("tenant_id", tenantId),
   ]);
 
-  // Surface query failures hard — better to fail the export than to ship
+  // Surface query failures hard â€” better to fail the export than to ship
   // a quietly-empty archive.
   assertOk("tenants", tenants);
   assertOk("tenant_members", tenantMembers);
@@ -439,7 +439,7 @@ async function collectTenantExport(
       format: "autonomux.gdpr.v1",
       notes:
         "OAuth tokens, audit chain, embeddings, and chain-of-thought traces " +
-        "are excluded — see readme.",
+        "are excluded â€” see readme.",
     },
     readme: README,
     tenants: tenants.data ?? [],
@@ -498,14 +498,14 @@ async function tryDecryptAgentFact(
       envelope = parsed as EncryptedEnvelope;
     }
   } catch {
-    // Not JSON envelope — likely raw bytea legacy row. Fall through.
+    // Not JSON envelope â€” likely raw bytea legacy row. Fall through.
   }
 
   if (envelope === null) {
     return {
       _note:
-        "Row not stored via packages/cipher envelope — cannot decrypt for export. " +
-        "Contact privacy@autonomux.app for manual handling.",
+        "Row not stored via packages/cipher envelope â€” cannot decrypt for export. " +
+        "Contact privacy@autonomux.io for manual handling.",
     };
   }
 
@@ -515,7 +515,7 @@ async function tryDecryptAgentFact(
     try {
       return JSON.parse(plaintext) as unknown;
     } catch {
-      // Plaintext wasn't JSON — return raw string.
+      // Plaintext wasn't JSON â€” return raw string.
       return { _raw_plaintext: plaintext };
     }
   } catch (err) {
@@ -527,7 +527,7 @@ async function tryDecryptAgentFact(
 }
 
 // ---------------------------------------------------------------------------
-// 2. Deletion — Article 17 / right to erasure (soft phase)
+// 2. Deletion â€” Article 17 / right to erasure (soft phase)
 // ---------------------------------------------------------------------------
 
 async function processGdprDeletionSoftJob(
@@ -589,7 +589,7 @@ async function processGdprDeletionSoftJob(
       {
         jobId: hardJobId,
         delay: HARD_DELETE_DELAY_MS,
-        // Hard-delete must not be silently auto-retried for 5 attempts —
+        // Hard-delete must not be silently auto-retried for 5 attempts â€”
         // if it fails, we want an admin alert immediately.
         attempts: 3,
         backoff: { type: "exponential", delay: 60_000 },
@@ -613,7 +613,7 @@ async function processGdprDeletionSoftJob(
     const expiresAt = new Date(Date.now() + HARD_DELETE_DELAY_MS).toISOString();
     await transitionStatus(sb, request.id, "completed", {
       completed_at: completedAt,
-      expires_at: expiresAt, // T+30d — "data fully purged at" marker
+      expires_at: expiresAt, // T+30d â€” "data fully purged at" marker
     });
 
     // 5. Send the grace-period email with the cancel link.
@@ -645,7 +645,7 @@ async function processGdprDeletionSoftJob(
 }
 
 // ---------------------------------------------------------------------------
-// 3. Deletion — Article 17 / right to erasure (hard phase, T+30d)
+// 3. Deletion â€” Article 17 / right to erasure (hard phase, T+30d)
 // ---------------------------------------------------------------------------
 
 /**
@@ -653,10 +653,10 @@ async function processGdprDeletionSoftJob(
  *   1. Audit-log "gdpr.deletion.hard_started" BEFORE we touch any data,
  *      so we have a survivor row even if step 2 partial-fails.
  *   2. Hard-delete tenant-scoped rows (CASCADE handles most via FK ON DELETE).
- *      We DELETE the tenants row last — that cascade clears the bulk.
+ *      We DELETE the tenants row last â€” that cascade clears the bulk.
  *   3. Delete the Supabase Auth user.
  *   4. Audit-log "gdpr.deletion.hard_deleted" with the surviving metadata
- *      (request_id + tenant_id are sufficient — the tenant_id column is
+ *      (request_id + tenant_id are sufficient â€” the tenant_id column is
  *      ON DELETE SET NULL on audit_log, so the row stays).
  */
 async function processGdprDeletionHardJob(
@@ -667,13 +667,13 @@ async function processGdprDeletionHardJob(
   const request = await loadRequest(sb, data.requestId);
 
   // The request row may have been cancelled in the 30-day window. If so we
-  // are NOT supposed to be running — BullMQ removed our delayed job. Bail.
+  // are NOT supposed to be running â€” BullMQ removed our delayed job. Bail.
   if (request === null) {
-    log.warn({ requestId: data.requestId }, "hard-delete: request gone — abort");
+    log.warn({ requestId: data.requestId }, "hard-delete: request gone â€” abort");
     return { requestId: data.requestId, status: "deduped" };
   }
   if (request.status === "cancelled") {
-    log.info({ requestId: request.id }, "hard-delete: request cancelled — abort");
+    log.info({ requestId: request.id }, "hard-delete: request cancelled â€” abort");
     return { requestId: data.requestId, status: "deduped" };
   }
   if (request.tenant_id === null) {
@@ -711,7 +711,7 @@ async function processGdprDeletionHardJob(
     //    companion_nudges, activity_log, billing_subscriptions, usage_meters,
     //    user_2fa_factors, tenant_members.
     //    audit_log uses ON DELETE SET NULL for tenant_id (per 0001), so audit
-    //    rows survive — exactly what we want.
+    //    rows survive â€” exactly what we want.
     //    billing_events also ON DELETE SET NULL (treated as system events).
     const { error: delErr } = await sb
       .from("tenants")
@@ -721,24 +721,24 @@ async function processGdprDeletionHardJob(
       throw new Error(`[gdpr.deletion.hard] tenants delete: ${delErr.message}`);
     }
 
-    // 3. Delete the auth.users row. supabase-js admin API is used here —
+    // 3. Delete the auth.users row. supabase-js admin API is used here â€”
     //    this REQUIRES service-role key (which we have).
     const { error: authErr } = await sb.auth.admin.deleteUser(userId);
     if (authErr !== null) {
       // Jury F-Trace-04 fix 2026-05-29: tenant data is already purged
-      // (cascade fired), but the auth.users row remains — meaning the
+      // (cascade fired), but the auth.users row remains â€” meaning the
       // user could still sign in to a tenantless account. This is a
       // PARTIAL deletion, NOT a completion. Mark the request `failed`
       // so ops can re-run the auth delete OR remediate manually. Do
       // NOT silently drop into "completed" state.
       log.error(
         { err: authErr.message, userId, requestId: request.id },
-        "gdpr.deletion.hard: tenant data purged but auth.users delete failed — ALERT (request marked failed)",
+        "gdpr.deletion.hard: tenant data purged but auth.users delete failed â€” ALERT (request marked failed)",
       );
     }
 
     // 4. The gdpr_requests row itself: tenant_id was set NULL by cascade.
-    //    Status reflects auth-delete outcome — failed if auth row survived,
+    //    Status reflects auth-delete outcome â€” failed if auth row survived,
     //    completed only when everything's purged.
     await sb
       .from("gdpr_requests")
@@ -747,7 +747,7 @@ async function processGdprDeletionHardJob(
         completed_at: authErr !== null ? null : new Date().toISOString(),
         failure_reason:
           authErr !== null
-            ? `auth.users delete failed: ${authErr.message} (tenant data already purged — manual remediation required)`
+            ? `auth.users delete failed: ${authErr.message} (tenant data already purged â€” manual remediation required)`
             : null,
       })
       .eq("id", request.id);
@@ -760,7 +760,7 @@ async function processGdprDeletionHardJob(
       );
     }
 
-    // 5. Survivor audit row AFTER purge — this is the legally-required record.
+    // 5. Survivor audit row AFTER purge â€” this is the legally-required record.
     await logAuditEvent(
       {
         tenantId: null, // tenant is gone; reference by metadata
@@ -786,7 +786,7 @@ async function processGdprDeletionHardJob(
   } catch (err) {
     log.error({ err, requestId: request.id }, "gdpr hard-delete failed");
     // We do NOT mark request status='failed' here because the request row
-    // may be orphaned — and the trigger doesn't have meaningful tenant.
+    // may be orphaned â€” and the trigger doesn't have meaningful tenant.
     // Audit-log the failure directly.
     await logAuditEvent(
       {

@@ -1,16 +1,16 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Admin · Autonomux",
-    template: "%s · Admin · Autonomux",
+    default: "Admin Â· Autonomux",
+    template: "%s Â· Admin Â· Autonomux",
   },
   description:
-    "Autonomux admin cpanel — internal operator surface. Access restricted.",
+    "Autonomux admin cpanel â€” internal operator surface. Access restricted.",
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_ADMIN_URL ?? "https://admin.autonomux.app",
+    process.env.NEXT_PUBLIC_ADMIN_URL ?? "https://admin.autonomux.io",
   ),
   icons: {
     icon: "/logo.png",

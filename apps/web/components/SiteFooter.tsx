@@ -1,11 +1,11 @@
-/**
+﻿/**
  * apps/web/components/SiteFooter.tsx
  *
- * Site footer — links to legal + trust surfaces. Server component, no
+ * Site footer â€” links to legal + trust surfaces. Server component, no
  * client-side JS. Wired into the root layout so every public page surfaces
  * the trust pages (Security, AI System Card, Subprocessors, etc.).
  *
- * Owner: [Comply + Herald] · Phase 1.0-C10
+ * Owner: [Comply + Herald] Â· Phase 1.0-C10
  */
 import Link from "next/link";
 
@@ -41,9 +41,9 @@ const COLS: ReadonlyArray<{
   {
     heading: "Contact",
     links: [
-      { href: "mailto:hello@autonomux.app", label: "hello@autonomux.app" },
-      { href: "mailto:security@autonomux.app", label: "security@autonomux.app" },
-      { href: "mailto:privacy@autonomux.app", label: "privacy@autonomux.app" },
+      { href: "mailto:hello@autonomux.io", label: "hello@autonomux.io" },
+      { href: "mailto:security@autonomux.io", label: "security@autonomux.io" },
+      { href: "mailto:privacy@autonomux.io", label: "privacy@autonomux.io" },
     ],
   },
 ];
@@ -146,8 +146,8 @@ export function SiteFooter(): React.ReactElement {
             color: "var(--muted)",
           }}
         >
-          <span>© {new Date().getFullYear()} Autonomux, Inc.</span>
-          <span>Made with care · Delaware, USA</span>
+          <span>Â© {new Date().getFullYear()} Autonomux, Inc.</span>
+          <span>Made with care Â· Delaware, USA</span>
         </div>
       </div>
     </footer>

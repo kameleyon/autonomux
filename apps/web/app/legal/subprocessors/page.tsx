@@ -1,12 +1,12 @@
-/**
+﻿/**
  * apps/web/app/legal/subprocessors/page.tsx
  *
- * Subprocessor list — published per GDPR Art. 28(2). Every vendor that
+ * Subprocessor list â€” published per GDPR Art. 28(2). Every vendor that
  * touches customer data, what they touch, where they sit, what
  * certifications they hold, and whether a DPA is in place. Updates require
  * a 30-day notice to customers; that commitment is on this page.
  *
- * Owner: [Comply + Herald] · Phase 1.0-C10
+ * Owner: [Comply + Herald] Â· Phase 1.0-C10
  */
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -26,7 +26,7 @@ interface SubprocessorRow {
   data: string;
   location: string;
   certifications: string;
-  dpa: "Yes" | "Yes — when shipped";
+  dpa: "Yes" | "Yes â€” when shipped";
   status: "Live" | "Planned with surface";
   notes?: string;
 }
@@ -111,7 +111,7 @@ const SUBPROCESSORS: ReadonlyArray<SubprocessorRow> = [
   {
     vendor: "AWS KMS",
     purpose: "Encryption key management",
-    data: "KMS-wrapped data encryption keys — never plaintext PII",
+    data: "KMS-wrapped data encryption keys â€” never plaintext PII",
     location: "US (AWS us-east-1)",
     certifications: "SOC 2 Type II, ISO 27001, FedRAMP, PCI DSS",
     dpa: "Yes",
@@ -150,7 +150,7 @@ const SUBPROCESSORS: ReadonlyArray<SubprocessorRow> = [
     data: "Bank balances, transactions, account metadata",
     location: "US",
     certifications: "SOC 2 Type II, ISO 27001",
-    dpa: "Yes — when shipped",
+    dpa: "Yes â€” when shipped",
     status: "Planned with surface",
     notes: "Engaged when the Treasurer feature ships in Phase 1.7.",
   },
@@ -183,8 +183,8 @@ export default function SubprocessorsPage(): React.ReactElement {
           marginBottom: "var(--sp-32)",
         }}
       >
-        Last updated ·{" "}
-        <time dateTime={LAST_UPDATED}>{LAST_UPDATED}</time> · v{VERSION}
+        Last updated Â·{" "}
+        <time dateTime={LAST_UPDATED}>{LAST_UPDATED}</time> Â· v{VERSION}
       </p>
 
       <CalloutBox>
@@ -192,10 +192,10 @@ export default function SubprocessorsPage(): React.ReactElement {
         <strong>30 days</strong> before adding a new subprocessor or
         materially changing one already on this page. To receive that
         notice by email, write to{" "}
-        <a href="mailto:privacy@autonomux.app?subject=Subprocessor%20notifications">
-          privacy@autonomux.app
+        <a href="mailto:privacy@autonomux.io?subject=Subprocessor%20notifications">
+          privacy@autonomux.io
         </a>{" "}
-        with the subject &ldquo;Subprocessor notifications&rdquo; — we
+        with the subject &ldquo;Subprocessor notifications&rdquo; â€” we
         will add you to the change list.
       </CalloutBox>
 
@@ -263,7 +263,7 @@ export default function SubprocessorsPage(): React.ReactElement {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function SubprocessorTable(props: {
   rows: ReadonlyArray<SubprocessorRow>;

@@ -1,11 +1,11 @@
-/**
+﻿/**
  * apps/web/app/legal/dpa/page.tsx
  *
- * Data Processing Agreement — landing page. Describes the agreement,
+ * Data Processing Agreement â€” landing page. Describes the agreement,
  * lists what it covers, and (for now) shows a placeholder for the
  * downloadable PDF. The PDF generator ships later in Phase 1.0-B12.
  *
- * Owner: [Comply] · Phase 1.0-B9
+ * Owner: [Comply] Â· Phase 1.0-B9
  */
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -35,7 +35,7 @@ export default function DPAPage(): React.ReactElement {
           marginBottom: "var(--sp-32)",
         }}
       >
-        Last updated · {LAST_UPDATED}
+        Last updated Â· {LAST_UPDATED}
       </p>
 
       <CalloutBox>
@@ -57,13 +57,13 @@ export default function DPAPage(): React.ReactElement {
           </li>
           <li>Security measures (Annex II to the SCCs).</li>
           <li>
-            International transfers — EU Standard Contractual Clauses
+            International transfers â€” EU Standard Contractual Clauses
             (2021/914) and the UK International Data Transfer Addendum.
           </li>
           <li>Audit and inspection rights.</li>
           <li>Data subject rights and assistance.</li>
           <li>
-            Breach notification — within 72 hours of becoming aware (GDPR
+            Breach notification â€” within 72 hours of becoming aware (GDPR
             Art. 33).
           </li>
           <li>Return or deletion of data on termination.</li>
@@ -79,9 +79,9 @@ export default function DPAPage(): React.ReactElement {
         </p>
         <p>
           Email{" "}
-          <a href="mailto:legal@autonomux.app">legal@autonomux.app</a> with
+          <a href="mailto:legal@autonomux.io">legal@autonomux.io</a> with
           your entity name, the data categories you expect to process, and
-          your DPO contact (if you have one) — we will send a signature
+          your DPO contact (if you have one) â€” we will send a signature
           packet.
         </p>
       </Section>
@@ -103,14 +103,14 @@ export default function DPAPage(): React.ReactElement {
 
       <Section title="Questions.">
         <p>
-          Email <a href="mailto:legal@autonomux.app">legal@autonomux.app</a>.
+          Email <a href="mailto:legal@autonomux.io">legal@autonomux.io</a>.
         </p>
       </Section>
     </main>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function Section(props: {
   title: string;

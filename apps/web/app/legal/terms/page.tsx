@@ -1,13 +1,13 @@
-/**
+﻿/**
  * apps/web/app/legal/terms/page.tsx
  *
- * Terms of Service — placeholder template. Counsel review required
+ * Terms of Service â€” placeholder template. Counsel review required
  * before launch.
  *
- * Includes the locked PRD §10.3 HIPAA refusal contract. That section is
+ * Includes the locked PRD Â§10.3 HIPAA refusal contract. That section is
  * load-bearing; do not soften the wording without consulting [Comply].
  *
- * Owner: [Comply] · Phase 1.0-B9
+ * Owner: [Comply] Â· Phase 1.0-B9
  */
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -35,7 +35,7 @@ export default function TermsOfServicePage(): React.ReactElement {
           marginBottom: "var(--sp-32)",
         }}
       >
-        Last updated · {LAST_UPDATED}
+        Last updated Â· {LAST_UPDATED}
       </p>
 
       <CalloutBox>
@@ -45,7 +45,7 @@ export default function TermsOfServicePage(): React.ReactElement {
 
       <Section title="1. What Autonomux is.">
         <p>
-          Autonomux gives you an &quot;AlterEgo&quot; — an AI assistant that
+          Autonomux gives you an &quot;AlterEgo&quot; â€” an AI assistant that
           can read and act on your email, calendar, money, and writing tools
           on your behalf, within limits you set. We are a software service,
           not your lawyer, doctor, accountant, or financial adviser.
@@ -56,7 +56,7 @@ export default function TermsOfServicePage(): React.ReactElement {
         <p>
           You must be at least 16 to create an account. You agree to keep
           your sign-in details safe and to tell us promptly at{" "}
-          <a href="mailto:security@autonomux.app">security@autonomux.app</a>{" "}
+          <a href="mailto:security@autonomux.io">security@autonomux.io</a>{" "}
           if you suspect unauthorised access.
         </p>
       </Section>
@@ -81,12 +81,12 @@ export default function TermsOfServicePage(): React.ReactElement {
         </ul>
       </Section>
 
-      <Section title="4. HIPAA — protected health information.">
+      <Section title="4. HIPAA â€” protected health information.">
         <CalloutBox tone="warn">
           <strong>Do not paste patient information into AlterEgo.</strong>{" "}
           We do not have a Business Associate Agreement. We are not a HIPAA
           covered entity, and we are not a business associate. The founder
-          is a registered nurse — this rule is non-negotiable.
+          is a registered nurse â€” this rule is non-negotiable.
         </CalloutBox>
         <p>
           Specifically: do not submit identifiable health data about anyone
@@ -191,14 +191,14 @@ export default function TermsOfServicePage(): React.ReactElement {
 
       <Section title="Questions.">
         <p>
-          Email <a href="mailto:legal@autonomux.app">legal@autonomux.app</a>.
+          Email <a href="mailto:legal@autonomux.io">legal@autonomux.io</a>.
         </p>
       </Section>
     </main>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function Section(props: {
   title: string;

@@ -1,11 +1,11 @@
-/**
+﻿/**
  * apps/web/app/accessibility/page.tsx
  *
- * Accessibility statement — public commitment to WCAG 2.2 AA, known
- * limitations, contact for accessibility issues. PRD §10.4 requires this
+ * Accessibility statement â€” public commitment to WCAG 2.2 AA, known
+ * limitations, contact for accessibility issues. PRD Â§10.4 requires this
  * surface. [Halo] owns the underlying conformance work.
  *
- * Owner: [Comply + Herald + Halo] · Phase 1.0-C10
+ * Owner: [Comply + Herald + Halo] Â· Phase 1.0-C10
  */
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -34,8 +34,8 @@ export default function AccessibilityPage(): React.ReactElement {
           marginBottom: "var(--sp-32)",
         }}
       >
-        Last updated ·{" "}
-        <time dateTime={LAST_UPDATED}>{LAST_UPDATED}</time> · v{VERSION}
+        Last updated Â·{" "}
+        <time dateTime={LAST_UPDATED}>{LAST_UPDATED}</time> Â· v{VERSION}
       </p>
 
       <Section title="Our commitment.">
@@ -68,7 +68,7 @@ export default function AccessibilityPage(): React.ReactElement {
           </li>
           <li>
             <strong>Focus visibility.</strong> Focus indicators meet WCAG
-            2.4.13 (≥3:1 contrast, ≥2 px outline) and are never hidden.
+            2.4.13 (â‰¥3:1 contrast, â‰¥2 px outline) and are never hidden.
           </li>
           <li>
             <strong>Colour and contrast.</strong> Body text meets 4.5:1;
@@ -95,13 +95,13 @@ export default function AccessibilityPage(): React.ReactElement {
 
       <Section title="Standards we measure against.">
         <ul>
-          <li>WCAG 2.2 Level AA — primary target.</li>
+          <li>WCAG 2.2 Level AA â€” primary target.</li>
           <li>
-            EN 301 549 — relevant for European Accessibility Act (EAA)
+            EN 301 549 â€” relevant for European Accessibility Act (EAA)
             obligations entering force June 2025.
           </li>
           <li>
-            U.S. Section 508 — relevant for any federal-adjacent customer
+            U.S. Section 508 â€” relevant for any federal-adjacent customer
             engagement.
           </li>
         </ul>
@@ -140,8 +140,8 @@ export default function AccessibilityPage(): React.ReactElement {
         <p>
           If you hit a barrier on any Autonomux surface, please tell us.
           Email{" "}
-          <a href="mailto:accessibility@autonomux.app">
-            accessibility@autonomux.app
+          <a href="mailto:accessibility@autonomux.io">
+            accessibility@autonomux.io
           </a>{" "}
           with:
         </p>
@@ -164,8 +164,8 @@ export default function AccessibilityPage(): React.ReactElement {
         <p>
           If you need a document on this site in an alternative format
           (large print, plain text, a specific reading order), email{" "}
-          <a href="mailto:accessibility@autonomux.app">
-            accessibility@autonomux.app
+          <a href="mailto:accessibility@autonomux.io">
+            accessibility@autonomux.io
           </a>{" "}
           and we will provide it at no charge.
         </p>
@@ -188,7 +188,7 @@ export default function AccessibilityPage(): React.ReactElement {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function Section(props: {
   title: string;
