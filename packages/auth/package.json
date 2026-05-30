@@ -11,7 +11,8 @@
     "./webauthn": "./src/webauthn.ts",
     "./backup-codes": "./src/backup-codes.ts",
     "./rate-limit": "./src/rate-limit.ts",
-    "./step-up": "./src/step-up.ts"
+    "./step-up": "./src/step-up.ts",
+    "./two-fa-session": "./src/two-fa-session.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

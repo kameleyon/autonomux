@@ -15,7 +15,7 @@ import {
   LlmInvalidRequestError,
   LlmRateLimitError,
   LlmServerError,
-} from "../errors.js";
+} from "../errors";
 
 export interface RetryOpts {
   max_attempts?: number;

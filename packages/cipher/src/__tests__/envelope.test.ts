@@ -1,12 +1,12 @@
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-import { decrypt, decryptToString, encrypt } from "../envelope.js";
-import { __setKmsClientForTest } from "../kms.js";
-import { sodiumReady } from "../sodium.js";
-import { ENVELOPE_VERSION, type EncryptedEnvelope } from "../types.js";
-import { fromBase64, toBase64 } from "../utils.js";
+import { decrypt, decryptToString, encrypt } from "../envelope";
+import { __setKmsClientForTest } from "../kms";
+import { sodiumReady } from "../sodium";
+import { ENVELOPE_VERSION, type EncryptedEnvelope } from "../types";
+import { fromBase64, toBase64 } from "../utils";
 
-import { makeFakeKmsClient, type FakeKmsStats } from "./_fakeKms.js";
+import { makeFakeKmsClient, type FakeKmsStats } from "./_fakeKms";
 
 const TENANT_A = "tenant_aaaa";
 const TENANT_B = "tenant_bbbb";

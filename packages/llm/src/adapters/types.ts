@@ -12,7 +12,7 @@ import type {
   CompleteResponse,
   Provider,
   StreamChunk,
-} from "../types.js";
+} from "../types";
 
 export interface AdapterCtx {
   logger?: Logger | undefined;

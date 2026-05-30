@@ -6,7 +6,7 @@
  * to surface, retry-other-model, or fail-the-run.
  */
 
-import type { Provider } from "./types.js";
+import type { Provider } from "./types";
 
 export interface LlmErrorOpts {
   provider: Provider;

@@ -28,7 +28,7 @@ import { verifyStepUpToken } from "@autonomux/auth";
 import { requireAuth } from "@/lib/auth-helpers";
 import { createClient } from "@/lib/supabase/server";
 import { getStepUpSecret } from "@/lib/twofa/config";
-import { STEP_UP_COOKIE } from "@/app/sign-in/totp/action";
+import { STEP_UP_COOKIE } from "@/lib/twofa/cookie";
 
 import {
   listMyGdprRequests,

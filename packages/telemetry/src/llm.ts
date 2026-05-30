@@ -23,7 +23,7 @@
 
 import { SpanKind, type Span } from "@opentelemetry/api";
 
-import { addAttributes, withSpan } from "./spans.js";
+import { addAttributes, withSpan } from "./spans";
 
 /** Inputs known BEFORE the call fires. */
 export type TraceLlmCallContext = {

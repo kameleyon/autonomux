@@ -25,7 +25,7 @@ export {
   provisioningUri,
   verifyBackupCode,
   verifyTotp,
-} from "./totp.js";
+} from "./totp";
 
 export {
   generateAuthenticationOptions,
@@ -45,7 +45,7 @@ export {
   type VerifyAuthenticationArgs,
   type VerifyRegistrationArgs,
   type WebAuthnUser,
-} from "./webauthn.js";
+} from "./webauthn";
 
 export {
   checkRateLimit,
@@ -54,7 +54,7 @@ export {
   WINDOW_SECONDS,
   type RateLimitContext,
   type RateLimitResult,
-} from "./rate-limit.js";
+} from "./rate-limit";
 
 export {
   issueStepUpToken,
@@ -62,7 +62,7 @@ export {
   STEP_UP_TTL_MS,
   type StepUpPurpose,
   type StepUpToken,
-} from "./step-up.js";
+} from "./step-up";
 
 export {
   issueTwoFaSessionToken,
@@ -70,4 +70,4 @@ export {
   TWO_FA_SESSION_COOKIE_NAME,
   TWO_FA_SESSION_TTL_MS,
   type TwoFaSessionToken,
-} from "./two-fa-session.js";
+} from "./two-fa-session";

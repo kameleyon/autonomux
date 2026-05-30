@@ -24,8 +24,8 @@ import {
   DecryptCommand,
 } from "@aws-sdk/client-kms";
 
-import { sodiumReady } from "./sodium.js";
-import { fromBase64, toBase64, assertEnv } from "./utils.js";
+import { sodiumReady } from "./sodium";
+import { fromBase64, toBase64, assertEnv } from "./utils";
 
 /** Required env vars for the KMS client. Region + key id are non-negotiable. */
 const REQUIRED_ENV = ["AWS_REGION", "AWS_KMS_KEY_ID"] as const;

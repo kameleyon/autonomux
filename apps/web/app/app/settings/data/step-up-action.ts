@@ -34,7 +34,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getSupabaseServiceClient } from "@/lib/supabase/service";
 import { getStepUpSecret } from "@/lib/twofa/config";
 import { twoFaCookieAttrs } from "@/lib/twofa/cookie";
-import { STEP_UP_COOKIE } from "@/app/sign-in/totp/action";
+import { STEP_UP_COOKIE } from "@/lib/twofa/cookie";
 
 const schema = z.object({
   code: z.string().trim().min(6).max(10),

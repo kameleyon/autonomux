@@ -10,8 +10,8 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-import { createServiceClient } from './client.js';
-import type { Database, Tables, TablesInsert } from './types.js';
+import { createServiceClient } from './client';
+import type { Database, Tables, TablesInsert } from './types';
 
 type Sb = SupabaseClient<Database>;
 

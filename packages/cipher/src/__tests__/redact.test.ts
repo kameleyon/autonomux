@@ -6,7 +6,7 @@ import {
   REDACTED,
   redactPii,
   redactString,
-} from "../redact.js";
+} from "../redact";
 
 describe("redactPii: field-name matching", () => {
   it("redacts known PII field at top level", () => {

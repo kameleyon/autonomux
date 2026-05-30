@@ -10,7 +10,7 @@ export {
     createServiceClient,
     createBrowserClient,
     type CookieAdapter,
-} from './client.js';
+} from './client';
 
 export type {
     Database,
@@ -45,7 +45,7 @@ export type {
     AgentMemoryEpisodeMetadata,
     MailroomRuleDsl,
     CompanionNudgeSchedule,
-} from './types.js';
+} from './types';
 
 export {
     listTenants,
@@ -53,16 +53,16 @@ export {
     writeAuditLog,
     verifyAuditChain,
     writeDailyAuditCheckpoint,
-} from './admin.js';
+} from './admin';
 
 export {
     extractJwtClaims,
     tryExtractJwtClaims,
     JwtMalformedError,
     type JwtClaims,
-} from './jwt.js';
+} from './jwt';
 
 export {
     logAuditEvent,
     type LogAuditEventArgs,
-} from './audit.js';
+} from './audit';

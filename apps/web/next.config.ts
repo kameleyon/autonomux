@@ -17,6 +17,20 @@ const config: NextConfig = {
     "@opentelemetry/resources",
     "@opentelemetry/semantic-conventions",
     "@autonomux/telemetry",
+    // Vercel build fix 2026-05-29: transitive deps of
+    // @opentelemetry/auto-instrumentations-node webpack can't bundle
+    // (require Node-only `net`/`tls`/`fs`/`stream`). Stay external.
+    "@grpc/grpc-js",
+    "@grpc/proto-loader",
+    "protobufjs",
+    "require-in-the-middle",
+    "import-in-the-middle",
+    "@opentelemetry/instrumentation",
+    "@opentelemetry/instrumentation-http",
+    "@opentelemetry/instrumentation-undici",
+    "@opentelemetry/instrumentation-ioredis",
+    "@opentelemetry/instrumentation-pg",
+    "@opentelemetry/instrumentation-pino",
   ],
 };
 

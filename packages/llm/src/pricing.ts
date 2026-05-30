@@ -10,7 +10,7 @@
  * usage roll-up relies on these numbers being current.
  */
 
-import type { ModelName, Provider, Usage } from "./types.js";
+import type { ModelName, Provider, Usage } from "./types";
 
 interface ProviderPricing {
   /** $ per 1M input tokens */

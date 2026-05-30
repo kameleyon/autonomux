@@ -15,8 +15,8 @@ import {
   LlmInvalidRequestError,
   LlmRateLimitError,
   LlmServerError,
-} from "../errors.js";
-import { computeCostUsd } from "../pricing.js";
+} from "../errors";
+import { computeCostUsd } from "../pricing";
 import type {
   CompleteRequest,
   CompleteResponse,
@@ -27,9 +27,9 @@ import type {
   StreamChunk,
   Tool,
   ToolUseBlock,
-} from "../types.js";
-import { withRetry } from "../util/retry.js";
-import type { AdapterCtx, LlmAdapter } from "./types.js";
+} from "../types";
+import { withRetry } from "../util/retry";
+import type { AdapterCtx, LlmAdapter } from "./types";
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /*  Constants                                                                  */

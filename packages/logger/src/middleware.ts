@@ -22,9 +22,12 @@
  * lazily resolve it via `globalThis` and skip silently if absent.
  */
 
-import { randomUUID } from "node:crypto";
-
 import type { Logger } from "pino";
+
+/* Vercel build fix 2026-05-29: replaced `node:crypto.randomUUID` with
+ * the Web Crypto `crypto.randomUUID()` (present in Node 19+ and the
+ * Edge runtime) so this module bundles cleanly for Next.js middleware. */
+const randomUUID: () => string = () => crypto.randomUUID();
 
 const REQUEST_ID_HEADER = "x-request-id";
 

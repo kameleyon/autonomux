@@ -11,19 +11,19 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createOpenRouterAdapter } from "../adapters/openrouter.js";
-import { createAnthropicAdapter } from "../adapters/anthropic.js";
-import type { AdapterCtx, LlmAdapter } from "../adapters/types.js";
-import { createLlmClient } from "../client.js";
+import { createOpenRouterAdapter } from "../adapters/openrouter";
+import { createAnthropicAdapter } from "../adapters/anthropic";
+import type { AdapterCtx, LlmAdapter } from "../adapters/types";
+import { createLlmClient } from "../client";
 import {
   LlmAuthError,
   LlmInvalidRequestError,
   LlmRateLimitError,
   LlmServerError,
-} from "../errors.js";
-import { PRICING, computeCostUsd } from "../pricing.js";
-import type { CompleteRequest, CompleteResponse } from "../types.js";
-import { TokenBudget } from "../util/budget.js";
+} from "../errors";
+import { PRICING, computeCostUsd } from "../pricing";
+import type { CompleteRequest, CompleteResponse } from "../types";
+import { TokenBudget } from "../util/budget";
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /*  Helpers — mock providers                                                   */

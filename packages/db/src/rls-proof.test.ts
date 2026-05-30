@@ -20,7 +20,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-import type { Database } from './types.js';
+import type { Database } from './types';
 
 const SHOULD_RUN =
     Boolean(process.env['SUPABASE_TEST_URL']) &&

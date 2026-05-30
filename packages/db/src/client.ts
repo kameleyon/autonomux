@@ -17,7 +17,7 @@ import {
 } from '@supabase/ssr';
 import { createClient as createSupabaseClient, type SupabaseClient } from '@supabase/supabase-js';
 
-import type { Database } from './types.js';
+import type { Database } from './types';
 
 // ---------------------------------------------------------------------------
 // Env access — never log these, never ship to the browser bundle other than

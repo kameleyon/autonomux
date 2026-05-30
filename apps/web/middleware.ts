@@ -26,10 +26,14 @@ import {
   createServerClient as createSSRServerClient,
   type CookieOptions,
 } from "@supabase/ssr";
+/* Edge-runtime import: pull only the Web Crypto module, never the
+ * @autonomux/auth barrel — the barrel transitively imports totp.ts
+ * which uses `node:crypto` and webpack can't externalize that for
+ * Edge. (Vercel build fix 2026-05-29) */
 import {
   TWO_FA_SESSION_COOKIE_NAME,
   verifyTwoFaSessionToken,
-} from "@autonomux/auth";
+} from "@autonomux/auth/two-fa-session";
 import type { Database } from "@autonomux/db/types";
 import { tryExtractJwtClaims } from "@autonomux/db/jwt";
 import {
@@ -180,7 +184,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     const cookieValue = request.cookies.get(TWO_FA_SESSION_COOKIE_NAME)?.value;
     const twoFaToken =
       secret.length >= 32
-        ? verifyTwoFaSessionToken(cookieValue, {
+        ? await verifyTwoFaSessionToken(cookieValue, {
             userId: user.id,
             secret,
           })

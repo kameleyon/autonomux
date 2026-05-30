@@ -11,16 +11,16 @@
 
 import type { Logger } from "pino";
 import { z } from "zod";
-import { createAnthropicAdapter } from "./adapters/anthropic.js";
-import { createOpenRouterAdapter } from "./adapters/openrouter.js";
-import type { AdapterCtx, LlmAdapter } from "./adapters/types.js";
-import { LlmInvalidRequestError } from "./errors.js";
+import { createAnthropicAdapter } from "./adapters/anthropic";
+import { createOpenRouterAdapter } from "./adapters/openrouter";
+import type { AdapterCtx, LlmAdapter } from "./adapters/types";
+import { LlmInvalidRequestError } from "./errors";
 import type {
   CompleteRequest,
   CompleteResponse,
   Provider,
   StreamChunk,
-} from "./types.js";
+} from "./types";
 
 export interface LlmClient {
   readonly provider: Provider;

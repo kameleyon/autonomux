@@ -19,7 +19,7 @@ import {
   type Span,
 } from "@opentelemetry/api";
 
-import { getTracer } from "./tracer.js";
+import { getTracer } from "./tracer";
 
 export type WithSpanOptions = {
   /** Tracer name (lib that's emitting the span). */

@@ -28,8 +28,8 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { createServiceClient } from "./client.js";
-import type { AuditActorKind, Database, Json, Tables } from "./types.js";
+import { createServiceClient } from "./client";
+import type { AuditActorKind, Database, Json, Tables } from "./types";
 
 export interface LogAuditEventArgs {
   /** Tenant the event belongs to. Null only for unauthenticated / system events. */

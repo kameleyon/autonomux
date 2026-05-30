@@ -6,22 +6,27 @@
  * for callers that want narrower imports.
  */
 
+/* Vercel build fix 2026-05-29: dropped `.js` extensions on relative
+ * imports. tsc resolves fine without them; webpack chokes on `./sdk.js`
+ * because the file is `sdk.ts` and the workspace package isn't pre-built
+ * (Vercel imports source directly via the workspace exports field). */
+
 export {
   initTelemetry,
   type InitTelemetryOptions,
   type TelemetryHandle,
-} from "./sdk.js";
+} from "./sdk";
 
-export { DEFAULT_TRACER_NAME, getTracer } from "./tracer.js";
+export { DEFAULT_TRACER_NAME, getTracer } from "./tracer";
 
 export {
   addAttributes,
   withSpan,
   type WithSpanOptions,
-} from "./spans.js";
+} from "./spans";
 
 export {
   traceLlmCall,
   type LlmResponseLike,
   type TraceLlmCallContext,
-} from "./llm.js";
+} from "./llm";

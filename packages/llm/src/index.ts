@@ -9,7 +9,7 @@ export {
   createLlmClient,
   type CreateLlmClientOpts,
   type LlmClient,
-} from "./client.js";
+} from "./client";
 
 export type {
   CompleteRequest,
@@ -27,7 +27,7 @@ export type {
   ToolUseBlock,
   TokenBudgetLike,
   Usage,
-} from "./types.js";
+} from "./types";
 
 export {
   LlmAuthError,
@@ -36,16 +36,16 @@ export {
   LlmInvalidRequestError,
   LlmRateLimitError,
   LlmServerError,
-} from "./errors.js";
+} from "./errors";
 
-export { PRICING, computeCostUsd } from "./pricing.js";
+export { PRICING, computeCostUsd } from "./pricing";
 
-export { TokenBudget, type TokenBudgetOpts } from "./util/budget.js";
+export { TokenBudget, type TokenBudgetOpts } from "./util/budget";
 
 export {
   ANTHROPIC_MODEL_MAP,
-} from "./adapters/anthropic.js";
+} from "./adapters/anthropic";
 
 export {
   OPENROUTER_MODEL_MAP,
-} from "./adapters/openrouter.js";
+} from "./adapters/openrouter";

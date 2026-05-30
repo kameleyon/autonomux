@@ -14,7 +14,7 @@ export type {
   FlagEvaluationReason,
   FlagEvaluator,
   EvaluateFlagArgs,
-} from "./types.js";
+} from "./types";
 
 export {
   flagEvaluator,
@@ -22,6 +22,6 @@ export {
   evaluateFlagWithReason,
   evaluateAllFlags,
   rolloutBucket,
-} from "./server.js";
+} from "./server";
 
-export { flagCache } from "./cache.js";
+export { flagCache } from "./cache";

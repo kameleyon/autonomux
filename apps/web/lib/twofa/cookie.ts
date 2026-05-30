@@ -192,3 +192,10 @@ export function decodeBackupDisplayCookie(
     BACKUP_DISPLAY_COOKIE_MAX_AGE * 1000,
   );
 }
+
+/**
+ * Step-up cookie name (was in app/sign-in/totp/action.ts; moved here so
+ * Server Action files only export async functions per Next 15 contract).
+ * Vercel build fix 2026-05-29.
+ */
+export const STEP_UP_COOKIE = "autonomux_step_up";

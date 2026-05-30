@@ -30,13 +30,13 @@ import {
   generateDek,
   unwrapDek,
   wrapDek,
-} from "./kms.js";
-import { open, seal, wipe } from "./sodium.js";
+} from "./kms";
+import { open, seal, wipe } from "./sodium";
 import {
   ENVELOPE_VERSION,
   type EncryptedEnvelope,
   type EnvelopeContext,
-} from "./types.js";
+} from "./types";
 import {
   bytesToUtf8,
   canonicalJson,
@@ -44,7 +44,7 @@ import {
   fromBase64,
   toBase64,
   utf8ToBytes,
-} from "./utils.js";
+} from "./utils";
 
 /** Zod schema for runtime validation of envelopes pulled from storage. */
 const envelopeSchema = z.object({

@@ -18,13 +18,13 @@ export {
   decrypt,
   decryptToString,
   encrypt,
-} from "./envelope.js";
+} from "./envelope";
 
 export {
   ENVELOPE_VERSION,
   type EncryptedEnvelope,
   type EnvelopeContext,
-} from "./types.js";
+} from "./types";
 
 export {
   __setKmsClientForTest,
@@ -32,7 +32,7 @@ export {
   getKmsClient,
   unwrapDek,
   wrapDek,
-} from "./kms.js";
+} from "./kms";
 
 export {
   open,
@@ -41,7 +41,7 @@ export {
   sodiumReady,
   wipe,
   type SealResult,
-} from "./sodium.js";
+} from "./sodium";
 
 export {
   PII_FIELD_NAMES,
@@ -50,7 +50,7 @@ export {
   REDACTED,
   redactPii,
   redactString,
-} from "./redact.js";
+} from "./redact";
 
 export {
   assertEnv,
@@ -63,4 +63,4 @@ export {
   toBase64,
   toBase64Url,
   utf8ToBytes,
-} from "./utils.js";
+} from "./utils";

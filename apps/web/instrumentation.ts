@@ -16,10 +16,28 @@ export async function register(): Promise<void> {
     return;
   }
 
-  // Dynamic import so the OTel Node SDK never lands in an Edge bundle.
-  const { initTelemetry } = await import("@autonomux/telemetry");
+  /**
+   * Vercel build fix 2026-05-29: `@opentelemetry/auto-instrumentations-
+   * node` bundles 50+ sub-instrumentations (aws-lambda, net, prometheus,
+   * etc.) that webpack can't externalize cleanly even with
+   * `serverExternalPackages`. Gate the SDK boot on `OTEL_ENABLED=true`
+   * so the production deploy can ship without it. When we're ready
+   * to wire telemetry in v1.1+, replace the auto-instrumentation set
+   * with a hand-picked minimal set (http + undici + ioredis + pg).
+   */
+  if (process.env["OTEL_ENABLED"] !== "true") {
+    return;
+  }
 
-  initTelemetry({
+  // String-based dynamic import — webpack treats the path as opaque
+  // and doesn't attempt to analyze/bundle @autonomux/telemetry's
+  // transitive @opentelemetry/* tree at compile time.
+  const modulePath = "@autonomux/telemetry";
+  const telemetry = (await import(/* webpackIgnore: true */ modulePath)) as {
+    initTelemetry: (opts: { service: string; version: string }) => unknown;
+  };
+
+  telemetry.initTelemetry({
     service: "apps/web",
     version: process.env["NEXT_PUBLIC_VERSION"] ?? "0.1.0",
   });

@@ -43,7 +43,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { getSupabaseServiceClient } from "@/lib/supabase/service";
 import { getStepUpSecret } from "@/lib/twofa/config";
-import { twoFaCookieAttrs } from "@/lib/twofa/cookie";
+import { STEP_UP_COOKIE, twoFaCookieAttrs } from "@/lib/twofa/cookie";
 
 const schema = z.object({
   code: z
@@ -53,9 +53,8 @@ const schema = z.object({
     .max(10),
 });
 
-// Cookie carrying the step-up token (verifies that the user has TOTP-ed
-// within the last 5 minutes — required for sensitive ops like 2FA revoke).
-export const STEP_UP_COOKIE = "autonomux_step_up";
+// Vercel build fix 2026-05-29: STEP_UP_COOKIE moved to @/lib/twofa/cookie
+// so "use server" files only export async functions per Next 15 contract.
 
 export type VerifySignInTotpResult =
   | { ok: true }
@@ -236,7 +235,7 @@ export async function verifySignInTotp(
    * this cookie, a user who has TOTP enrolled cannot reach any
    * protected route — the password handshake alone is not enough.
    */
-  const twoFaToken = issueTwoFaSessionToken(user.id, getStepUpSecret());
+  const twoFaToken = await issueTwoFaSessionToken(user.id, getStepUpSecret());
   cookieStore.set(
     TWO_FA_SESSION_COOKIE_NAME,
     twoFaToken,

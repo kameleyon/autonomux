@@ -21,7 +21,7 @@ export {
   type CreateLoggerOptions,
   type Logger,
   type Service,
-} from "./logger.js";
+} from "./logger";
 
 export {
   createNextRequestLogger,
@@ -29,11 +29,11 @@ export {
   REQUEST_ID_HEADER_NAME,
   type AccessLogInfo,
   type RequestContext,
-} from "./middleware.js";
+} from "./middleware";
 
 export {
   writeAuditEvent,
   type AuditActorKind,
   type AuditSupabaseClient,
   type WriteAuditEventInput,
-} from "./audit.js";
+} from "./audit";

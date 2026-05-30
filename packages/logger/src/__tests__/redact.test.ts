@@ -15,7 +15,7 @@ import { Writable } from "node:stream";
 import { describe, expect, it } from "vitest";
 import { pino } from "pino";
 
-import { REDACT_PATHS } from "../logger.js";
+import { REDACT_PATHS } from "../logger";
 
 const REDACT_CENSOR = "[REDACTED]";
 

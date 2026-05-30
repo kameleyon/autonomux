@@ -11,4 +11,4 @@ export {
   hashBackupCode,
   hashBackupCodes,
   verifyBackupCode,
-} from "./totp.js";
+} from "./totp";

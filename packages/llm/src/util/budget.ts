@@ -13,9 +13,9 @@
  * matches how we bill tenants on overage (one rate, one meter).
  */
 
-import { LlmBudgetExceededError } from "../errors.js";
-import { PRICING } from "../pricing.js";
-import type { ModelName, TokenBudgetLike } from "../types.js";
+import { LlmBudgetExceededError } from "../errors";
+import { PRICING } from "../pricing";
+import type { ModelName, TokenBudgetLike } from "../types";
 
 export interface TokenBudgetOpts {
   /** Tenant monthly cap, in Sonnet-equivalent input tokens. */

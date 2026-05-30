@@ -36,14 +36,14 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServiceClient } from "@autonomux/db/client";
 import type { Database } from "@autonomux/db/types";
 
-import { flagCache } from "./cache.js";
+import { flagCache } from "./cache";
 import type {
   EvaluateFlagArgs,
   FeatureFlag,
   FlagEvaluation,
   FlagEvaluationReason,
   FlagEvaluator,
-} from "./types.js";
+} from "./types";
 
 // ---------------------------------------------------------------------------
 // Snapshot loader — single batched read of every flag row.

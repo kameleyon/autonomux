@@ -15,7 +15,7 @@
  * Owner: [Lens + Forge]
  */
 
-import type { FeatureFlag } from "./types.js";
+import type { FeatureFlag } from "./types";
 
 interface CacheEntry {
   /** Snapshot keyed by flag key. */
