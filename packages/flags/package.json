@@ -1,0 +1,37 @@
+{
+  "name": "@autonomux/flags",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Autonomux — self-hosted feature flag evaluator. Roll-our-own minimum; GrowthBook-drop-in. Owned by [Lens + Forge].",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./server": "./src/server.ts",
+    "./client": "./src/client.ts",
+    "./types": "./src/types.ts",
+    "./cache": "./src/cache.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc",
+    "test": "echo '(no tests yet for @autonomux/flags)'",
+    "lint": "echo '(no lint configured for @autonomux/flags yet)'",
+    "clean": "rm -rf .turbo dist"
+  },
+  "dependencies": {
+    "@autonomux/db": "*",
+    "@supabase/supabase-js": "2.47.10"
+  },
+  "peerDependencies": {
+    "react": "^19"
+  },
+  "peerDependenciesMeta": {
+    "react": { "optional": true }
+  },
+  "devDependencies": {
+    "@types/node": "22.10.5",
+    "@types/react": "19.0.4",
+    "typescript": "5.8.2"
+  }
+}

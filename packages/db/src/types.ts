@@ -99,6 +99,16 @@ export type CompanionNudgeKind =
 
 export type AuditActorKind = 'user' | 'service' | 'admin' | 'system' | 'webhook';
 
+export type GdprRequestKind = 'export' | 'deletion';
+
+export type GdprRequestStatus =
+    | 'pending'
+    | 'processing'
+    | 'completed'
+    | 'failed'
+    | 'expired'
+    | 'cancelled';
+
 export type TwoFactorKind = 'totp' | 'webauthn';
 
 export type TwoFactorVerifyKind = 'totp' | 'backup_code' | 'webauthn';
@@ -818,6 +828,68 @@ export interface Database {
                     created_at?: string;
                 };
                 Update: Partial<Database['public']['Tables']['user_2fa_verify_attempts']['Insert']>;
+                Relationships: [];
+            };
+            feature_flags: {
+                Row: {
+                    key: string;
+                    description: string | null;
+                    enabled_globally: boolean;
+                    rollout_percentage: number;
+                    enabled_for_tenants: string[];
+                    disabled_for_tenants: string[];
+                } & Timestamps;
+                Insert: {
+                    key: string;
+                    description?: string | null;
+                    enabled_globally?: boolean;
+                    rollout_percentage?: number;
+                    enabled_for_tenants?: string[];
+                    disabled_for_tenants?: string[];
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: Partial<Database['public']['Tables']['feature_flags']['Insert']>;
+                Relationships: [];
+            };
+            gdpr_requests: {
+                Row: {
+                    id: string;
+                    tenant_id: string | null;
+                    user_id: string;
+                    kind: GdprRequestKind;
+                    status: GdprRequestStatus;
+                    admin_actor_user_id: string | null;
+                    bullmq_job_id: string | null;
+                    download_url: string | null;
+                    download_storage_path: string | null;
+                    failure_reason: string | null;
+                    requested_at: string;
+                    started_at: string | null;
+                    completed_at: string | null;
+                    expires_at: string | null;
+                    cancelled_at: string | null;
+                } & Timestamps;
+                Insert: {
+                    id?: string;
+                    tenant_id?: string | null;
+                    user_id: string;
+                    kind: GdprRequestKind;
+                    status?: GdprRequestStatus;
+                    admin_actor_user_id?: string | null;
+                    bullmq_job_id?: string | null;
+                    download_url?: string | null;
+                    download_storage_path?: string | null;
+                    failure_reason?: string | null;
+                    requested_at?: string;
+                    started_at?: string | null;
+                    completed_at?: string | null;
+                    expires_at?: string | null;
+                    cancelled_at?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: Partial<Database['public']['Tables']['gdpr_requests']['Insert']>;
                 Relationships: [];
             };
         };

@@ -25,6 +25,7 @@ import type { Logger } from "pino";
 import { withSpan } from "@autonomux/telemetry";
 
 import { acquireIdempotencyLock } from "../lib/redis.js";
+import { processGdprJob } from "./gdpr.js";
 
 // ---------------------------------------------------------------------------
 // Queue names (string-typed so they survive minification / lib boundaries)
@@ -40,6 +41,7 @@ export const QUEUE_NAMES = {
   briefing: "briefing",
   audit: "audit",
   cron: "cron",
+  gdpr: "gdpr",
 } as const;
 
 export type QueueName = (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES];
@@ -115,20 +117,34 @@ export type QueueRegistry = Readonly<Record<QueueName, QueueHandle>>;
 /**
  * Build the full registry. Returns one handle per queue.
  * Caller is responsible for `closeQueueRegistry(...)` on shutdown.
+ *
+ * Two-pass init: queue handles are created first (so each processor can
+ * reference its own QueueHandle — e.g. gdpr.deletion.soft enqueues a delayed
+ * gdpr.deletion.hard via the same queue). Then the registry object is frozen
+ * and returned.
  */
 export function createQueueRegistry(deps: QueueDeps): QueueRegistry {
+  // Forward-reference holder so each processor can resolve sibling queues
+  // (used by gdpr soft-delete → schedule delayed hard-delete on `gdpr`).
+  const registryRef: { current: QueueRegistry | null } = { current: null };
+
   const entries: Array<[QueueName, QueueHandle]> = (
     Object.values(QUEUE_NAMES) as QueueName[]
-  ).map((name) => [name, createQueueHandle(name, deps)]);
+  ).map((name) => [name, createQueueHandle(name, deps, registryRef)]);
 
   const registry = Object.fromEntries(entries) as Record<
     QueueName,
     QueueHandle
   >;
+  registryRef.current = registry;
   return registry;
 }
 
-function createQueueHandle(name: QueueName, deps: QueueDeps): QueueHandle {
+function createQueueHandle(
+  name: QueueName,
+  deps: QueueDeps,
+  registryRef: { current: QueueRegistry | null },
+): QueueHandle {
   const log = deps.logger.child({ component: "queue", queue: name });
 
   const queue = new Queue<BaseJobPayload, BaseJobResult>(name, {
@@ -149,7 +165,7 @@ function createQueueHandle(name: QueueName, deps: QueueDeps): QueueHandle {
       // job.data payloads are NOT added (may contain PII per PRD §8.2).
       return withSpan(
         `job.${name}`,
-        () => processStubJob(job, deps, name),
+        () => dispatchJob(job, deps, name, registryRef),
         {
           tracer: "@autonomux/worker",
           attributes: {
@@ -217,18 +233,17 @@ function createQueueHandle(name: QueueName, deps: QueueDeps): QueueHandle {
 }
 
 /**
- * Placeholder processor used by every queue until its real
- * sub-agent ships. Honest — labeled `stub`, not faked-success.
+ * Per-queue dispatcher. Routes to real processors when implemented,
+ * falls through to `processStubJob` otherwise.
  *
- * Guarantees:
- *   - idempotency lock via requestId
- *   - structured log entry
- *   - returns `BaseJobResult` so future processors are drop-in
+ * Idempotency lock is acquired at this layer (once per queueName) so each
+ * processor sees only the work it should actually do.
  */
-async function processStubJob(
+async function dispatchJob(
   job: Job<BaseJobPayload, BaseJobResult>,
   deps: QueueDeps,
   queueName: QueueName,
+  registryRef: { current: QueueRegistry | null },
 ): Promise<BaseJobResult> {
   const log = deps.logger.child({
     component: "processor",
@@ -239,18 +254,15 @@ async function processStubJob(
     tenantId: job.data.tenantId,
   });
 
-  // Jury F-Trace-02 fix 2026-05-29: bypass idempotency for system-tenant
-  // recurring jobs (heartbeat, daily checkpoint, etc.) — they intentionally
-  // re-fire on a fixed cadence with the same requestId, so the 24h dedup
-  // window would silence them after the first run. Real tenant jobs still
-  // get full idempotency protection.
+  // Idempotency lock — same as the legacy stub path. Bypassed for system
+  // tenant (heartbeat/cron) and for the gdpr.deletion.hard re-run (the
+  // delayed job intentionally fires once, no dedup needed past the lock).
   if (job.data.tenantId !== "system") {
     const acquired = await acquireIdempotencyLock(
       deps.queueConnection,
       job.data.requestId,
       IDEMPOTENCY_TTL_SECONDS,
     );
-
     if (!acquired) {
       log.warn("duplicate requestId — deduped");
       return {
@@ -259,6 +271,14 @@ async function processStubJob(
         note: "requestId already processed within idempotency TTL",
       };
     }
+  }
+
+  if (queueName === "gdpr") {
+    const reg = registryRef.current;
+    if (reg === null) {
+      throw new Error("[queues] registry not yet initialized");
+    }
+    return processGdprJob(job, log, reg.gdpr);
   }
 
   log.info("received job — no processor yet (Phase 1.0-A4 stub)");

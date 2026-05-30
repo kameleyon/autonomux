@@ -6,6 +6,7 @@ import "@autonomux/ui/Dialog.css";
 import "./globals.css";
 
 import { CookieBannerSlot } from "@/components/CookieBannerSlot";
+import { SiteFooter } from "@/components/SiteFooter";
 
 export const metadata: Metadata = {
   title: {
@@ -57,6 +58,7 @@ export default function RootLayout({
           Skip to content
         </a>
         {children}
+        <SiteFooter />
         <CookieBannerSlot />
       </body>
     </html>

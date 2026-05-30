@@ -13,10 +13,18 @@
     "clean": "rm -rf .next .turbo"
   },
   "dependencies": {
+    "@autonomux/db": "*",
+    "@autonomux/flags": "*",
     "@autonomux/logger": "*",
+    "@autonomux/ui": "*",
+    "@supabase/supabase-js": "2.47.10",
+    "bullmq": "5.34.10",
+    "ioredis": "5.4.2",
     "next": "15.5.18",
     "react": "19.0.0",
     "react-dom": "19.0.0",
+    "server-only": "0.0.1",
+    "zod": "3.24.1",
     "@types/node": "22.10.5",
     "@types/react": "19.0.4",
     "@types/react-dom": "19.0.2",

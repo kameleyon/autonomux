@@ -31,6 +31,8 @@ export type {
     BillSource,
     CompanionNudgeKind,
     AuditActorKind,
+    GdprRequestKind,
+    GdprRequestStatus,
     TwoFactorKind,
     TwoFactorVerifyKind,
     WebAuthnDeviceType,
