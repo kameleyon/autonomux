@@ -76,29 +76,52 @@ export async function requireAuth(
 }
 
 /**
- * Pull tenant_id off the live session. Throws if the user is not signed in,
- * or if the access token does not yet carry a tenant_id (signup happened
- * but tenants row failed — operator must reconcile).
+ * Pull tenant_id off the live session.
+ *
+ * Resolution order:
+ *   1. JWT claim (`tenant_id` top-level, or in `app_metadata`). This is
+ *      the hot path — set by `public.custom_access_token_hook` and
+ *      available on every request without a DB roundtrip.
+ *   2. Fallback: SELECT from `tenant_members` for this user. Used when
+ *      the JWT was issued BEFORE the access-token hook was wired (the
+ *      old session is still valid; we just don't have the claim yet).
+ *      Self-heals: the next auto-refresh of the token will re-run the
+ *      hook and pick up the claim, eliminating the fallback for that
+ *      user from then on.
+ *
+ * Throws only if the user has no `tenant_members` row at all (signup
+ * truly failed — operator must reconcile).
  */
 export async function requireTenantId(
   supabase: SupabaseClient<Database>,
 ): Promise<string> {
   // Ensure session is real (server-validated).
-  await requireAuth(supabase);
+  const user = await requireAuth(supabase);
 
   const { data, error } = await supabase.auth.getSession();
   if (error !== null) {
     throw new AuthRequiredError(error.message);
   }
   const accessToken = data.session?.access_token;
-  if (accessToken === undefined || accessToken.length === 0) {
-    throw new AuthRequiredError();
+  if (accessToken !== undefined && accessToken.length > 0) {
+    const claims = tryExtractJwtClaims(accessToken);
+    if (claims !== null) return claims.tenant_id;
   }
-  const claims = tryExtractJwtClaims(accessToken);
-  if (claims === null) {
+
+  // Fallback — claim not in JWT (likely stale session from before the
+  // access-token hook went live). Look it up via tenant_members.
+  const { data: membership, error: lookupError } = await supabase
+    .from("tenant_members")
+    .select("tenant_id")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (lookupError !== null || membership === null) {
     throw new TenantMissingError();
   }
-  return claims.tenant_id;
+  return membership.tenant_id;
 }
 
 /**
