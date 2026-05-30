@@ -39,7 +39,8 @@ let serviceClient: SupabaseClient<Database> | null = null;
 
 export function getSupabaseServiceClient(): SupabaseClient<Database> {
   if (serviceClient !== null) return serviceClient;
-  const url = requireEnv("NEXT_PUBLIC_SUPABASE_URL");
+  /* Same trailing-slash defense as ./server.ts — see comment there. */
+  const url = requireEnv("NEXT_PUBLIC_SUPABASE_URL").replace(/\/+$/, "");
   const serviceRoleKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
 
   serviceClient = createSupabaseClient<Database>(url, serviceRoleKey, {

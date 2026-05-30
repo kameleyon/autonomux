@@ -42,7 +42,12 @@ function requireEnv(name: string): string {
  */
 export async function createClient(): Promise<SupabaseClient<Database>> {
   const cookieStore = await cookies();
-  const url = requireEnv("NEXT_PUBLIC_SUPABASE_URL");
+  /* Strip any trailing slash from the Supabase URL — operators sometimes
+   * paste `https://<ref>.supabase.co/` into Vercel which makes the SDK
+   * construct `https://<ref>.supabase.co//auth/v1/signup` (double slash),
+   * gotrue then rejects with "Invalid path specified in request URL".
+   * 2026-05-30. */
+  const url = requireEnv("NEXT_PUBLIC_SUPABASE_URL").replace(/\/+$/, "");
   const anonKey = requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
 
   return createSSRServerClient<Database>(url, anonKey, {
