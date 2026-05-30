@@ -8,6 +8,22 @@ import "./globals.css";
 import { CookieBannerSlot } from "@/components/CookieBannerSlot";
 import { SiteFooter } from "@/components/SiteFooter";
 
+/* Defensive: NEXT_PUBLIC_SITE_URL must be a fully-qualified URL with scheme.
+ * If an operator pastes the bare host (no https://) into Vercel, `new URL()`
+ * throws TypeError: Invalid URL at SSR time and 500s every route. Fall back
+ * to the canonical host on any parse failure. Vercel deploy hardening
+ * 2026-05-30. */
+function resolveMetadataBase(): URL {
+  const raw = process.env["NEXT_PUBLIC_SITE_URL"];
+  const fallback = "https://autonomux.io";
+  if (raw === undefined || raw.length === 0) return new URL(fallback);
+  try {
+    return new URL(raw);
+  } catch {
+    return new URL(fallback);
+  }
+}
+
 export const metadata: Metadata = {
   title: {
     default: "Autonomux — your AlterEgo",
@@ -15,9 +31,7 @@ export const metadata: Metadata = {
   },
   description:
     "Your AlterEgo runs your inbox, your calendar, your money, and your writing — so you can run the rest.",
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://autonomux.io",
-  ),
+  metadataBase: resolveMetadataBase(),
   icons: {
     icon: "/logo.png",
   },
