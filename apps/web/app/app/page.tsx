@@ -76,8 +76,9 @@ export default async function AppHomePage(): Promise<React.ReactElement> {
           fontSize: "var(--fs-mono-meta)",
           letterSpacing: "0.25em",
           textTransform: "uppercase",
-          color: "var(--brand-orange)",
+          color: "rgba(255, 250, 245, 0.92)",
           marginBottom: "var(--sp-12)",
+          textShadow: "0 1px 2px rgba(0,0,0,0.35)",
         }}
       >
         Signed in &middot; {user.email}
@@ -86,16 +87,19 @@ export default async function AppHomePage(): Promise<React.ReactElement> {
         style={{
           fontSize: "var(--fs-display-m)",
           marginBottom: "var(--sp-24)",
+          color: "rgba(255, 250, 245, 0.98)",
+          textShadow: "0 1px 2px rgba(0,0,0,0.4)",
         }}
       >
-        Your <em>AlterEgo</em> is being assembled.
+        Your AlterEgo is being assembled.
       </h1>
       <p
         style={{
           fontSize: "var(--fs-body-lg)",
-          color: "var(--ink-soft)",
+          color: "rgba(255, 245, 235, 0.88)",
           marginBottom: "var(--sp-40)",
           maxWidth: "640px",
+          textShadow: "0 1px 2px rgba(0,0,0,0.3)",
         }}
       >
         Phase 1.0 foundation is live. The orchestrator + sub-agents ship in
@@ -117,14 +121,13 @@ export default async function AppHomePage(): Promise<React.ReactElement> {
               style={{
                 padding: "var(--sp-24)",
                 height: "100%",
-                opacity: isLive ? 1 : 0.6,
               }}
             >
               <h2
                 style={{
                   fontSize: "var(--fs-h-step)",
                   marginBottom: "var(--sp-8)",
-                  color: isLive ? "var(--ink)" : "var(--muted)",
+                  color: "var(--ink)",
                 }}
               >
                 {c.title}
@@ -146,10 +149,11 @@ export default async function AppHomePage(): Promise<React.ReactElement> {
                     fontSize: "var(--fs-mono-meta)",
                     letterSpacing: "0.18em",
                     textTransform: "uppercase",
-                    color: "var(--brand-orange)",
+                    color: "var(--brand-red)",
+                    fontWeight: 600,
                   }}
                 >
-                  Sprint D
+                  Coming · Sprint D
                 </p>
               )}
             </div>
