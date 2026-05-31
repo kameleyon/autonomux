@@ -20,38 +20,39 @@
   color: var(--brand-cream);
 }
 
-/* The blaze — deeper, more saturated, locked to viewport. */
+/* The blaze — red→orange only, deeper, saturated, locked to viewport.
+ * No gold (yellow reads as "brown" when overlaid on the burgundy base). */
 .app-shell::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -2;
   background:
-    /* gold glow top-left (still a bright accent) */
+    /* bright orange glow top-left */
     radial-gradient(
       ellipse 70% 55% at 5% 0%,
-      rgba(var(--brand-gold-rgb), 0.55) 0%,
-      transparent 55%
+      rgba(var(--brand-orange-rgb), 0.75) 0%,
+      transparent 60%
     ),
-    /* ember middle — heavy red-orange */
+    /* ember middle — heavy orange-red */
     radial-gradient(
       ellipse 90% 80% at 50% 55%,
-      rgba(var(--brand-orange-rgb), 0.85) 0%,
-      transparent 70%
+      rgba(var(--brand-orange-rgb), 0.7) 0%,
+      transparent 72%
     ),
-    /* burgundy floor */
+    /* deep red floor bottom-right */
     radial-gradient(
       ellipse 100% 70% at 70% 100%,
       rgba(var(--brand-red-rgb), 0.95) 0%,
       transparent 75%
     ),
-    /* solid dark base so corners stay rich */
+    /* solid red→orange→red base */
     linear-gradient(
-      150deg,
-      #2c0a04 0%,
-      #5a1408 35%,
-      #7a2308 60%,
-      #4d0f06 100%
+      135deg,
+      #c43811 0%,
+      #b02810 28%,
+      #8a1a08 60%,
+      #5a0e06 100%
     );
   background-attachment: fixed;
   pointer-events: none;
