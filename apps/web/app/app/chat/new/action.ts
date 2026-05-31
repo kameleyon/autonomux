@@ -21,27 +21,34 @@ import { redirect } from "next/navigation";
 import { childLogger } from "@/lib/logger";
 import { requireAuth, requireTenantId } from "@/lib/auth-helpers";
 import { createClient } from "@/lib/supabase/server";
+import { getSupabaseServiceClient } from "@/lib/supabase/service";
 
 const DEFAULT_TITLE = "New conversation";
 
 export async function createThread(): Promise<void> {
   const log = childLogger({ component: "chat.action.createThread" });
 
-  const supabase = await createClient();
-  const user = await requireAuth(supabase);
-  /* If the user's JWT was issued before the access-token hook was wired,
-   * `auth.jwt() ->> 'tenant_id'` is NULL and RLS rejects the INSERT below
-   * even though we know the tenant via the DB fallback. Forcing a session
-   * refresh re-runs the hook and stamps the claim onto the new token. */
-  await supabase.auth.refreshSession();
-  const tenantId = await requireTenantId(supabase);
+  /* Two clients, two purposes:
+   *  - `userClient` carries the user's JWT and is the gate for AuthN
+   *    (requireAuth proves they're signed in + email verified).
+   *  - `serviceClient` bypasses RLS for the INSERT. We need this because
+   *    `requireTenantId` has a DB fallback (handles users whose JWT was
+   *    issued before the access-token hook was wired), but the RLS
+   *    policy on chat_threads checks `auth.jwt() ->> 'tenant_id'`
+   *    directly — the fallback can't influence what the policy sees.
+   *
+   * Auth invariant: we verify tenant ownership server-side via
+   * `tenant_members` (that's what requireTenantId reads in the fallback)
+   * BEFORE writing. The user cannot influence which tenant the row
+   * belongs to. RLS is bypassed for the WRITE only; reads remain
+   * RLS-gated via the user client. */
+  const userClient = await createClient();
+  const user = await requireAuth(userClient);
+  const tenantId = await requireTenantId(userClient);
 
-  // `chat_threads` is added by migration 0009 (Cluster A). Until the
-  // generated `Database` type is republished we use an untyped accessor
-  // here — the RLS policy on the table is the source of truth for
-  // tenant scoping, not the TS shape.
+  const service = getSupabaseServiceClient();
   const insert = await (
-    supabase as unknown as {
+    service as unknown as {
       from: (t: string) => {
         insert: (row: Record<string, unknown>) => {
           select: (cols: string) => {
@@ -69,8 +76,6 @@ export async function createThread(): Promise<void> {
       { err: insert.error, user_id: user.id, tenant_id: tenantId },
       "createThread insert failed",
     );
-    // Send the user back to /app/chat with an error query — the page can
-    // surface it via the empty state if the list is otherwise empty.
     redirect("/app/chat?err=create_failed");
   }
 

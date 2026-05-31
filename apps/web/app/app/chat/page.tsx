@@ -22,6 +22,7 @@ import { redirect } from "next/navigation";
 
 import { requireAuth, requireTenantId } from "@/lib/auth-helpers";
 import { createClient } from "@/lib/supabase/server";
+import { getSupabaseServiceClient } from "@/lib/supabase/service";
 
 import { createThread } from "./new/action";
 import type { ChatThreadRow } from "@/lib/chat/types";
@@ -39,9 +40,14 @@ export default async function ChatIndexPage(props: {
   const tenantId = await requireTenantId(supabase);
   const searchParams = await props.searchParams;
 
-  // Untyped accessor — chat_threads lands in migration 0009 (Cluster A).
+  /* Service-role SELECT with explicit tenant_id predicate — needed
+   * because users whose JWT was issued before the access-token hook
+   * went live cannot satisfy the RLS `current_tenant_id()` check.
+   * The `eq("tenant_id", tenantId)` filter below IS the security
+   * boundary; tenantId came from the verified auth path above. */
+  const service = getSupabaseServiceClient();
   const { data } = await (
-    supabase as unknown as {
+    service as unknown as {
       from: (t: string) => {
         select: (cols: string) => {
           eq: (

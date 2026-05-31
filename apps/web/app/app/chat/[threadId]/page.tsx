@@ -17,6 +17,7 @@ import { notFound } from "next/navigation";
 
 import { requireAuth, requireTenantId } from "@/lib/auth-helpers";
 import { createClient } from "@/lib/supabase/server";
+import { getSupabaseServiceClient } from "@/lib/supabase/service";
 
 import { ThreadList } from "@/components/chat/ThreadList";
 import { ChatStream } from "@/components/chat/ChatStream";
@@ -40,22 +41,23 @@ export default async function ChatThreadPage(props: {
   await requireAuth(supabase);
   const tenantId = await requireTenantId(supabase);
 
-  // Untyped accessors — chat_threads + chat_messages ship in migration
-  // 0009 (Cluster A). The RLS policies on both tables enforce tenant
-  // scoping; we just have to honour the row absence as a 404.
+  /* Service-role reads with explicit tenant_id predicates — RLS denies
+   * everything for users whose JWT lacks the tenant_id claim (issued
+   * pre-hook). tenantId is verified server-side via requireTenantId
+   * which uses the tenant_members fallback. */
+  const service = getSupabaseServiceClient();
 
   const threadRes = await (
-    supabase as unknown as {
+    service as unknown as {
       from: (t: string) => {
         select: (cols: string) => {
-          eq: (
-            col: string,
-            v: string,
-          ) => {
-            maybeSingle: () => Promise<{
-              data: ChatThreadRow | null;
-              error: { message: string } | null;
-            }>;
+          eq: (col: string, v: string) => {
+            eq: (col: string, v: string) => {
+              maybeSingle: () => Promise<{
+                data: ChatThreadRow | null;
+                error: { message: string } | null;
+              }>;
+            };
           };
         };
       };
@@ -66,6 +68,7 @@ export default async function ChatThreadPage(props: {
       "id,tenant_id,user_id,title,created_at,updated_at,last_message_at",
     )
     .eq("id", threadId)
+    .eq("tenant_id", tenantId)
     .maybeSingle();
 
   if (threadRes.error !== null || threadRes.data === null) {
@@ -78,7 +81,7 @@ export default async function ChatThreadPage(props: {
   // overlap.
   const [allThreadsRes, messagesRes] = await Promise.all([
     (
-      supabase as unknown as {
+      service as unknown as {
         from: (t: string) => {
           select: (cols: string) => {
             eq: (
@@ -107,7 +110,7 @@ export default async function ChatThreadPage(props: {
       .order("last_message_at", { ascending: false, nullsFirst: false })
       .limit(50),
     (
-      supabase as unknown as {
+      service as unknown as {
         from: (t: string) => {
           select: (cols: string) => {
             eq: (

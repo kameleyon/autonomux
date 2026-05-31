@@ -29,6 +29,7 @@ import { NextRequest } from "next/server";
 import { childLogger } from "@/lib/logger";
 import { requireAuth, requireTenantId } from "@/lib/auth-helpers";
 import { createClient } from "@/lib/supabase/server";
+import { getSupabaseServiceClient } from "@/lib/supabase/service";
 import { buildAlterEgoRuntime } from "@/lib/orchestrator/factory";
 
 import type { OrchestratorEvent } from "@autonomux/orchestrator";
@@ -113,22 +114,26 @@ export async function POST(request: NextRequest): Promise<Response> {
     });
   }
 
-  // Verify thread belongs to tenant (RLS will return no row otherwise).
-  // `chat_threads` is added by migration 0009 (Cluster A) — typed access
-  // would require the regenerated Database type, so we use an untyped
-  // accessor here.
+  /* Writes + thread-ownership check use the service-role client because
+   * the user's JWT may have been issued before the access-token hook
+   * fired (tenant_id claim absent → RLS denies everything). We've already
+   * verified the user's tenant_id via `requireTenantId` which falls back
+   * to a `tenant_members` lookup, so it's safe to bypass RLS as long as
+   * every query carries an explicit `tenant_id` predicate. */
+  const service = getSupabaseServiceClient();
+
+  // Verify thread belongs to tenant (explicit predicate, RLS-bypassed).
   const threadRes = await (
-    supabase as unknown as {
+    service as unknown as {
       from: (t: string) => {
         select: (cols: string) => {
-          eq: (
-            col: string,
-            v: string,
-          ) => {
-            maybeSingle: () => Promise<{
-              data: { id: string } | null;
-              error: { message: string } | null;
-            }>;
+          eq: (col: string, v: string) => {
+            eq: (col: string, v: string) => {
+              maybeSingle: () => Promise<{
+                data: { id: string } | null;
+                error: { message: string } | null;
+              }>;
+            };
           };
         };
       };
@@ -137,6 +142,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     .from("chat_threads")
     .select("id")
     .eq("id", body.threadId)
+    .eq("tenant_id", tenantId)
     .maybeSingle();
 
   if (threadRes.error !== null || threadRes.data === null) {
@@ -151,7 +157,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     { type: "text", text: body.userMessage },
   ];
   const insertUser = await (
-    supabase as unknown as {
+    service as unknown as {
       from: (t: string) => {
         insert: (row: Record<string, unknown>) => Promise<{
           error: { message: string } | null;
@@ -179,25 +185,28 @@ export async function POST(request: NextRequest): Promise<Response> {
 
   // Touch last_message_at so the thread list re-sorts.
   await (
-    supabase as unknown as {
+    service as unknown as {
       from: (t: string) => {
         update: (row: Record<string, unknown>) => {
-          eq: (
-            col: string,
-            v: string,
-          ) => Promise<{ error: { message: string } | null }>;
+          eq: (col: string, v: string) => {
+            eq: (
+              col: string,
+              v: string,
+            ) => Promise<{ error: { message: string } | null }>;
+          };
         };
       };
     }
   )
     .from("chat_threads")
     .update({ last_message_at: new Date().toISOString() })
-    .eq("id", body.threadId);
+    .eq("id", body.threadId)
+    .eq("tenant_id", tenantId);
 
   // Load the last 50 messages of this thread to pass as conversation
   // context (we just persisted the new user turn, so it's included).
   const historyRes = await (
-    supabase as unknown as {
+    service as unknown as {
       from: (t: string) => {
         select: (cols: string) => {
           eq: (
@@ -353,7 +362,10 @@ async function finalisePersistence(args: FinaliseArgs): Promise<void> {
   // Nothing streamed and nothing to persist — skip the insert.
   if (assistantText.length === 0 && subAgentBlocks.length === 0) return;
 
-  const supabase = await createClient();
+  // Service-role write — same rationale as the route's main body
+  // (user JWT may lack tenant_id claim; we've already verified the
+  // tenant boundary above).
+  const service = getSupabaseServiceClient();
   const blocks: StoredContentBlock[] = [];
   if (assistantText.length > 0) {
     blocks.push({ type: "text", text: assistantText });
@@ -361,7 +373,7 @@ async function finalisePersistence(args: FinaliseArgs): Promise<void> {
   for (const sb of subAgentBlocks) blocks.push(sb);
 
   const insertRes = await (
-    supabase as unknown as {
+    service as unknown as {
       from: (t: string) => {
         insert: (row: Record<string, unknown>) => Promise<{
           error: { message: string } | null;
@@ -384,12 +396,10 @@ async function finalisePersistence(args: FinaliseArgs): Promise<void> {
   }
 
   if (cancelled) {
-    // Mark the latest agent_run for this thread as cancelled. The
-    // orchestrator persists `agent_runs` rows (Cluster A); we issue a
-    // best-effort UPDATE here keyed by thread + status='running'. If
-    // Cluster A hasn't shipped yet this is a no-op (RLS returns no rows).
+    // Mark the latest agent_run for this thread as cancelled — service-role
+    // write; explicit tenant filter is the security boundary.
     const cancelRes = await (
-      supabase as unknown as {
+      service as unknown as {
         from: (t: string) => {
           update: (row: Record<string, unknown>) => {
             eq: (
