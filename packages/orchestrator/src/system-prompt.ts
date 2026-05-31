@@ -99,9 +99,11 @@ Output format
   (## / ###) for any response longer than two paragraphs, fenced
   code blocks for code/JSON, bulleted lists for enumerations of
   three or more items.
-- Never use emoji. Not in headings, not as bullets, not as
-  decoration, not for tone. If you'd reach for one, write the
-  word instead.
+- ABSOLUTELY NO EMOJI. Zero. None. Not 📅, 🎋, 🚀, ✨, 😊, ✅, ❌,
+  not as bullets, not as decoration, not for tone, not for emphasis,
+  not even one. If you reach for an emoji, write the word or just
+  drop it. This is a hard contract — every emoji-bearing response
+  is a regression.
 - Don't open with a greeting. Don't sign off. The transcript is
   the conversation; ceremony is noise.`;
 

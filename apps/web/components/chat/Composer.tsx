@@ -79,8 +79,11 @@ export function Composer({
   useEffect(() => {
     const ta = textareaRef.current;
     if (ta === null) return;
+    // Start at 3 lines, grow to 9 lines max. Scrollbar shows up only when
+    // content exceeds the cap (overflow-y: auto + a "polite" scrollbar
+    // style applied via the className below).
     ta.style.height = "auto";
-    ta.style.height = `${Math.min(ta.scrollHeight, 240)}px`;
+    ta.style.height = `${Math.min(Math.max(ta.scrollHeight, 84), 220)}px`;
   }, [value]);
 
   const wasDisabledRef = useRef(disabled);
@@ -281,6 +284,7 @@ export function Composer({
       <textarea
         id="chat-composer-input"
         ref={textareaRef}
+        className="composer-textarea"
         value={value}
         onChange={(e) => setValue(e.target.value.slice(0, MAX_CHARS))}
         onKeyDown={(e) => {
@@ -290,7 +294,7 @@ export function Composer({
           }
         }}
         onPaste={handlePaste}
-        rows={1}
+        rows={3}
         placeholder={
           disabled
             ? "Streaming response…"
@@ -301,8 +305,8 @@ export function Composer({
         aria-describedby="chat-composer-hint"
         style={{
           width: "100%",
-          minHeight: "44px",
-          maxHeight: "240px",
+          minHeight: "84px",
+          maxHeight: "220px",
           resize: "none",
           padding: "var(--sp-10) var(--sp-12)",
           borderRadius: "var(--r-md)",
@@ -310,9 +314,10 @@ export function Composer({
           background: "var(--brand-white)",
           color: "var(--ink)",
           fontFamily: "Inter, system-ui, sans-serif",
-          fontSize: "var(--fs-body)",
+          fontSize: "var(--fs-body-sm)",
           lineHeight: "var(--lh-body)",
           outline: "none",
+          overflowY: "auto",
         }}
       />
 

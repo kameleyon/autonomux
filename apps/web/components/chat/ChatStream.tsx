@@ -54,6 +54,8 @@ interface UiMessage {
   blocks: StoredContentBlock[];
   /** Tracks in-flight sub-agent invocations awaiting their result event. */
   pendingSubAgents: PendingSubAgent[];
+  /** Epoch ms when this turn started — drives the timestamp next to the role label. */
+  createdAt: number;
 }
 
 interface PendingSubAgent {
@@ -68,6 +70,7 @@ function fromHistory(row: ChatMessageRow): UiMessage | null {
     role: row.role,
     blocks: Array.isArray(row.content_blocks) ? row.content_blocks : [],
     pendingSubAgents: [],
+    createdAt: new Date(row.created_at).getTime(),
   };
 }
 
@@ -165,17 +168,20 @@ export function ChatStream({
         const userText = textParts.join("");
         if (userText.length === 0) return;
 
+        const now = Date.now();
         const userMsg: UiMessage = {
-          clientId: `user-${Date.now()}`,
+          clientId: `user-${now}`,
           role: "user",
           blocks: [{ type: "text", text: userText }],
           pendingSubAgents: [],
+          createdAt: now,
         };
         const assistantMsg: UiMessage = {
-          clientId: `assistant-${Date.now()}`,
+          clientId: `assistant-${now}`,
           role: "assistant",
           blocks: [{ type: "text", text: "" }],
           pendingSubAgents: [],
+          createdAt: now,
         };
 
         setMessages((prev) => [...prev, userMsg, assistantMsg]);
@@ -241,7 +247,26 @@ export function ChatStream({
         {messages.length === 0 ? (
           <EmptyConversationHint />
         ) : (
-          messages.map((m) => <MessageBubble key={m.clientId} message={m} />)
+          messages.map((m) => {
+            // If this is an assistant message with no text yet AND no
+            // sub-agents in flight, render a standalone "thinking" indicator
+            // INSTEAD of an empty bubble.
+            const hasText = m.blocks.some(
+              (b) => b.type === "text" && b.text.length > 0,
+            );
+            const hasResults = m.blocks.some(
+              (b) => b.type === "sub_agent_result",
+            );
+            if (
+              m.role === "assistant" &&
+              !hasText &&
+              !hasResults &&
+              m.pendingSubAgents.length === 0
+            ) {
+              return <ThinkingIndicator key={m.clientId} createdAt={m.createdAt} />;
+            }
+            return <MessageBubble key={m.clientId} message={m} />;
+          })
         )}
       </div>
 
@@ -375,7 +400,7 @@ function MessageBubble({ message }: { message: UiMessage }): React.ReactElement 
         }
         style={{
           maxWidth: "min(720px, 95%)",
-          padding: "var(--sp-12) var(--sp-16)",
+          padding: "var(--sp-10) var(--sp-14)",
           borderRadius: "var(--r-xl)",
           whiteSpace: "pre-wrap",
           wordBreak: "break-word",
@@ -383,15 +408,29 @@ function MessageBubble({ message }: { message: UiMessage }): React.ReactElement 
       >
         <div
           style={{
+            display: "flex",
+            alignItems: "baseline",
+            gap: "var(--sp-8)",
             fontFamily: "DM Mono, monospace",
             fontSize: "var(--fs-mono-meta)",
-            color: isUser ? "var(--brand-orange)" : "var(--muted)",
             letterSpacing: "0.18em",
             textTransform: "uppercase",
             marginBottom: "var(--sp-6)",
           }}
         >
-          {isUser ? "You" : "AlterEgo"}
+          <span style={{ color: isUser ? "var(--brand-orange)" : "var(--muted)" }}>
+            {isUser ? "You" : "AlterEgo"}
+          </span>
+          <span
+            style={{
+              color: "var(--muted)",
+              letterSpacing: "0.06em",
+              fontSize: "calc(var(--fs-mono-meta) * 0.92)",
+              opacity: 0.7,
+            }}
+          >
+            {formatTime(message.createdAt)}
+          </span>
         </div>
         {message.blocks.map((b, idx) =>
           b.type === "text" ? (
@@ -406,18 +445,7 @@ function MessageBubble({ message }: { message: UiMessage }): React.ReactElement 
             >
               {isUser ? (
                 <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{b.text}</p>
-              ) : b.text.length === 0 &&
-                idx === message.blocks.length - 1 &&
-                message.pendingSubAgents.length === 0 ? (
-                <span
-                  className="typing-dots"
-                  aria-label="AlterEgo is thinking"
-                >
-                  <span />
-                  <span />
-                  <span />
-                </span>
-              ) : (
+              ) : b.text.length === 0 ? null : (
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={{
@@ -502,6 +530,65 @@ function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`;
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(0)} KB`;
   return `${(n / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function formatTime(ms: number): string {
+  const d = new Date(ms);
+  return d.toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+/** Thinking indicator — sits where the bubble WILL be, no bubble chrome. */
+function ThinkingIndicator({
+  createdAt,
+}: {
+  createdAt: number;
+}): React.ReactElement {
+  return (
+    <div
+      className="msg-anim"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "var(--sp-10)",
+        paddingLeft: "var(--sp-4)",
+      }}
+    >
+      <span
+        style={{
+          fontFamily: "DM Mono, monospace",
+          fontSize: "var(--fs-mono-meta)",
+          letterSpacing: "0.18em",
+          textTransform: "uppercase",
+          color: "rgba(255, 250, 245, 0.95)",
+          textShadow: "0 1px 2px rgba(0,0,0,0.35)",
+        }}
+      >
+        AlterEgo
+      </span>
+      <span
+        style={{
+          fontFamily: "DM Mono, monospace",
+          fontSize: "calc(var(--fs-mono-meta) * 0.92)",
+          color: "rgba(255, 245, 235, 0.7)",
+          letterSpacing: "0.06em",
+          textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+        }}
+      >
+        {formatTime(createdAt)}
+      </span>
+      <span
+        className="typing-dots typing-dots--on-wash"
+        aria-label="AlterEgo is thinking"
+      >
+        <span />
+        <span />
+        <span />
+      </span>
+    </div>
+  );
 }
 
 function EmptyConversationHint(): React.ReactElement {
