@@ -91,7 +91,7 @@ export default async function AppHomePage(): Promise<React.ReactElement> {
           textShadow: "0 1px 2px rgba(0,0,0,0.4)",
         }}
       >
-        Your AlterEgo is being assembled.
+        Your <em style={{ fontStyle: "italic" }}>AlterEgo</em> is being assembled.
       </h1>
       <p
         style={{
@@ -119,8 +119,10 @@ export default async function AppHomePage(): Promise<React.ReactElement> {
             <div
               className="app-shell-card"
               style={{
-                padding: "var(--sp-24)",
+                padding: "var(--sp-20) var(--sp-22)",
                 height: "100%",
+                overflow: "hidden",
+                opacity: isLive ? 1 : 0.85,
               }}
             >
               <h2
@@ -128,6 +130,7 @@ export default async function AppHomePage(): Promise<React.ReactElement> {
                   fontSize: "var(--fs-h-step)",
                   marginBottom: "var(--sp-8)",
                   color: "var(--ink)",
+                  wordBreak: "break-word",
                 }}
               >
                 {c.title}
@@ -137,6 +140,7 @@ export default async function AppHomePage(): Promise<React.ReactElement> {
                   fontSize: "var(--fs-body-sm)",
                   color: "var(--ink-soft)",
                   margin: 0,
+                  wordBreak: "break-word",
                 }}
               >
                 {c.desc}
@@ -150,7 +154,6 @@ export default async function AppHomePage(): Promise<React.ReactElement> {
                     letterSpacing: "0.18em",
                     textTransform: "uppercase",
                     color: "var(--brand-red)",
-                    fontWeight: 600,
                   }}
                 >
                   Coming · Sprint D
