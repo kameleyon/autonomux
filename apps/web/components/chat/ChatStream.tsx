@@ -496,6 +496,7 @@ function MessageBubbleRaw({ message }: { message: UiMessage }): React.ReactEleme
             {isUser ? "You" : "AlterEgo"}
           </span>
           <span
+            suppressHydrationWarning
             style={{
               color: "var(--muted)",
               letterSpacing: "0.06em",
@@ -643,6 +644,7 @@ function ThinkingIndicator({
         AlterEgo
       </span>
       <span
+        suppressHydrationWarning
         style={{
           fontFamily: "DM Mono, monospace",
           fontSize: "calc(var(--fs-mono-meta) * 0.92)",
