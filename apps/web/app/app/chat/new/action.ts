@@ -66,7 +66,9 @@ export async function createThread(): Promise<void> {
       tenant_id: tenantId,
       user_id: user.id,
       title: DEFAULT_TITLE,
-      last_message_at: null,
+      // last_message_at is NOT NULL with default now() — let the default
+      // fire instead of explicitly passing null (which violates the
+      // constraint). The thread list re-sorts on first message anyway.
     })
     .select("id")
     .single();
