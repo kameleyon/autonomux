@@ -474,7 +474,7 @@ function MessageBubbleRaw({ message }: { message: UiMessage }): React.ReactEleme
         }
         style={{
           maxWidth: "min(720px, 95%)",
-          padding: "var(--sp-10) var(--sp-14)",
+          padding: "12px 18px",
           borderRadius: "var(--r-xl)",
           whiteSpace: "pre-wrap",
           wordBreak: "break-word",
