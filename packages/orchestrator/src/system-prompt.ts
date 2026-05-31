@@ -114,23 +114,35 @@ Output format
  * *selection heuristics*, not signatures.
  */
 function renderCapabilityMap(subAgents: ReadonlyArray<string>): string {
+  const generalScope = `What you can do
+- You are a general-purpose assistant first, tool-runner second. Answer
+  any reasonable question from your own knowledge: writing, analysis,
+  research synthesis, code, math, advice, creative work, planning,
+  explanation. Do not refuse a question just because no tool matches it.
+- You DO have broad world knowledge through your training. You DON'T
+  have live web access today — if a question genuinely needs current
+  info (today's news, today's stock price, breaking events), say so
+  in one line, then answer what you can from training, and offer to
+  re-check when web search lands as a sub-agent.
+- You DO know today's date (provided in the runtime block below).
+- For things you can do RIGHT NOW with a tool, use the tool. For
+  things you can do well WITHOUT a tool, just do them.`;
+
   if (subAgents.length === 0) {
-    return `Available tools: none registered yet. If the user asks for
-something requiring an integration, say so specifically (e.g. "connect
-Gmail first via /app/settings/integrations").`;
+    return `${generalScope}\n\nNo sub-agent tools registered in this session.`;
   }
   const lines = subAgents.map((name) => {
     const hint = SUB_AGENT_HINTS[name] ?? "(no hint registered)";
-    return `  • ${name} — ${hint}`;
+    return `  - ${name}: ${hint}`;
   });
-  return `Sub-agents you can call as tools:\n${lines.join("\n")}\n\n${
-    `Selection rules:
-- Inbox / email questions ("what's in my inbox," "any new invoices,"
-  "triage today's mail") → mailroom.
-- Always read before write. If the user says "reply to X," call
-  mailroom in 'summarize_thread' mode first, then propose the draft,
-  then ask for go-ahead before sending.`
-  }`;
+  return `${generalScope}\n\nSub-agents you can call as tools (use when relevant, ignore when not):
+${lines.join("\n")}
+
+Tool-use rules
+- Only invoke a tool when it materially helps the user's actual
+  request. Don't call Mailroom for a question that isn't about email.
+- Always read before write. For "reply to X," call mailroom in
+  'summarize_thread' first, then propose the draft, then confirm.`;
 }
 
 const SUB_AGENT_HINTS: Record<string, string> = {
@@ -198,13 +210,25 @@ export async function composeSystemPrompt(
   const personalityLine = renderPersonality(inputs.personality);
   const capabilities = renderCapabilityMap(inputs.registeredSubAgents ?? []);
 
+  // Runtime block — date/time injected fresh on every turn so the model
+  // never thinks it's stuck in its training cutoff.
+  const now = new Date();
+  const today = now.toISOString().slice(0, 10);
+  const dayName = now.toLocaleDateString("en-US", {
+    weekday: "long",
+    timeZone: "UTC",
+  });
+  const runtimeBlock = `Runtime
+- Today is ${dayName}, ${today} (UTC).
+- You are running as bigBrain v${BIGBRAIN_VERSION}.`;
+
   const sections: string[] = [
     PERSONA,
     capabilities,
+    runtimeBlock,
     personalityLine,
     `What you know about this user (decrypted, do not echo verbatim unless asked):\n${facts}`,
     HIPAA_REFUSAL,
-    `bigBrain v${BIGBRAIN_VERSION}`,
   ];
 
   const assembled = sections.join("\n\n");

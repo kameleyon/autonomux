@@ -3,33 +3,59 @@
 /**
  * apps/web/components/chat/Composer.tsx
  *
- * Auto-growing textarea + send button. Submits via parent callback (the
- * ChatStream owns the in-flight state + SSE connection — Composer just
- * collects input).
+ * Auto-growing textarea + send button + attachment chips.
  *
- * Keyboard:
- *   - Enter inserts a newline (so multi-line messages compose naturally).
- *   - Cmd/Ctrl+Enter submits.
- * Disabled while a turn is in-flight; the disabled state is fully
- * keyboard-discoverable via aria-disabled + a visible status string.
+ * Keyboard
+ *   - Enter → send.
+ *   - Shift + Enter → newline.
  *
- * a11y:
- *   - Labeled textarea (`<label htmlFor>`).
- *   - Live char counter in aria-live="polite" so SR users hear it without
- *     interruption.
- *   - Focus outline inherits the global var(--focus-ring) ring.
+ * Attachments (Claude.ai-style)
+ *   - Click the paperclip → file picker (multi-select).
+ *   - Drag + drop files onto the composer.
+ *   - Paste an image or PDF from the clipboard → chip.
+ *   - Paste plain text > LARGE_PASTE_CHARS (15 000) → chip (as a .txt
+ *     attachment) instead of stuffing the textarea.
  *
- * Owner: [Cluster C · Vega + Forge + Halo]
+ * Accepted types: png, jpeg, gif, webp, pdf, text/* (md/csv/json/plain).
+ * Max 5 MB per file; max 5 attachments per turn.
+ *
+ * The Composer is presentational: it bundles `{ text, attachments[] }`
+ * into a single `onSubmit` payload and lets the parent decide what to
+ * do with the FileList. The parent (ChatStream) uploads + sends.
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const MAX_CHARS = 12_000; // mirrors the server cap in route.ts
+const MAX_CHARS = 12_000;
+const LARGE_PASTE_CHARS = 15_000;
+const MAX_FILES = 5;
+const MAX_FILE_BYTES = 5 * 1024 * 1024;
+
+const ACCEPTED_MIME = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/gif",
+  "image/webp",
+  "application/pdf",
+  "text/plain",
+  "text/markdown",
+  "text/csv",
+  "application/json",
+]);
+
+export interface ComposerSubmitPayload {
+  readonly text: string;
+  readonly attachments: ReadonlyArray<File>;
+}
 
 export interface ComposerProps {
   disabled: boolean;
-  /** Called with the trimmed user message. */
-  onSubmit: (message: string) => void;
+  onSubmit: (payload: ComposerSubmitPayload) => void;
+}
+
+interface AttachmentItem {
+  readonly id: string;
+  readonly file: File;
 }
 
 export function Composer({
@@ -37,10 +63,12 @@ export function Composer({
   onSubmit,
 }: ComposerProps): React.ReactElement {
   const [value, setValue] = useState("");
+  const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
+  const [dragOver, setDragOver] = useState(false);
+  const [warning, setWarning] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-grow: reset height, then push to scrollHeight. Capped via CSS
-  // max-height so a 500-line paste doesn't fill the viewport.
   useEffect(() => {
     const ta = textareaRef.current;
     if (ta === null) return;
@@ -48,9 +76,6 @@ export function Composer({
     ta.style.height = `${Math.min(ta.scrollHeight, 240)}px`;
   }, [value]);
 
-  // Re-focus the textarea when the in-flight stream completes — so the
-  // user can immediately type their next turn without reaching for the
-  // mouse. Only fires on the disabled→enabled edge.
   const wasDisabledRef = useRef(disabled);
   useEffect(() => {
     if (wasDisabledRef.current && !disabled) {
@@ -59,12 +84,88 @@ export function Composer({
     wasDisabledRef.current = disabled;
   }, [disabled]);
 
+  const addFiles = useCallback(
+    (incoming: ReadonlyArray<File>): void => {
+      setWarning(null);
+      const accepted: AttachmentItem[] = [];
+      for (const f of incoming) {
+        if (attachments.length + accepted.length >= MAX_FILES) {
+          setWarning(`Max ${MAX_FILES} attachments per message.`);
+          break;
+        }
+        if (f.size > MAX_FILE_BYTES) {
+          setWarning(`"${f.name}" is larger than 5 MB.`);
+          continue;
+        }
+        if (!ACCEPTED_MIME.has(f.type) && !f.type.startsWith("text/")) {
+          setWarning(`"${f.name}" is an unsupported file type.`);
+          continue;
+        }
+        accepted.push({
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          file: f,
+        });
+      }
+      if (accepted.length > 0) {
+        setAttachments((prev) => [...prev, ...accepted]);
+      }
+    },
+    [attachments.length],
+  );
+
+  const removeAttachment = useCallback((id: string): void => {
+    setAttachments((prev) => prev.filter((a) => a.id !== id));
+  }, []);
+
+  const handlePaste = useCallback(
+    (e: React.ClipboardEvent<HTMLTextAreaElement>): void => {
+      const cd = e.clipboardData;
+      if (cd === null) return;
+
+      // Files first (images, PDFs from the OS clipboard).
+      if (cd.files.length > 0) {
+        e.preventDefault();
+        addFiles(Array.from(cd.files));
+        return;
+      }
+
+      // Large text paste → attachment.
+      const text = cd.getData("text/plain");
+      if (text.length >= LARGE_PASTE_CHARS) {
+        e.preventDefault();
+        const f = new File(
+          [text],
+          `pasted-text-${new Date().toISOString().slice(11, 19).replace(/:/g, "")}.txt`,
+          { type: "text/plain" },
+        );
+        addFiles([f]);
+      }
+    },
+    [addFiles],
+  );
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent<HTMLFormElement>): void => {
+      e.preventDefault();
+      setDragOver(false);
+      const files = Array.from(e.dataTransfer?.files ?? []);
+      if (files.length > 0) addFiles(files);
+    },
+    [addFiles],
+  );
+
   const submit = useCallback((): void => {
     const trimmed = value.trim();
-    if (trimmed.length === 0 || disabled) return;
-    onSubmit(trimmed);
+    if (disabled) return;
+    if (trimmed.length === 0 && attachments.length === 0) return;
+    onSubmit({
+      text: trimmed,
+      attachments: attachments.map((a) => a.file),
+    });
     setValue("");
-  }, [value, disabled, onSubmit]);
+    setAttachments([]);
+    setWarning(null);
+  }, [value, attachments, disabled, onSubmit]);
 
   return (
     <form
@@ -72,19 +173,102 @@ export function Composer({
         e.preventDefault();
         submit();
       }}
+      onDragOver={(e) => {
+        e.preventDefault();
+        if (!dragOver) setDragOver(true);
+      }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={handleDrop}
+      className="app-shell-composer"
       style={{
-        borderTop: "1px solid var(--border)",
-        padding: "var(--sp-16) var(--sp-20)",
-        background: "var(--surface)",
+        padding: "var(--sp-12) var(--sp-20) var(--sp-16) var(--sp-20)",
         display: "flex",
         flexDirection: "column",
         gap: "var(--sp-8)",
+        outline: dragOver
+          ? "2px dashed var(--brand-orange)"
+          : "2px solid transparent",
+        outlineOffset: "-4px",
+        borderRadius: "var(--r-md)",
+        transition: "outline-color 120ms",
       }}
     >
-      <label
-        htmlFor="chat-composer-input"
-        className="visually-hidden"
-      >
+      {attachments.length > 0 && (
+        <ul
+          aria-label="Attachments"
+          style={{
+            listStyle: "none",
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "var(--sp-6)",
+            margin: 0,
+            padding: 0,
+          }}
+        >
+          {attachments.map((a) => (
+            <li
+              key={a.id}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "var(--sp-8)",
+                padding: "var(--sp-6) var(--sp-10)",
+                borderRadius: "var(--r-md)",
+                background: "rgba(0,0,0,0.06)",
+                border: "1px solid rgba(0,0,0,0.1)",
+                fontSize: "var(--fs-body-sm)",
+                color: "var(--ink)",
+                maxWidth: "260px",
+              }}
+            >
+              <span
+                aria-hidden="true"
+                style={{
+                  fontFamily: "DM Mono, monospace",
+                  fontSize: "var(--fs-mono-meta)",
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  color: "var(--brand-orange)",
+                }}
+              >
+                {fileKindLabel(a.file)}
+              </span>
+              <span
+                style={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  minWidth: 0,
+                }}
+                title={a.file.name}
+              >
+                {a.file.name}
+              </span>
+              <span style={{ color: "var(--muted)" }}>
+                {formatBytes(a.file.size)}
+              </span>
+              <button
+                type="button"
+                onClick={() => removeAttachment(a.id)}
+                aria-label={`Remove ${a.file.name}`}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "var(--ink-soft)",
+                  fontSize: "var(--fs-body)",
+                  lineHeight: 1,
+                  padding: 0,
+                }}
+              >
+                ×
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <label htmlFor="chat-composer-input" className="visually-hidden">
         Message AlterEgo
       </label>
       <textarea
@@ -93,16 +277,17 @@ export function Composer({
         value={value}
         onChange={(e) => setValue(e.target.value.slice(0, MAX_CHARS))}
         onKeyDown={(e) => {
-          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+          if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             submit();
           }
         }}
+        onPaste={handlePaste}
         rows={1}
         placeholder={
           disabled
             ? "Streaming response…"
-            : "Ask AlterEgo to triage your inbox, draft a reply, or surface what changed."
+            : "Ask AlterEgo. Enter to send, Shift+Enter for a new line. Paste or drop a file to attach."
         }
         disabled={disabled}
         aria-disabled={disabled}
@@ -123,6 +308,34 @@ export function Composer({
           outline: "none",
         }}
       />
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept={Array.from(ACCEPTED_MIME).join(",") + ",text/*"}
+        style={{ display: "none" }}
+        onChange={(e) => {
+          if (e.target.files !== null) {
+            addFiles(Array.from(e.target.files));
+            e.target.value = "";
+          }
+        }}
+      />
+
+      {warning !== null && (
+        <p
+          role="alert"
+          style={{
+            margin: 0,
+            fontSize: "var(--fs-body-sm)",
+            color: "var(--brand-red)",
+          }}
+        >
+          {warning}
+        </p>
+      )}
+
       <div
         style={{
           display: "flex",
@@ -131,29 +344,60 @@ export function Composer({
           gap: "var(--sp-12)",
         }}
       >
-        <p
-          id="chat-composer-hint"
-          aria-live="polite"
-          style={{
-            margin: 0,
-            fontFamily: "DM Mono, monospace",
-            fontSize: "var(--fs-mono-meta)",
-            color: "var(--muted)",
-            letterSpacing: "0.08em",
-          }}
-        >
-          {value.length} / {MAX_CHARS} chars
-          <span style={{ marginLeft: "var(--sp-12)" }}>
-            Cmd/Ctrl + Enter to send
-          </span>
-        </p>
+        <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-8)" }}>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={disabled}
+            aria-label="Attach files"
+            title="Attach files (paste or drop also works)"
+            style={{
+              background: "transparent",
+              border: "1px solid var(--border-strong)",
+              borderRadius: "var(--r-md)",
+              padding: "var(--sp-6) var(--sp-10)",
+              cursor: disabled ? "not-allowed" : "pointer",
+              fontSize: "var(--fs-body)",
+              color: "var(--ink-soft)",
+              lineHeight: 1,
+            }}
+          >
+            ⎘
+          </button>
+          <p
+            id="chat-composer-hint"
+            aria-live="polite"
+            style={{
+              margin: 0,
+              fontFamily: "DM Mono, monospace",
+              fontSize: "var(--fs-mono-meta)",
+              color: "var(--muted)",
+              letterSpacing: "0.08em",
+            }}
+          >
+            {value.length} / {MAX_CHARS}
+            {attachments.length > 0
+              ? ` · ${attachments.length}/${MAX_FILES} files`
+              : ""}
+            <span style={{ marginLeft: "var(--sp-12)" }}>
+              Enter sends · Shift+Enter newline
+            </span>
+          </p>
+        </div>
         <button
           type="submit"
-          disabled={disabled || value.trim().length === 0}
-          aria-disabled={disabled || value.trim().length === 0}
+          disabled={
+            disabled ||
+            (value.trim().length === 0 && attachments.length === 0)
+          }
+          aria-disabled={
+            disabled ||
+            (value.trim().length === 0 && attachments.length === 0)
+          }
           style={{
             background:
-              disabled || value.trim().length === 0
+              disabled ||
+              (value.trim().length === 0 && attachments.length === 0)
                 ? "var(--muted-soft)"
                 : "var(--brand-orange)",
             color: "var(--brand-white)",
@@ -163,7 +407,8 @@ export function Composer({
             fontSize: "var(--fs-body-sm)",
             fontWeight: 500,
             cursor:
-              disabled || value.trim().length === 0
+              disabled ||
+              (value.trim().length === 0 && attachments.length === 0)
                 ? "not-allowed"
                 : "pointer",
             transition: "background 120ms",
@@ -174,4 +419,17 @@ export function Composer({
       </div>
     </form>
   );
+}
+
+function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(0)} KB`;
+  return `${(n / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function fileKindLabel(f: File): string {
+  if (f.type.startsWith("image/")) return "img";
+  if (f.type === "application/pdf") return "pdf";
+  if (f.type.startsWith("text/") || f.type === "application/json") return "txt";
+  return "file";
 }

@@ -28,6 +28,7 @@ import remarkGfm from "remark-gfm";
 
 import { Composer } from "./Composer";
 import { SubAgentCard } from "./SubAgentCard";
+import type { ComposerSubmitPayload } from "./Composer";
 import { openChatStream } from "@/lib/chat/sse-client";
 import type {
   ChatMessageRow,
@@ -129,31 +130,61 @@ export function ChatStream({
 
   // ── Submit handler ──────────────────────────────────────────────────
   const handleSubmit = useCallback(
-    (userText: string): void => {
+    (payload: ComposerSubmitPayload): void => {
       if (inFlight) return;
       setErrorMsg(null);
 
-      const userMsg: UiMessage = {
-        clientId: `user-${Date.now()}`,
-        role: "user",
-        blocks: [{ type: "text", text: userText }],
-        pendingSubAgents: [],
-      };
-      const assistantMsg: UiMessage = {
-        clientId: `assistant-${Date.now()}`,
-        role: "assistant",
-        blocks: [{ type: "text", text: "" }],
-        pendingSubAgents: [],
-      };
-
-      setMessages((prev) => [...prev, userMsg, assistantMsg]);
-      setInFlight(true);
-      userScrolledUpRef.current = false;
-
-      const ac = new AbortController();
-      abortRef.current = ac;
-
       void (async () => {
+        // Read text attachments inline so the LLM can act on them.
+        // Images / PDFs are listed by filename for now; full vision wiring
+        // lands when we plumb Anthropic content blocks through the LLM
+        // adapter. Server-side route will receive the same fold.
+        const textParts: string[] = [];
+        if (payload.text.length > 0) textParts.push(payload.text);
+        const attachmentLabels: string[] = [];
+        for (const f of payload.attachments) {
+          if (
+            f.type.startsWith("text/") ||
+            f.type === "application/json"
+          ) {
+            try {
+              const content = await f.text();
+              textParts.push(
+                `\n\n--- attached: ${f.name} (${formatBytes(f.size)}) ---\n${content}\n--- end ${f.name} ---`,
+              );
+            } catch {
+              attachmentLabels.push(`[unreadable: ${f.name}]`);
+            }
+          } else {
+            attachmentLabels.push(`[${f.type || "file"}: ${f.name} · ${formatBytes(f.size)}]`);
+          }
+        }
+        if (attachmentLabels.length > 0) {
+          textParts.push(`\n\nAttachments (not yet readable by AlterEgo): ${attachmentLabels.join(", ")}`);
+        }
+        const userText = textParts.join("");
+        if (userText.length === 0) return;
+
+        const userMsg: UiMessage = {
+          clientId: `user-${Date.now()}`,
+          role: "user",
+          blocks: [{ type: "text", text: userText }],
+          pendingSubAgents: [],
+        };
+        const assistantMsg: UiMessage = {
+          clientId: `assistant-${Date.now()}`,
+          role: "assistant",
+          blocks: [{ type: "text", text: "" }],
+          pendingSubAgents: [],
+        };
+
+        setMessages((prev) => [...prev, userMsg, assistantMsg]);
+        setInFlight(true);
+        userScrolledUpRef.current = false;
+
+        const ac = new AbortController();
+        abortRef.current = ac;
+
         try {
           for await (const event of openChatStream(
             { threadId, userMessage: userText },
@@ -465,6 +496,12 @@ function MessageBubble({ message }: { message: UiMessage }): React.ReactElement 
       </div>
     </article>
   );
+}
+
+function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(0)} KB`;
+  return `${(n / 1024 / 1024).toFixed(1)} MB`;
 }
 
 function EmptyConversationHint(): React.ReactElement {
