@@ -37,6 +37,7 @@ import {
   type SampleWorkerHandle,
 } from "./workers/sample.js";
 import { buildMailroomDeps } from "./workers/mailroom.js";
+import { buildSchedulerDeps } from "./workers/scheduler.js";
 import { registerCronJobs } from "./jobs/cron.js";
 import { startHealthServer, type HealthServer } from "./lib/health.js";
 
@@ -105,12 +106,26 @@ async function main(): Promise<void> {
     triageMaxMessages: env.MAILROOM_TRIAGE_MAX_MESSAGES,
   });
 
+  // The Scheduler processor (workers/scheduler.ts) shares the same
+  // agent-bus Redis client and the same root logger. Its Google Calendar
+  // OAuth creds are independent of the Mailroom Gmail creds — they are
+  // separate Google Cloud OAuth clients.
+  const schedulerDeps = buildSchedulerDeps({
+    logger,
+    agentBus: queueConnection,
+    gcalClientId: env.GCAL_OAUTH_CLIENT_ID,
+    gcalClientSecret: env.GCAL_OAUTH_CLIENT_SECRET,
+    readTodayMaxEvents: env.SCHEDULER_READ_TODAY_MAX_EVENTS,
+    readRangeMaxEvents: env.SCHEDULER_READ_RANGE_MAX_EVENTS,
+  });
+
   // ---- Queue registry ----
   const registry = createQueueRegistry({
     queueConnection,
     workerConnection,
     logger,
     mailroom: mailroomDeps,
+    scheduler: schedulerDeps,
   });
   logger.info(
     { queues: Object.keys(registry) },

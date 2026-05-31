@@ -125,6 +125,9 @@ export default async function IntegrationsPage(props: {
   const hasActiveGmail = vms.some(
     (v) => v.integration === "gmail" && v.status === "active",
   );
+  const hasActiveGcal = vms.some(
+    (v) => v.integration === "gcal" && v.status === "active",
+  );
 
   return (
     <div className="wrap">
@@ -235,16 +238,36 @@ export default async function IntegrationsPage(props: {
       {/* ------------------------------------------------------------------ */}
       {!hasActiveGmail ? (
         <section
-          aria-labelledby="connect-h2"
+          aria-labelledby="connect-gmail-h2"
           style={{ marginTop: "var(--sp-32)" }}
         >
-          <h2 id="connect-h2">Connect Gmail</h2>
+          <h2 id="connect-gmail-h2">Connect Gmail</h2>
           <p>
             Connect Gmail to let the Mailroom sub-agent triage your inbox and
             draft replies for review.
           </p>
           <p>
             <Link href="/auth/oauth/gmail/start">Connect Gmail</Link>
+          </p>
+        </section>
+      ) : null}
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Connect Google Calendar                                             */}
+      {/* ------------------------------------------------------------------ */}
+      {!hasActiveGcal ? (
+        <section
+          aria-labelledby="connect-gcal-h2"
+          style={{ marginTop: "var(--sp-32)" }}
+        >
+          <h2 id="connect-gcal-h2">Connect Calendar</h2>
+          <p>
+            Connect Google Calendar to let the Scheduler sub-agent surface
+            upcoming events, detect conflicts, and prepare you for what&apos;s
+            next. Read-only access — the agent never writes to your calendar.
+          </p>
+          <p>
+            <Link href="/auth/oauth/gcal/start">Connect Calendar</Link>
           </p>
         </section>
       ) : null}

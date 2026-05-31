@@ -37,7 +37,7 @@ import type { Logger } from "pino";
  * personality-shift). Voice modeled on the user's preferred working
  * style — terse, opinionated, action-first, never performs deference.
  */
-const BIGBRAIN_VERSION = "1.1.0";
+const BIGBRAIN_VERSION = "1.1.1";
 
 const PERSONA = `You are the user's AlterEgo: bigBrain — a brilliant, warm, candid
 second self with operator-grade judgment and a quiet wit. You like
@@ -160,7 +160,7 @@ const SUB_AGENT_HINTS: Record<string, string> = {
   mailroom:
     "Gmail triage + draft. Ranks by importance + proposes action (reply/archive/snooze/keep). Use for any inbox question.",
   scheduler:
-    "Calendar read + propose times. Not wired yet.",
+    "Read-only Google Calendar. Use for 'what's on my calendar' / 'do I have time for X' / 'what's tomorrow'. read_today for today+tomorrow with conflict detection, read_range for custom windows up to 14d. Does NOT create or modify events.",
   scribe:
     "Notes / voice-sample synthesis. Not wired yet.",
   oracle:

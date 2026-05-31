@@ -30,6 +30,10 @@ import {
   processMailroomJob,
   type MailroomWorkerDeps,
 } from "../workers/mailroom.js";
+import {
+  processSchedulerJob,
+  type SchedulerWorkerDeps,
+} from "../workers/scheduler.js";
 
 // ---------------------------------------------------------------------------
 // Queue names (string-typed so they survive minification / lib boundaries)
@@ -105,6 +109,7 @@ export type QueueDeps = {
    * The dispatcher only consults these when the matching job arrives.
    */
   readonly mailroom?: MailroomWorkerDeps;
+  readonly scheduler?: SchedulerWorkerDeps;
 };
 
 export type QueueHandle = {
@@ -304,6 +309,22 @@ async function dispatchJob(
       logger: log,
       job,
       deps: deps.mailroom,
+    });
+  }
+
+  if (queueName === "scheduler") {
+    if (deps.scheduler === undefined) {
+      // Boot order issue — scheduler job arrived before the worker handed
+      // deps to the registry. Treat as a transient failure so BullMQ retries.
+      log.error("scheduler job arrived but scheduler deps not registered");
+      throw new Error(
+        "[queues] scheduler processor invoked without SchedulerWorkerDeps; check boot wiring",
+      );
+    }
+    return processSchedulerJob({
+      logger: log,
+      job,
+      deps: deps.scheduler,
     });
   }
 

@@ -30,6 +30,11 @@ export {
 } from "./sub-agents/mailroom.tool";
 
 export {
+  schedulerEntry,
+  schedulerTool,
+} from "./sub-agents/scheduler.tool";
+
+export {
   composeSystemPrompt,
   type SystemPromptInputs,
 } from "./system-prompt";

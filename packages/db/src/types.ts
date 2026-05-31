@@ -70,6 +70,7 @@ export type IntegrationKind =
     | 'gmail'
     | 'outlook'
     | 'google_calendar'
+    | 'gcal'
     | 'substack'
     | 'x'
     | 'linkedin'

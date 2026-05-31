@@ -23,6 +23,7 @@ import { createLlmClient } from "@autonomux/llm";
 import {
   createAlterEgo,
   mailroomEntry,
+  schedulerEntry,
   SubAgentRegistry,
   type AlterEgoRuntime,
 } from "@autonomux/orchestrator";
@@ -77,6 +78,7 @@ export function buildAlterEgoRuntime(opts: BuildRuntimeOpts): AlterEgoRuntime {
    * sub-agents are appended here as their worker handlers land. */
   const registry = new SubAgentRegistry();
   registry.register(mailroomEntry);
+  registry.register(schedulerEntry);
 
   return createAlterEgo({
     llm,

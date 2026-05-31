@@ -32,8 +32,9 @@ const PURPOSE = "oauth_state_v1" as const;
 export const OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
 
 export interface OAuthStateClaims {
-  /** Provider — locked to 'gmail' today, future-proof for outlook etc. */
-  provider: "gmail";
+  /** Provider — gmail (Mailroom) and gcal (Scheduler) today; future-proof
+   *  for outlook, calendly, etc. */
+  provider: "gmail" | "gcal";
   /** Tenant the flow was initiated under. */
   tenantId: string;
   /** Supabase auth user id of the initiator. */
@@ -141,7 +142,7 @@ function requireStateSecret(): string {
 // ---------------------------------------------------------------------------
 
 export interface MintStateInput {
-  provider: "gmail";
+  provider: "gmail" | "gcal";
   tenantId: string;
   userId: string;
   verifier: string;
@@ -245,7 +246,7 @@ export async function verifyStateJwt(
     typeof claims.userId !== "string" ||
     typeof claims.verifier !== "string" ||
     typeof claims.nonce !== "string" ||
-    claims.provider !== "gmail"
+    (claims.provider !== "gmail" && claims.provider !== "gcal")
   ) {
     return { ok: false, reason: "malformed" };
   }
