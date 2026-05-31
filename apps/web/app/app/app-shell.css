@@ -4,85 +4,172 @@
  * Signed-in app skin. Loaded only when a user is inside /app/*.
  * Public + auth pages stay on globals.css (cream + soft warm wash).
  *
- * The gradient is fixed (background-attachment: fixed) so scrolling a
- * long thread doesn't drag the warmth with it — the surface feels lit
- * from outside the viewport.
- *
- * Frosted-white cards use backdrop-filter on top of an rgba surface.
- * The fallback (no backdrop-filter support) is a slightly-opaque white.
+ * Visual model:
+ *   - Background is a deep fiery wash — burgundy bottom, ember middle,
+ *     orange-gold top-left. Saturated, not pastel. Reads like a stove
+ *     burner at night, not a sunset photo.
+ *   - Text DIRECTLY on the wash is cream (high contrast on dark warm).
+ *   - Content lives inside frosted-white cards; cards reset text to
+ *     ink so reading inside them feels like cold paper on a hot table.
  */
 
 .app-shell {
   position: relative;
   min-height: 100vh;
   isolation: isolate;
-  color: var(--ink);
+  color: var(--brand-cream);
 }
 
-/* The blaze. Locked to viewport (fixed) so it doesn't scroll. */
+/* The blaze — deeper, more saturated, locked to viewport. */
 .app-shell::before {
   content: "";
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: -2;
   background:
-    /* gold sunrise top-left */
+    /* gold glow top-left (still a bright accent) */
     radial-gradient(
-      ellipse 80% 60% at 8% 0%,
+      ellipse 70% 55% at 5% 0%,
       rgba(var(--brand-gold-rgb), 0.55) 0%,
-      transparent 60%
+      transparent 55%
     ),
-    /* deep ember bottom-right */
+    /* ember middle — heavy red-orange */
     radial-gradient(
-      ellipse 75% 70% at 95% 100%,
-      rgba(var(--brand-red-rgb), 0.6) 0%,
-      transparent 65%
-    ),
-    /* core orange across the middle */
-    radial-gradient(
-      ellipse 90% 70% at 50% 50%,
-      rgba(var(--brand-orange-rgb), 0.55) 0%,
+      ellipse 90% 80% at 50% 55%,
+      rgba(var(--brand-orange-rgb), 0.85) 0%,
       transparent 70%
     ),
-    /* warm base so corners don't go grey */
+    /* burgundy floor */
+    radial-gradient(
+      ellipse 100% 70% at 70% 100%,
+      rgba(var(--brand-red-rgb), 0.95) 0%,
+      transparent 75%
+    ),
+    /* solid dark base so corners stay rich */
     linear-gradient(
-      135deg,
-      rgba(var(--brand-orange-rgb), 0.45) 0%,
-      rgba(var(--brand-red-rgb), 0.55) 100%
+      150deg,
+      #2c0a04 0%,
+      #5a1408 35%,
+      #7a2308 60%,
+      #4d0f06 100%
     );
   background-attachment: fixed;
   pointer-events: none;
 }
 
-/* Slight warm grain so the gradient doesn't band on cheap monitors. */
+/* Warm grain so the gradient doesn't band. */
 .app-shell::after {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.04;
+  opacity: 0.06;
   background-image:
-    radial-gradient(rgba(255, 255, 255, 0.6) 1px, transparent 1px);
+    radial-gradient(rgba(255, 230, 200, 0.9) 1px, transparent 1px);
   background-size: 3px 3px;
 }
 
-/* Public utility — frosted-white card. */
+/* ── Text that sits DIRECTLY on the wash ─────────────────────────────── */
+
+.app-shell h1,
+.app-shell h2,
+.app-shell h3,
+.app-shell h4,
+.app-shell h5,
+.app-shell h6 {
+  color: var(--brand-cream);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.app-shell h1 em,
+.app-shell h2 em,
+.app-shell h3 em {
+  /* The orange em accent disappears on the fiery wash — bump to a
+   * bright cream-gold so it reads against the burgundy/orange. */
+  color: var(--brand-gold);
+  font-style: italic;
+}
+
+/* Standalone <p> + spans on the wash get cream too. */
+.app-shell > * > p,
+.app-shell > * > span,
+.app-shell > p,
+.app-shell > span {
+  color: rgba(255, 240, 220, 0.92);
+}
+
+/* The DM Mono "kicker" labels that used to be brand-orange — swap to
+ * a warm cream-gold so they pop without competing with the wash. */
+.app-shell [style*="DM Mono"] {
+  /* If a kicker had inline color: var(--brand-orange), override here
+   * via a class-based filter — overridden specifically by .app-shell-card
+   * below so card-interior kickers go back to orange-on-white. */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+/* Links on the wash — bright gold not muted orange. */
+.app-shell a {
+  color: var(--brand-gold);
+}
+
+.app-shell a:hover {
+  color: #fff5d6;
+}
+
+/* ── Frosted-white cards ──────────────────────────────────────────────── */
+
 .app-shell-card {
-  background: rgba(255, 255, 255, 0.78);
-  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 250, 245, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: var(--r-xl);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.7) inset,
-    0 10px 30px rgba(60, 20, 0, 0.18);
+    0 1px 0 rgba(255, 255, 255, 0.85) inset,
+    0 18px 40px rgba(40, 8, 0, 0.35);
   color: var(--ink);
+}
+
+/* Inside a card, every text element resets to ink + the orange brand
+ * accent comes back (it reads fine on white). */
+.app-shell-card,
+.app-shell-card p,
+.app-shell-card span,
+.app-shell-card li,
+.app-shell-card div {
+  color: var(--ink);
+}
+
+.app-shell-card h1,
+.app-shell-card h2,
+.app-shell-card h3,
+.app-shell-card h4 {
+  color: var(--ink);
+  text-shadow: none;
+}
+
+.app-shell-card h1 em,
+.app-shell-card h2 em,
+.app-shell-card h3 em {
+  color: var(--brand-orange);
+}
+
+.app-shell-card [style*="DM Mono"] {
+  text-shadow: none;
+}
+
+.app-shell-card a {
+  color: var(--brand-orange);
+}
+
+.app-shell-card a:hover {
+  color: var(--brand-red);
 }
 
 /* Softer variant for sub-cards inside a primary card. */
 .app-shell-card--soft {
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 250, 245, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: var(--r-lg);
   backdrop-filter: blur(8px) saturate(130%);
@@ -90,47 +177,43 @@
   color: var(--ink);
 }
 
-/* Chat shell — full-height, edge-to-edge, no white wrap. */
+/* ── Chat-specific surfaces ──────────────────────────────────────────── */
+
 .app-shell-chat {
   display: flex;
   min-height: calc(100vh - 0px);
   width: 100%;
 }
 
-/* Inline message bubbles inside chat — translucent over the gradient. */
 .app-shell-bubble {
-  background: rgba(255, 255, 255, 0.86);
-  backdrop-filter: blur(10px) saturate(135%);
-  -webkit-backdrop-filter: blur(10px) saturate(135%);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 4px 14px rgba(60, 20, 0, 0.1);
+  background: rgba(255, 250, 245, 0.94);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 6px 18px rgba(40, 8, 0, 0.25);
+  color: var(--ink);
+}
+
+.app-shell-bubble p,
+.app-shell-bubble span,
+.app-shell-bubble div {
   color: var(--ink);
 }
 
 .app-shell-bubble--user {
-  background: rgba(255, 255, 255, 0.94);
-  border-color: rgba(var(--brand-orange-rgb), 0.35);
+  background: rgba(255, 250, 245, 0.98);
+  border-color: rgba(var(--brand-orange-rgb), 0.45);
 }
 
-/* Composer + footer surfaces should read as belonging to the shell. */
+/* The "You" / "AlterEgo" tag above each bubble — readable. */
+.app-shell-bubble [style*="DM Mono"] {
+  color: var(--ink-soft);
+}
+
+/* Composer footer should still feel like part of the shell. */
 .app-shell-composer {
-  background: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 250, 245, 0.88);
   backdrop-filter: blur(14px) saturate(140%);
   -webkit-backdrop-filter: blur(14px) saturate(140%);
   border-top: 1px solid rgba(255, 255, 255, 0.6);
-}
-
-/* Headings/text colors stay legible on the warm wash. */
-.app-shell h1,
-.app-shell h2,
-.app-shell h3 {
-  color: var(--ink);
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
-}
-
-/* Plain headings in cards drop the shadow (card already provides contrast). */
-.app-shell-card h1,
-.app-shell-card h2,
-.app-shell-card h3 {
-  text-shadow: none;
 }
