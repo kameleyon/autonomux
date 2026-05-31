@@ -133,6 +133,31 @@ const MD_COMPONENTS: Components = {
   ),
 };
 
+/* ──────────────────────────────────────────────────────────────────────
+ * Emoji enforcement.
+ *
+ * The system prompt forbids emoji in the strongest terms, but a prompt is a
+ * request, not a guarantee — the model violates it intermittently. This is
+ * the hard contract: strip every emoji code point before it reaches the DOM,
+ * so it is structurally impossible for an emoji to render in an assistant
+ * bubble (live stream OR reloaded history) regardless of what the model emits.
+ *
+ * Covers pictographics, regional-indicator flags, skin-tone modifiers, the
+ * ZWJ / variation selectors that glue sequences together, and keycap marks.
+ * After removal we tidy the whitespace the emoji left behind (doubled spaces,
+ * a space stranded before punctuation, trailing line whitespace).
+ * ────────────────────────────────────────────────────────────────────── */
+function stripEmoji(text: string): string {
+  return text
+    .replace(/\p{Extended_Pictographic}/gu, "")
+    .replace(/[\u{1F1E6}-\u{1F1FF}]/gu, "") // regional indicators (flags)
+    .replace(/[\u{1F3FB}-\u{1F3FF}]/gu, "") // skin-tone modifiers
+    .replace(/[\u200D\uFE0E\uFE0F\u20E3]/gu, "") // ZWJ + variation selectors + keycap
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/ +([.,!?;:])/g, "$1")
+    .replace(/[ \t]+$/gm, "");
+}
+
 function fromHistory(row: ChatMessageRow): UiMessage | null {
   if (row.role !== "user" && row.role !== "assistant") return null;
   return {
@@ -474,10 +499,15 @@ function MessageBubbleRaw({ message }: { message: UiMessage }): React.ReactEleme
         }
         style={{
           maxWidth: "min(720px, 95%)",
-          paddingTop: "14px",
-          paddingRight: "20px",
-          paddingBottom: "14px",
-          paddingLeft: "20px",
+          // Balanced interior: 12 vertical / 16 horizontal. Both exist on the
+          // --sp scale (unlike --sp-14, which silently resolved to 0 and caused
+          // the earlier "no padding" regression). Paired with the
+          // `.msg-md > :last-child { margin-bottom: 0 }` reset in app-shell.css
+          // so top and bottom interior space stay symmetric.
+          paddingTop: "var(--sp-12)",
+          paddingRight: "var(--sp-16)",
+          paddingBottom: "var(--sp-12)",
+          paddingLeft: "var(--sp-16)",
           borderRadius: "var(--r-xl)",
           whiteSpace: "pre-wrap",
           wordBreak: "break-word",
@@ -523,61 +553,12 @@ function MessageBubbleRaw({ message }: { message: UiMessage }): React.ReactEleme
               }}
             >
               {isUser ? (
+                // User text is the user's own words — render verbatim (their
+                // emoji are their choice). Only AlterEgo output is stripped.
                 <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{b.text}</p>
-              ) : b.text.length === 0 ? null : (
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    p: ({ children }) => (
-                      <p style={{ margin: "0 0 var(--sp-8) 0" }}>{children}</p>
-                    ),
-                    h1: ({ children }) => (
-                      <h2 style={{ fontSize: "var(--fs-h-step)", margin: "var(--sp-12) 0 var(--sp-8)" }}>{children}</h2>
-                    ),
-                    h2: ({ children }) => (
-                      <h2 style={{ fontSize: "var(--fs-h-step)", margin: "var(--sp-12) 0 var(--sp-8)" }}>{children}</h2>
-                    ),
-                    h3: ({ children }) => (
-                      <h3 style={{ fontSize: "var(--fs-body-lg)", fontWeight: 600, margin: "var(--sp-10) 0 var(--sp-6)" }}>{children}</h3>
-                    ),
-                    ul: ({ children }) => (
-                      <ul style={{ margin: "0 0 var(--sp-8) 0", paddingLeft: "var(--sp-20)" }}>{children}</ul>
-                    ),
-                    ol: ({ children }) => (
-                      <ol style={{ margin: "0 0 var(--sp-8) 0", paddingLeft: "var(--sp-20)" }}>{children}</ol>
-                    ),
-                    li: ({ children }) => (
-                      <li style={{ margin: "var(--sp-4) 0" }}>{children}</li>
-                    ),
-                    code: ({ children }) => (
-                      <code style={{
-                        fontFamily: "DM Mono, monospace",
-                        fontSize: "0.92em",
-                        background: "rgba(0,0,0,0.06)",
-                        padding: "0.1em 0.35em",
-                        borderRadius: "var(--r-sm)",
-                      }}>{children}</code>
-                    ),
-                    pre: ({ children }) => (
-                      <pre style={{
-                        fontFamily: "DM Mono, monospace",
-                        fontSize: "var(--fs-body-sm)",
-                        background: "rgba(0,0,0,0.06)",
-                        padding: "var(--sp-12)",
-                        borderRadius: "var(--r-md)",
-                        overflow: "auto",
-                        margin: "var(--sp-8) 0",
-                      }}>{children}</pre>
-                    ),
-                    a: ({ href, children }) => (
-                      <a href={href ?? "#"} style={{ color: "var(--brand-orange)" }}>{children}</a>
-                    ),
-                    strong: ({ children }) => (
-                      <strong style={{ fontWeight: 600 }}>{children}</strong>
-                    ),
-                  }}
-                >
-                  {b.text}
+              ) : stripEmoji(b.text).length === 0 ? null : (
+                <ReactMarkdown remarkPlugins={MD_PLUGINS} components={MD_COMPONENTS}>
+                  {stripEmoji(b.text)}
                 </ReactMarkdown>
               )}
             </div>
@@ -641,8 +622,12 @@ function ThinkingIndicator({
           fontSize: "var(--fs-mono-meta)",
           letterSpacing: "0.18em",
           textTransform: "uppercase",
-          color: "rgba(255, 250, 245, 0.95)",
-          textShadow: "0 1px 2px rgba(0,0,0,0.35)",
+          // Quiet caption on the wash, NOT bold white body text. Matches the
+          // muted weight of the in-bubble "AlterEgo" meta label so the
+          // transition into a bubble (once text arrives) isn't a jarring
+          // bright-white → muted flip.
+          color: "rgba(255, 240, 225, 0.66)",
+          textShadow: "0 1px 1px rgba(0,0,0,0.2)",
         }}
       >
         AlterEgo
