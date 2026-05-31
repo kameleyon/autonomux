@@ -23,6 +23,8 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 import { Composer } from "./Composer";
 import { SubAgentCard } from "./SubAgentCard";
@@ -110,8 +112,13 @@ export function ChatStream({
     if (userScrolledUpRef.current) return;
     const el = scrollerRef.current;
     if (el === null) return;
-    el.scrollTop = el.scrollHeight;
-  }, [messages]);
+    // Smooth scroll on user/assistant turn-add; instant for token-by-token
+    // appends (otherwise the smooth animation queues and lags the cursor).
+    el.scrollTo({
+      top: el.scrollHeight,
+      behavior: messages.length > 0 && inFlight ? "auto" : "smooth",
+    });
+  }, [messages, inFlight]);
 
   // ── Cleanup on unmount → cancel server stream ────────────────────────
   useEffect(() => {
@@ -323,6 +330,7 @@ function MessageBubble({ message }: { message: UiMessage }): React.ReactElement 
   return (
     <article
       data-role={message.role}
+      className="msg-anim"
       style={{
         display: "flex",
         flexDirection: "column",
@@ -356,30 +364,87 @@ function MessageBubble({ message }: { message: UiMessage }): React.ReactElement 
         </div>
         {message.blocks.map((b, idx) =>
           b.type === "text" ? (
-            <p
+            <div
               key={idx}
+              className="msg-md"
               style={{
-                margin: 0,
                 fontSize: "var(--fs-body)",
                 color: "var(--ink)",
                 lineHeight: "var(--lh-body)",
               }}
             >
-              {b.text}
-              {/* Subtle cursor while streaming — only visible if it's the
-                  trailing text block of an assistant message that's still
-                  waiting on more deltas. */}
-              {!isUser &&
-              idx === message.blocks.length - 1 &&
-              message.pendingSubAgents.length === 0 &&
-              b.text.length === 0 ? (
-                <span aria-hidden="true" style={{ opacity: 0.5 }}>
-                  …
+              {isUser ? (
+                <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{b.text}</p>
+              ) : b.text.length === 0 &&
+                idx === message.blocks.length - 1 &&
+                message.pendingSubAgents.length === 0 ? (
+                <span
+                  className="typing-dots"
+                  aria-label="AlterEgo is thinking"
+                >
+                  <span />
+                  <span />
+                  <span />
                 </span>
-              ) : null}
-            </p>
+              ) : (
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    p: ({ children }) => (
+                      <p style={{ margin: "0 0 var(--sp-8) 0" }}>{children}</p>
+                    ),
+                    h1: ({ children }) => (
+                      <h2 style={{ fontSize: "var(--fs-h-step)", margin: "var(--sp-12) 0 var(--sp-8)" }}>{children}</h2>
+                    ),
+                    h2: ({ children }) => (
+                      <h2 style={{ fontSize: "var(--fs-h-step)", margin: "var(--sp-12) 0 var(--sp-8)" }}>{children}</h2>
+                    ),
+                    h3: ({ children }) => (
+                      <h3 style={{ fontSize: "var(--fs-body-lg)", fontWeight: 600, margin: "var(--sp-10) 0 var(--sp-6)" }}>{children}</h3>
+                    ),
+                    ul: ({ children }) => (
+                      <ul style={{ margin: "0 0 var(--sp-8) 0", paddingLeft: "var(--sp-20)" }}>{children}</ul>
+                    ),
+                    ol: ({ children }) => (
+                      <ol style={{ margin: "0 0 var(--sp-8) 0", paddingLeft: "var(--sp-20)" }}>{children}</ol>
+                    ),
+                    li: ({ children }) => (
+                      <li style={{ margin: "var(--sp-4) 0" }}>{children}</li>
+                    ),
+                    code: ({ children }) => (
+                      <code style={{
+                        fontFamily: "DM Mono, monospace",
+                        fontSize: "0.92em",
+                        background: "rgba(0,0,0,0.06)",
+                        padding: "0.1em 0.35em",
+                        borderRadius: "var(--r-sm)",
+                      }}>{children}</code>
+                    ),
+                    pre: ({ children }) => (
+                      <pre style={{
+                        fontFamily: "DM Mono, monospace",
+                        fontSize: "var(--fs-body-sm)",
+                        background: "rgba(0,0,0,0.06)",
+                        padding: "var(--sp-12)",
+                        borderRadius: "var(--r-md)",
+                        overflow: "auto",
+                        margin: "var(--sp-8) 0",
+                      }}>{children}</pre>
+                    ),
+                    a: ({ href, children }) => (
+                      <a href={href ?? "#"} style={{ color: "var(--brand-orange)" }}>{children}</a>
+                    ),
+                    strong: ({ children }) => (
+                      <strong style={{ fontWeight: 600 }}>{children}</strong>
+                    ),
+                  }}
+                >
+                  {b.text}
+                </ReactMarkdown>
+              )}
+            </div>
           ) : (
-            <div key={idx} style={{ width: "100%" }}>
+            <div key={idx} className="card-anim" style={{ width: "100%" }}>
               <SubAgentCard
                 invocationId={`hist-${idx}`}
                 subAgent={b.sub_agent}
@@ -390,7 +455,7 @@ function MessageBubble({ message }: { message: UiMessage }): React.ReactElement 
         )}
         {/* In-flight sub-agent skeleton card(s). */}
         {message.pendingSubAgents.map((p) => (
-          <div key={p.invocationId} style={{ width: "100%" }}>
+          <div key={p.invocationId} className="card-anim" style={{ width: "100%" }}>
             <SubAgentCard
               invocationId={p.invocationId}
               subAgent={p.subAgent}
