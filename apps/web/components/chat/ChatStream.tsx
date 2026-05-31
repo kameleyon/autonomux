@@ -22,8 +22,15 @@
  * Owner: [Cluster C · Vega + Forge + Halo]
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 import { Composer } from "./Composer";
@@ -62,6 +69,69 @@ interface PendingSubAgent {
   invocationId: string;
   subAgent: SubAgentName;
 }
+
+/* ──────────────────────────────────────────────────────────────────────
+ * Stable identities for ReactMarkdown.
+ *
+ * Passing fresh `remarkPlugins={[...]}` / `components={{...}}` literals on
+ * every render forces ReactMarkdown to rebuild its plugin pipeline and
+ * component map on every token delta. During a 60-token-per-second stream
+ * that thrashes React's scheduler hard enough to dump scheduler frames
+ * (the `postMessage`/`unstable_scheduleCallback` loops in the trace).
+ * Hoisting these to module scope means ReactMarkdown sees the same
+ * references and only re-renders for actual content changes.
+ * ────────────────────────────────────────────────────────────────────── */
+const MD_PLUGINS = [remarkGfm];
+
+const MD_COMPONENTS: Components = {
+  p: ({ children }) => (
+    <p style={{ margin: "0 0 var(--sp-8) 0" }}>{children}</p>
+  ),
+  h1: ({ children }) => (
+    <h2 style={{ fontSize: "var(--fs-h-step)", margin: "var(--sp-12) 0 var(--sp-8)" }}>{children}</h2>
+  ),
+  h2: ({ children }) => (
+    <h2 style={{ fontSize: "var(--fs-h-step)", margin: "var(--sp-12) 0 var(--sp-8)" }}>{children}</h2>
+  ),
+  h3: ({ children }) => (
+    <h3 style={{ fontSize: "var(--fs-body-lg)", fontWeight: 600, margin: "var(--sp-10) 0 var(--sp-6)" }}>{children}</h3>
+  ),
+  ul: ({ children }) => (
+    <ul style={{ margin: "0 0 var(--sp-8) 0", paddingLeft: "var(--sp-20)" }}>{children}</ul>
+  ),
+  ol: ({ children }) => (
+    <ol style={{ margin: "0 0 var(--sp-8) 0", paddingLeft: "var(--sp-20)" }}>{children}</ol>
+  ),
+  li: ({ children }) => (
+    <li style={{ margin: "var(--sp-4) 0" }}>{children}</li>
+  ),
+  code: ({ children }) => (
+    <code style={{
+      fontFamily: "DM Mono, monospace",
+      fontSize: "0.92em",
+      background: "rgba(0,0,0,0.06)",
+      padding: "0.1em 0.35em",
+      borderRadius: "var(--r-sm)",
+    }}>{children}</code>
+  ),
+  pre: ({ children }) => (
+    <pre style={{
+      fontFamily: "DM Mono, monospace",
+      fontSize: "var(--fs-body-sm)",
+      background: "rgba(0,0,0,0.06)",
+      padding: "var(--sp-12)",
+      borderRadius: "var(--r-md)",
+      overflow: "auto",
+      margin: "var(--sp-8) 0",
+    }}>{children}</pre>
+  ),
+  a: ({ href, children }) => (
+    <a href={href ?? "#"} style={{ color: "var(--brand-orange)" }}>{children}</a>
+  ),
+  strong: ({ children }) => (
+    <strong style={{ fontWeight: 600 }}>{children}</strong>
+  ),
+};
 
 function fromHistory(row: ChatMessageRow): UiMessage | null {
   if (row.role !== "user" && row.role !== "assistant") return null;
@@ -381,7 +451,11 @@ function reduceAssistant(msg: UiMessage, event: OrchestratorEvent): UiMessage {
 
 // ── Visual subcomponents ────────────────────────────────────────────────
 
-function MessageBubble({ message }: { message: UiMessage }): React.ReactElement {
+const MessageBubble = memo(MessageBubbleRaw, (a, b) =>
+  a.message === b.message,
+);
+
+function MessageBubbleRaw({ message }: { message: UiMessage }): React.ReactElement {
   const isUser = message.role === "user";
   return (
     <article
