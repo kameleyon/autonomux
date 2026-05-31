@@ -236,24 +236,31 @@
 
 /* ── Motion ──────────────────────────────────────────────────────────── */
 
-/* Subtle bouncy entry — small rise + a gentle overshoot, not a "pop".
- * Travel is 8px (was 14) and the scale overshoot is 1.006 (was 1.02) so it
- * reads as a soft settle rather than an attention-grabbing bounce. */
+/* Modern message entry — "appearing through frosted glass."
+ * The bubble rises 18px, fades from blurred to sharp, and lands with a
+ * tiny settle. Total feel is ~450ms of visible motion. Compare to the
+ * old 8px/1.006 settings which were below the perceptual threshold.
+ *   - translateY ramps the message up from where the composer used to be
+ *   - filter blur(8px → 0) makes it look like it's coming into focus
+ *   - scale settles last so the bubble "weighs in" at rest
+ *   - opacity finishes earliest so text is readable before motion ends */
 @keyframes msg-enter {
   0% {
     opacity: 0;
-    transform: translateY(8px) scale(0.985);
+    transform: translateY(18px) scale(0.96);
+    filter: blur(8px);
   }
-  55% {
+  45% {
     opacity: 1;
-    transform: translateY(-2px) scale(1.006);
+    filter: blur(0);
   }
-  80% {
-    transform: translateY(0) scale(0.998);
+  70% {
+    transform: translateY(-3px) scale(1.008);
   }
   100% {
     opacity: 1;
     transform: translateY(0) scale(1);
+    filter: blur(0);
   }
 }
 
@@ -285,8 +292,8 @@
 }
 
 .msg-anim {
-  animation: msg-enter 300ms cubic-bezier(0.34, 1.3, 0.64, 1) both;
-  will-change: transform, opacity;
+  animation: msg-enter 450ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity, filter;
   transform-origin: center top;
 }
 
