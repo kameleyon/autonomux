@@ -29,6 +29,11 @@ export async function createThread(): Promise<void> {
 
   const supabase = await createClient();
   const user = await requireAuth(supabase);
+  /* If the user's JWT was issued before the access-token hook was wired,
+   * `auth.jwt() ->> 'tenant_id'` is NULL and RLS rejects the INSERT below
+   * even though we know the tenant via the DB fallback. Forcing a session
+   * refresh re-runs the hook and stamps the claim onto the new token. */
+  await supabase.auth.refreshSession();
   const tenantId = await requireTenantId(supabase);
 
   // `chat_threads` is added by migration 0009 (Cluster A). Until the
