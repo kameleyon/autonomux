@@ -113,11 +113,9 @@ export default async function AppHomePage(): Promise<React.ReactElement> {
           const isLive = c.state === "available";
           const inner = (
             <div
+              className="app-shell-card"
               style={{
                 padding: "var(--sp-24)",
-                borderRadius: "var(--r-xl)",
-                border: "1px solid var(--border)",
-                background: "var(--surface)",
                 height: "100%",
                 opacity: isLive ? 1 : 0.6,
               }}

@@ -1,0 +1,136 @@
+/*
+ * apps/web/app/app/app-shell.css
+ *
+ * Signed-in app skin. Loaded only when a user is inside /app/*.
+ * Public + auth pages stay on globals.css (cream + soft warm wash).
+ *
+ * The gradient is fixed (background-attachment: fixed) so scrolling a
+ * long thread doesn't drag the warmth with it — the surface feels lit
+ * from outside the viewport.
+ *
+ * Frosted-white cards use backdrop-filter on top of an rgba surface.
+ * The fallback (no backdrop-filter support) is a slightly-opaque white.
+ */
+
+.app-shell {
+  position: relative;
+  min-height: 100vh;
+  isolation: isolate;
+  color: var(--ink);
+}
+
+/* The blaze. Locked to viewport (fixed) so it doesn't scroll. */
+.app-shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    /* gold sunrise top-left */
+    radial-gradient(
+      ellipse 80% 60% at 8% 0%,
+      rgba(var(--brand-gold-rgb), 0.55) 0%,
+      transparent 60%
+    ),
+    /* deep ember bottom-right */
+    radial-gradient(
+      ellipse 75% 70% at 95% 100%,
+      rgba(var(--brand-red-rgb), 0.6) 0%,
+      transparent 65%
+    ),
+    /* core orange across the middle */
+    radial-gradient(
+      ellipse 90% 70% at 50% 50%,
+      rgba(var(--brand-orange-rgb), 0.55) 0%,
+      transparent 70%
+    ),
+    /* warm base so corners don't go grey */
+    linear-gradient(
+      135deg,
+      rgba(var(--brand-orange-rgb), 0.45) 0%,
+      rgba(var(--brand-red-rgb), 0.55) 100%
+    );
+  background-attachment: fixed;
+  pointer-events: none;
+}
+
+/* Slight warm grain so the gradient doesn't band on cheap monitors. */
+.app-shell::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0.6) 1px, transparent 1px);
+  background-size: 3px 3px;
+}
+
+/* Public utility — frosted-white card. */
+.app-shell-card {
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: var(--r-xl);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 10px 30px rgba(60, 20, 0, 0.18);
+  color: var(--ink);
+}
+
+/* Softer variant for sub-cards inside a primary card. */
+.app-shell-card--soft {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: var(--r-lg);
+  backdrop-filter: blur(8px) saturate(130%);
+  -webkit-backdrop-filter: blur(8px) saturate(130%);
+  color: var(--ink);
+}
+
+/* Chat shell — full-height, edge-to-edge, no white wrap. */
+.app-shell-chat {
+  display: flex;
+  min-height: calc(100vh - 0px);
+  width: 100%;
+}
+
+/* Inline message bubbles inside chat — translucent over the gradient. */
+.app-shell-bubble {
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(10px) saturate(135%);
+  -webkit-backdrop-filter: blur(10px) saturate(135%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 14px rgba(60, 20, 0, 0.1);
+  color: var(--ink);
+}
+
+.app-shell-bubble--user {
+  background: rgba(255, 255, 255, 0.94);
+  border-color: rgba(var(--brand-orange-rgb), 0.35);
+}
+
+/* Composer + footer surfaces should read as belonging to the shell. */
+.app-shell-composer {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-top: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+/* Headings/text colors stay legible on the warm wash. */
+.app-shell h1,
+.app-shell h2,
+.app-shell h3 {
+  color: var(--ink);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* Plain headings in cards drop the shadow (card already provides contrast). */
+.app-shell-card h1,
+.app-shell-card h2,
+.app-shell-card h3 {
+  text-shadow: none;
+}

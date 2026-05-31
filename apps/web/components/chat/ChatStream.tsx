@@ -244,52 +244,66 @@ function applyEvent(
 }
 
 function reduceAssistant(msg: UiMessage, event: OrchestratorEvent): UiMessage {
+  /* The orchestrator's wire shape uses `text`/`sub_agent_name`/`tool_use_id`;
+   * the local OrchestratorEvent mirror in lib/chat/types.ts used to call
+   * them `delta`/`sub_agent`/`invocation_id`. We read both spellings so the
+   * UI stays compatible across older/newer event shapes. */
+  type WireEvent = OrchestratorEvent & {
+    delta?: string;
+    text?: string;
+    sub_agent?: SubAgentName;
+    sub_agent_name?: string;
+    invocation_id?: string;
+    tool_use_id?: string;
+    content?: unknown;
+    result?: SubAgentResultPayload;
+  };
+  const e = event as WireEvent;
+
   switch (event.type) {
     case "text_delta": {
-      // Append to the trailing text block (create one if the last block
-      // is a sub_agent_result — keeps the stream readable when text
-      // resumes AFTER a tool call).
+      const delta = e.text ?? e.delta ?? "";
+      if (delta.length === 0) return msg;
       const blocks = [...msg.blocks];
       const last = blocks[blocks.length - 1];
       if (last !== undefined && last.type === "text") {
         blocks[blocks.length - 1] = {
           type: "text",
-          text: last.text + event.delta,
+          text: last.text + delta,
         };
       } else {
-        blocks.push({ type: "text", text: event.delta });
+        blocks.push({ type: "text", text: delta });
       }
       return { ...msg, blocks };
     }
     case "sub_agent_start": {
+      const invocationId = e.tool_use_id ?? e.invocation_id ?? "unknown";
+      const subAgent = (e.sub_agent_name ?? e.sub_agent ?? "mailroom") as SubAgentName;
       return {
         ...msg,
         pendingSubAgents: [
           ...msg.pendingSubAgents,
-          {
-            invocationId: event.invocation_id,
-            subAgent: event.sub_agent,
-          },
+          { invocationId, subAgent },
         ],
       };
     }
     case "sub_agent_progress": {
-      // Progress events don't currently mutate the rendered card — they
-      // could drive a per-card progress copy update in a later sprint.
       return msg;
     }
     case "sub_agent_result": {
-      // Promote pending → resolved block; drop the pending entry.
+      const invocationId = e.tool_use_id ?? e.invocation_id ?? "unknown";
+      const subAgent = (e.sub_agent_name ?? e.sub_agent ?? "mailroom") as SubAgentName;
+      const result = (e.result ?? e.content) as SubAgentResultPayload;
       const block: StoredContentBlock = {
         type: "sub_agent_result",
-        sub_agent: event.sub_agent,
-        result: event.result,
+        sub_agent: subAgent,
+        result,
       };
       return {
         ...msg,
         blocks: [...msg.blocks, block],
         pendingSubAgents: msg.pendingSubAgents.filter(
-          (p) => p.invocationId !== event.invocation_id,
+          (p) => p.invocationId !== invocationId,
         ),
       };
     }
@@ -297,8 +311,6 @@ function reduceAssistant(msg: UiMessage, event: OrchestratorEvent): UiMessage {
       return msg;
     }
     case "error": {
-      // Error is surfaced via the top-level banner; nothing to embed in
-      // the message itself.
       return msg;
     }
   }
@@ -319,13 +331,13 @@ function MessageBubble({ message }: { message: UiMessage }): React.ReactElement 
       }}
     >
       <div
+        className={
+          "app-shell-bubble" + (isUser ? " app-shell-bubble--user" : "")
+        }
         style={{
           maxWidth: "min(720px, 95%)",
           padding: "var(--sp-12) var(--sp-16)",
           borderRadius: "var(--r-xl)",
-          background: isUser ? "var(--surface-warm)" : "var(--brand-cream)",
-          border: "1px solid var(--border)",
-          color: "var(--ink)",
           whiteSpace: "pre-wrap",
           wordBreak: "break-word",
         }}
