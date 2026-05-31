@@ -27,7 +27,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const MAX_CHARS = 12_000;
-const LARGE_PASTE_CHARS = 15_000;
+/**
+ * Threshold at which a paste auto-converts into a `.txt` attachment instead
+ * of inserting into the textarea. claude.ai uses ~15k for this; we use a
+ * smaller number so it fires reliably BEFORE the textarea's MAX_CHARS cap
+ * (otherwise a paste in the 12k–15k range would silently get truncated by
+ * the onChange slicer instead of becoming a chip).
+ */
+const LARGE_PASTE_CHARS = 6_000;
 const MAX_FILES = 5;
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 
