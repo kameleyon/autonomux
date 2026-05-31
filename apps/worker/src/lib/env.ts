@@ -26,9 +26,20 @@ const VALID_NODE_ENVS: readonly NodeEnv[] = [
  * Required env vars. Add to this list as new sub-agents come online.
  * REDIS_URL: BullMQ / IORedis connection string.
  * NODE_ENV:  Standard runtime selector.
+ * GMAIL_OAUTH_CLIENT_ID + GMAIL_OAUTH_CLIENT_SECRET: needed by the Mailroom
+ *   worker (lib/gmail-client.ts) to refresh expired access tokens via
+ *   Google's OAuth refresh_token flow. Shared with apps/web (start flow).
  */
-const REQUIRED_ENV = ["REDIS_URL", "NODE_ENV"] as const;
+const REQUIRED_ENV = [
+  "REDIS_URL",
+  "NODE_ENV",
+  "GMAIL_OAUTH_CLIENT_ID",
+  "GMAIL_OAUTH_CLIENT_SECRET",
+] as const;
 type RequiredEnvKey = (typeof REQUIRED_ENV)[number];
+
+/** Default Mailroom triage batch size if the caller doesn't override. */
+const DEFAULT_MAILROOM_TRIAGE_MAX_MESSAGES = 25;
 
 export type WorkerEnv = {
   readonly REDIS_URL: string;
@@ -37,6 +48,12 @@ export type WorkerEnv = {
   readonly LOG_LEVEL: string;
   /** Optional service tag emitted on every log line. */
   readonly SERVICE_NAME: string;
+  /** Gmail OAuth client id — required, used to refresh access tokens. */
+  readonly GMAIL_OAUTH_CLIENT_ID: string;
+  /** Gmail OAuth client secret — required, used to refresh access tokens. */
+  readonly GMAIL_OAUTH_CLIENT_SECRET: string;
+  /** Max messages the Mailroom triage job pulls from Gmail per run. */
+  readonly MAILROOM_TRIAGE_MAX_MESSAGES: number;
 };
 
 /**
@@ -77,11 +94,43 @@ export function assertEnv(): WorkerEnv {
     throw new Error("[@autonomux/worker] REDIS_URL missing after assertion.");
   }
 
+  const gmailClientId = process.env["GMAIL_OAUTH_CLIENT_ID"];
+  if (gmailClientId === undefined) {
+    throw new Error(
+      "[@autonomux/worker] GMAIL_OAUTH_CLIENT_ID missing after assertion.",
+    );
+  }
+
+  const gmailClientSecret = process.env["GMAIL_OAUTH_CLIENT_SECRET"];
+  if (gmailClientSecret === undefined) {
+    throw new Error(
+      "[@autonomux/worker] GMAIL_OAUTH_CLIENT_SECRET missing after assertion.",
+    );
+  }
+
+  // Optional with sane default; reject non-integers / non-positive values
+  // so misconfiguration fails fast at boot rather than at first job.
+  let triageMax = DEFAULT_MAILROOM_TRIAGE_MAX_MESSAGES;
+  const triageMaxRaw = process.env["MAILROOM_TRIAGE_MAX_MESSAGES"];
+  if (triageMaxRaw !== undefined && triageMaxRaw.trim() !== "") {
+    const parsed = Number.parseInt(triageMaxRaw.trim(), 10);
+    if (!Number.isInteger(parsed) || parsed <= 0 || parsed > 500) {
+      throw new Error(
+        `[@autonomux/worker] Invalid MAILROOM_TRIAGE_MAX_MESSAGES "${triageMaxRaw}". ` +
+          "Expected a positive integer ≤ 500.",
+      );
+    }
+    triageMax = parsed;
+  }
+
   return {
     REDIS_URL: redisUrl,
     NODE_ENV: nodeEnvRaw,
     LOG_LEVEL: process.env["LOG_LEVEL"] ?? "info",
     SERVICE_NAME: process.env["SERVICE_NAME"] ?? "autonomux-worker",
+    GMAIL_OAUTH_CLIENT_ID: gmailClientId,
+    GMAIL_OAUTH_CLIENT_SECRET: gmailClientSecret,
+    MAILROOM_TRIAGE_MAX_MESSAGES: triageMax,
   };
 }
 

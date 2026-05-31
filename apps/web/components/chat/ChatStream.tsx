@@ -1,0 +1,427 @@
+"use client";
+
+/**
+ * apps/web/components/chat/ChatStream.tsx
+ *
+ * Client island for the active thread view.
+ *
+ * Responsibilities:
+ *   - Hydrate from the server-loaded `initialMessages` (history of the
+ *     conversation; immutable across renders).
+ *   - On Composer submit: optimistic-append the user turn, open the SSE
+ *     POST stream (lib/chat/sse-client), and accumulate events into an
+ *     in-flight assistant message (text deltas + inline SubAgentCards).
+ *   - Mount an ARIA-live="polite" region for the streaming text (Halo
+ *     requirement — SC 4.1.3 Status Messages).
+ *   - Auto-scroll to bottom when the message list grows OR the in-flight
+ *     text appends, UNLESS the user has scrolled up to read history
+ *     (manual scroll suppression — never yank them back).
+ *   - On unmount / route change: abort the in-flight fetch so the server
+ *     fires `request.signal.aborted` and writes `agent_runs.status='cancelled'`.
+ *
+ * Owner: [Cluster C · Vega + Forge + Halo]
+ */
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { Composer } from "./Composer";
+import { SubAgentCard } from "./SubAgentCard";
+import { openChatStream } from "@/lib/chat/sse-client";
+import type {
+  ChatMessageRow,
+  OrchestratorEvent,
+  StoredContentBlock,
+  SubAgentName,
+  SubAgentResultPayload,
+} from "@/lib/chat/types";
+
+export interface ChatStreamProps {
+  threadId: string;
+  initialMessages: ReadonlyArray<ChatMessageRow>;
+}
+
+// ── In-memory message shape ─────────────────────────────────────────────
+// Distinct from `ChatMessageRow` because the in-flight assistant turn
+// doesn't have a DB id yet; we identify it by `clientId`.
+
+interface UiMessage {
+  clientId: string;
+  /** "user" | "assistant" — `system`/`tool` rows are filtered out of the UI. */
+  role: "user" | "assistant";
+  blocks: StoredContentBlock[];
+  /** Tracks in-flight sub-agent invocations awaiting their result event. */
+  pendingSubAgents: PendingSubAgent[];
+}
+
+interface PendingSubAgent {
+  invocationId: string;
+  subAgent: SubAgentName;
+}
+
+function fromHistory(row: ChatMessageRow): UiMessage | null {
+  if (row.role !== "user" && row.role !== "assistant") return null;
+  return {
+    clientId: `db-${row.id}`,
+    role: row.role,
+    blocks: Array.isArray(row.content_blocks) ? row.content_blocks : [],
+    pendingSubAgents: [],
+  };
+}
+
+export function ChatStream({
+  threadId,
+  initialMessages,
+}: ChatStreamProps): React.ReactElement {
+  const initialUi = useMemo<UiMessage[]>(
+    () =>
+      initialMessages
+        .map(fromHistory)
+        .filter((m): m is UiMessage => m !== null),
+    [initialMessages],
+  );
+
+  const [messages, setMessages] = useState<UiMessage[]>(initialUi);
+  const [inFlight, setInFlight] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // AbortController for the active SSE fetch; ref so we can call abort()
+  // from unmount cleanup without re-running the effect.
+  const abortRef = useRef<AbortController | null>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const userScrolledUpRef = useRef(false);
+
+  // ── Auto-scroll ─────────────────────────────────────────────────────
+  // Track whether the user is pinned near the bottom; if they scrolled
+  // up to read older messages, don't yank them back when new content
+  // appends.
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (el === null) return;
+    const handler = (): void => {
+      const distanceFromBottom =
+        el.scrollHeight - (el.scrollTop + el.clientHeight);
+      userScrolledUpRef.current = distanceFromBottom > 80;
+    };
+    el.addEventListener("scroll", handler, { passive: true });
+    return () => el.removeEventListener("scroll", handler);
+  }, []);
+
+  useEffect(() => {
+    if (userScrolledUpRef.current) return;
+    const el = scrollerRef.current;
+    if (el === null) return;
+    el.scrollTop = el.scrollHeight;
+  }, [messages]);
+
+  // ── Cleanup on unmount → cancel server stream ────────────────────────
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, []);
+
+  // ── Submit handler ──────────────────────────────────────────────────
+  const handleSubmit = useCallback(
+    (userText: string): void => {
+      if (inFlight) return;
+      setErrorMsg(null);
+
+      const userMsg: UiMessage = {
+        clientId: `user-${Date.now()}`,
+        role: "user",
+        blocks: [{ type: "text", text: userText }],
+        pendingSubAgents: [],
+      };
+      const assistantMsg: UiMessage = {
+        clientId: `assistant-${Date.now()}`,
+        role: "assistant",
+        blocks: [{ type: "text", text: "" }],
+        pendingSubAgents: [],
+      };
+
+      setMessages((prev) => [...prev, userMsg, assistantMsg]);
+      setInFlight(true);
+      userScrolledUpRef.current = false;
+
+      const ac = new AbortController();
+      abortRef.current = ac;
+
+      void (async () => {
+        try {
+          for await (const event of openChatStream(
+            { threadId, userMessage: userText },
+            { signal: ac.signal },
+          )) {
+            applyEvent(setMessages, assistantMsg.clientId, event);
+            if (event.type === "error") {
+              setErrorMsg(event.message);
+            }
+          }
+        } catch (err) {
+          if ((err as Error)?.name !== "AbortError") {
+            setErrorMsg(
+              (err as Error)?.message ??
+                "Could not reach AlterEgo. Try again in a moment.",
+            );
+          }
+        } finally {
+          setInFlight(false);
+          if (abortRef.current === ac) abortRef.current = null;
+        }
+      })();
+    },
+    [inFlight, threadId],
+  );
+
+  return (
+    <div
+      style={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        minHeight: 0,
+      }}
+    >
+      {/* Live region for SR-only stream announcements. Visually-hidden
+          summary of the last text-delta burst keeps verbosity sane. */}
+      <div
+        ref={scrollerRef}
+        role="log"
+        aria-live="polite"
+        aria-relevant="additions text"
+        aria-atomic="false"
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          padding: "var(--sp-24) var(--sp-24) var(--sp-12) var(--sp-24)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "var(--sp-16)",
+          minHeight: 0,
+        }}
+      >
+        {messages.length === 0 ? (
+          <EmptyConversationHint />
+        ) : (
+          messages.map((m) => <MessageBubble key={m.clientId} message={m} />)
+        )}
+      </div>
+
+      {errorMsg !== null ? (
+        <div
+          role="alert"
+          style={{
+            margin: "0 var(--sp-24) var(--sp-12) var(--sp-24)",
+            padding: "var(--sp-10) var(--sp-12)",
+            borderRadius: "var(--r-md)",
+            background: "var(--alert-bg)",
+            color: "var(--alert-c)",
+            fontSize: "var(--fs-body-sm)",
+          }}
+        >
+          {errorMsg}
+        </div>
+      ) : null}
+
+      <Composer disabled={inFlight} onSubmit={handleSubmit} />
+    </div>
+  );
+}
+
+// ── Event reducer ───────────────────────────────────────────────────────
+
+function applyEvent(
+  setMessages: React.Dispatch<React.SetStateAction<UiMessage[]>>,
+  assistantClientId: string,
+  event: OrchestratorEvent,
+): void {
+  setMessages((prev) =>
+    prev.map((m) => {
+      if (m.clientId !== assistantClientId) return m;
+      return reduceAssistant(m, event);
+    }),
+  );
+}
+
+function reduceAssistant(msg: UiMessage, event: OrchestratorEvent): UiMessage {
+  switch (event.type) {
+    case "text_delta": {
+      // Append to the trailing text block (create one if the last block
+      // is a sub_agent_result — keeps the stream readable when text
+      // resumes AFTER a tool call).
+      const blocks = [...msg.blocks];
+      const last = blocks[blocks.length - 1];
+      if (last !== undefined && last.type === "text") {
+        blocks[blocks.length - 1] = {
+          type: "text",
+          text: last.text + event.delta,
+        };
+      } else {
+        blocks.push({ type: "text", text: event.delta });
+      }
+      return { ...msg, blocks };
+    }
+    case "sub_agent_start": {
+      return {
+        ...msg,
+        pendingSubAgents: [
+          ...msg.pendingSubAgents,
+          {
+            invocationId: event.invocation_id,
+            subAgent: event.sub_agent,
+          },
+        ],
+      };
+    }
+    case "sub_agent_progress": {
+      // Progress events don't currently mutate the rendered card — they
+      // could drive a per-card progress copy update in a later sprint.
+      return msg;
+    }
+    case "sub_agent_result": {
+      // Promote pending → resolved block; drop the pending entry.
+      const block: StoredContentBlock = {
+        type: "sub_agent_result",
+        sub_agent: event.sub_agent,
+        result: event.result,
+      };
+      return {
+        ...msg,
+        blocks: [...msg.blocks, block],
+        pendingSubAgents: msg.pendingSubAgents.filter(
+          (p) => p.invocationId !== event.invocation_id,
+        ),
+      };
+    }
+    case "final_usage": {
+      return msg;
+    }
+    case "error": {
+      // Error is surfaced via the top-level banner; nothing to embed in
+      // the message itself.
+      return msg;
+    }
+  }
+}
+
+// ── Visual subcomponents ────────────────────────────────────────────────
+
+function MessageBubble({ message }: { message: UiMessage }): React.ReactElement {
+  const isUser = message.role === "user";
+  return (
+    <article
+      data-role={message.role}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: isUser ? "flex-end" : "flex-start",
+        gap: "var(--sp-8)",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "min(720px, 95%)",
+          padding: "var(--sp-12) var(--sp-16)",
+          borderRadius: "var(--r-xl)",
+          background: isUser ? "var(--surface-warm)" : "var(--brand-cream)",
+          border: "1px solid var(--border)",
+          color: "var(--ink)",
+          whiteSpace: "pre-wrap",
+          wordBreak: "break-word",
+        }}
+      >
+        <div
+          style={{
+            fontFamily: "DM Mono, monospace",
+            fontSize: "var(--fs-mono-meta)",
+            color: isUser ? "var(--brand-orange)" : "var(--muted)",
+            letterSpacing: "0.18em",
+            textTransform: "uppercase",
+            marginBottom: "var(--sp-6)",
+          }}
+        >
+          {isUser ? "You" : "AlterEgo"}
+        </div>
+        {message.blocks.map((b, idx) =>
+          b.type === "text" ? (
+            <p
+              key={idx}
+              style={{
+                margin: 0,
+                fontSize: "var(--fs-body)",
+                color: "var(--ink)",
+                lineHeight: "var(--lh-body)",
+              }}
+            >
+              {b.text}
+              {/* Subtle cursor while streaming — only visible if it's the
+                  trailing text block of an assistant message that's still
+                  waiting on more deltas. */}
+              {!isUser &&
+              idx === message.blocks.length - 1 &&
+              message.pendingSubAgents.length === 0 &&
+              b.text.length === 0 ? (
+                <span aria-hidden="true" style={{ opacity: 0.5 }}>
+                  …
+                </span>
+              ) : null}
+            </p>
+          ) : (
+            <div key={idx} style={{ width: "100%" }}>
+              <SubAgentCard
+                invocationId={`hist-${idx}`}
+                subAgent={b.sub_agent}
+                result={b.result as SubAgentResultPayload}
+              />
+            </div>
+          ),
+        )}
+        {/* In-flight sub-agent skeleton card(s). */}
+        {message.pendingSubAgents.map((p) => (
+          <div key={p.invocationId} style={{ width: "100%" }}>
+            <SubAgentCard
+              invocationId={p.invocationId}
+              subAgent={p.subAgent}
+            />
+          </div>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+function EmptyConversationHint(): React.ReactElement {
+  return (
+    <div
+      style={{
+        margin: "auto",
+        textAlign: "center",
+        maxWidth: "440px",
+        padding: "var(--sp-32)",
+      }}
+    >
+      <p
+        style={{
+          fontFamily: "DM Mono, monospace",
+          fontSize: "var(--fs-mono-meta)",
+          letterSpacing: "0.25em",
+          textTransform: "uppercase",
+          color: "var(--brand-orange)",
+          marginBottom: "var(--sp-12)",
+        }}
+      >
+        Empty thread
+      </p>
+      <p
+        style={{
+          fontSize: "var(--fs-body-lg)",
+          color: "var(--ink-soft)",
+          margin: 0,
+        }}
+      >
+        Type below to start your first conversation. Ask AlterEgo to triage
+        your inbox, summarise a thread, or draft a reply.
+      </p>
+    </div>
+  );
+}

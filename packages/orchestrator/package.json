@@ -1,0 +1,42 @@
+{
+  "name": "@autonomux/orchestrator",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Autonomux — AlterEgo runtime: streaming tool-loop, sub-agent registry, episodic recall, agent-bus. Owned by [Forge].",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./events": "./src/events.ts",
+    "./runtime": "./src/runtime.ts",
+    "./sub-agents": "./src/sub-agents/registry.ts",
+    "./sub-agents/mailroom": "./src/sub-agents/mailroom.tool.ts",
+    "./system-prompt": "./src/system-prompt.ts",
+    "./memory": "./src/memory/episodic.ts",
+    "./agent-bus": "./src/agent-bus.ts"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "echo '(no lint configured for @autonomux/orchestrator yet)'",
+    "clean": "rm -rf .turbo dist"
+  },
+  "dependencies": {
+    "@autonomux/cipher": "*",
+    "@autonomux/db": "*",
+    "@autonomux/llm": "*",
+    "@autonomux/logger": "*",
+    "@autonomux/telemetry": "*",
+    "ioredis": "5.4.2",
+    "pino": "9.5.0",
+    "server-only": "0.0.1",
+    "zod": "3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.5",
+    "typescript": "5.8.2",
+    "vitest": "2.1.8"
+  }
+}

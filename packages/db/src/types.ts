@@ -417,6 +417,9 @@ export interface Database {
                     scope_grants: string[];
                     last_refresh_at: string | null;
                     last_error: string | null;
+                    // Sprint D §4 / migration 0011_oauth_credentials.sql
+                    encrypted_credentials: Json | null;
+                    token_expires_at: string | null;
                 } & Timestamps;
                 Insert: {
                     id?: string;
@@ -427,6 +430,8 @@ export interface Database {
                     scope_grants?: string[];
                     last_refresh_at?: string | null;
                     last_error?: string | null;
+                    encrypted_credentials?: Json | null;
+                    token_expires_at?: string | null;
                     created_at?: string;
                     updated_at?: string;
                 };

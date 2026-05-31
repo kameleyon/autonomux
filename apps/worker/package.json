@@ -13,11 +13,14 @@
     "build": "echo '@autonomux/worker: runtime is tsx — no compile step'",
     "start": "tsx src/index.ts",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "clean": "rm -rf dist .turbo"
   },
   "dependencies": {
     "@autonomux/cipher": "*",
     "@autonomux/db": "*",
+    "@autonomux/llm": "*",
     "@autonomux/logger": "*",
     "@autonomux/telemetry": "*",
     "@supabase/supabase-js": "2.47.10",
@@ -29,6 +32,7 @@
   },
   "devDependencies": {
     "@types/node": "22.10.5",
-    "typescript": "5.8.2"
+    "typescript": "5.8.2",
+    "vitest": "2.1.8"
   }
 }

@@ -66,3 +66,14 @@ export {
     logAuditEvent,
     type LogAuditEventArgs,
 } from './audit';
+
+export {
+    bumpUsageMeter,
+    recordAgentRun,
+    recordSubAgentRun,
+    type AgentRunHandle,
+    type AgentRunReplaySnapshot,
+    type BumpUsageMeterArgs,
+    type RecordAgentRunArgs,
+    type RecordSubAgentRunArgs,
+} from './orchestrator-helpers';

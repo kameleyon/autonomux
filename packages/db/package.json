@@ -11,7 +11,8 @@
     "./types": "./src/types.ts",
     "./admin": "./src/admin.ts",
     "./jwt": "./src/jwt.ts",
-    "./audit": "./src/audit.ts"
+    "./audit": "./src/audit.ts",
+    "./orchestrator-helpers": "./src/orchestrator-helpers.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

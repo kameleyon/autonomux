@@ -42,10 +42,10 @@ const CARDS: ReadonlyArray<Card> = [
     state: "available",
   },
   {
-    href: "#",
-    title: "AlterEgo orchestrator",
-    desc: "Your personal AI runs the sub-agents below. Ships in Sprint D.",
-    state: "wired-soon",
+    href: "/app/chat",
+    title: "Chat with AlterEgo",
+    desc: "Open a thread and put it to work — triage your inbox, draft a reply, surface what changed.",
+    state: "available",
   },
   {
     href: "#",

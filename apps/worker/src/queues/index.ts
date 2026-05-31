@@ -26,6 +26,10 @@ import { withSpan } from "@autonomux/telemetry";
 
 import { acquireIdempotencyLock } from "../lib/redis.js";
 import { processGdprJob } from "./gdpr.js";
+import {
+  processMailroomJob,
+  type MailroomWorkerDeps,
+} from "../workers/mailroom.js";
 
 // ---------------------------------------------------------------------------
 // Queue names (string-typed so they survive minification / lib boundaries)
@@ -95,6 +99,12 @@ export type QueueDeps = {
   readonly queueConnection: Redis;
   readonly workerConnection: Redis;
   readonly logger: Logger;
+  /**
+   * Per-sub-agent dependency bundles. Each is optional so non-mailroom
+   * deployments (e.g. tests) can boot the registry without Gmail creds.
+   * The dispatcher only consults these when the matching job arrives.
+   */
+  readonly mailroom?: MailroomWorkerDeps;
 };
 
 export type QueueHandle = {
@@ -279,6 +289,22 @@ async function dispatchJob(
       throw new Error("[queues] registry not yet initialized");
     }
     return processGdprJob(job, log, reg.gdpr);
+  }
+
+  if (queueName === "mailroom") {
+    if (deps.mailroom === undefined) {
+      // Boot order issue — mailroom job arrived before the worker handed
+      // deps to the registry. Treat as a transient failure so BullMQ retries.
+      log.error("mailroom job arrived but mailroom deps not registered");
+      throw new Error(
+        "[queues] mailroom processor invoked without MailroomWorkerDeps; check boot wiring",
+      );
+    }
+    return processMailroomJob({
+      logger: log,
+      job,
+      deps: deps.mailroom,
+    });
   }
 
   log.info("received job — no processor yet (Phase 1.0-A4 stub)");

@@ -36,6 +36,7 @@ import {
   startSampleWorker,
   type SampleWorkerHandle,
 } from "./workers/sample.js";
+import { buildMailroomDeps } from "./workers/mailroom.js";
 import { registerCronJobs } from "./jobs/cron.js";
 import { startHealthServer, type HealthServer } from "./lib/health.js";
 
@@ -90,11 +91,26 @@ async function main(): Promise<void> {
     }
   };
 
+  // ---- Sub-agent dependency wiring ----
+  // The Mailroom processor (workers/mailroom.ts) needs the agent-bus Redis
+  // client, Gmail OAuth creds, and the triage batch cap. We build the bundle
+  // before the queue registry so the registry can hand it to the dispatcher.
+  // Reuse the queue Redis connection for pub/sub publish — non-blocking ops
+  // are safe on the same client.
+  const mailroomDeps = buildMailroomDeps({
+    logger,
+    agentBus: queueConnection,
+    gmailClientId: env.GMAIL_OAUTH_CLIENT_ID,
+    gmailClientSecret: env.GMAIL_OAUTH_CLIENT_SECRET,
+    triageMaxMessages: env.MAILROOM_TRIAGE_MAX_MESSAGES,
+  });
+
   // ---- Queue registry ----
   const registry = createQueueRegistry({
     queueConnection,
     workerConnection,
     logger,
+    mailroom: mailroomDeps,
   });
   logger.info(
     { queues: Object.keys(registry) },

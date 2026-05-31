@@ -6,6 +6,20 @@ const config: NextConfig = {
   images: {
     remotePatterns: [],
   },
+  /* Workspace packages consumed as TypeScript source (package.json main
+   * points at ./src/index.ts, not a built dist/). Next webpack won't
+   * transpile node_modules by default — opt them in explicitly or it
+   * chokes on bare `.ts` imports with "Module parse failed". */
+  transpilePackages: [
+    "@autonomux/auth",
+    "@autonomux/cipher",
+    "@autonomux/db",
+    "@autonomux/flags",
+    "@autonomux/llm",
+    "@autonomux/logger",
+    "@autonomux/orchestrator",
+    "@autonomux/ui",
+  ],
   // OTel Node SDK is heavy + uses dynamic require — keep it external so
   // Next doesn't try to bundle it for the server runtime. Auto-loaded
   // by `instrumentation.ts`. Phase 1.0-B10 (Watch).
