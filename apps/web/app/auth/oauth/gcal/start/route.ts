@@ -37,6 +37,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   buildAuthorizeUrl,
   getGcalOAuthConfig,
+  OAUTH_STATE_COOKIE_NAME,
   resolveGcalScope,
 } from "@/lib/oauth/gcal";
 import {
@@ -48,8 +49,6 @@ import {
 } from "@/lib/oauth/state";
 
 export const dynamic = "force-dynamic";
-
-export const OAUTH_STATE_COOKIE_NAME = "oauth_state_gcal";
 
 function integrationsErrorRedirect(
   origin: string,

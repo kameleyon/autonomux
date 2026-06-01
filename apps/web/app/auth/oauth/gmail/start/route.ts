@@ -32,6 +32,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   buildAuthorizeUrl,
   getGmailOAuthConfig,
+  OAUTH_STATE_COOKIE_NAME,
   resolveGmailScope,
 } from "@/lib/oauth/gmail";
 import {
@@ -43,8 +44,6 @@ import {
 } from "@/lib/oauth/state";
 
 export const dynamic = "force-dynamic";
-
-export const OAUTH_STATE_COOKIE_NAME = "oauth_state_gmail";
 
 function integrationsErrorRedirect(
   origin: string,

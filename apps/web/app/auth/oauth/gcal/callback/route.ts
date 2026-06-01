@@ -38,9 +38,9 @@ import { getSupabaseServiceClient } from "@/lib/supabase/service";
 import {
   exchangeCodeForTokens,
   getGcalOAuthConfig,
+  OAUTH_STATE_COOKIE_NAME,
 } from "@/lib/oauth/gcal";
 import { verifyStateJwt } from "@/lib/oauth/state";
-import { OAUTH_STATE_COOKIE_NAME } from "../start/route";
 
 export const dynamic = "force-dynamic";
 

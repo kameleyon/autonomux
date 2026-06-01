@@ -39,7 +39,7 @@ import {
   getGmailOAuthConfig,
 } from "@/lib/oauth/gmail";
 import { verifyStateJwt } from "@/lib/oauth/state";
-import { OAUTH_STATE_COOKIE_NAME } from "../start/route";
+import { OAUTH_STATE_COOKIE_NAME } from "@/lib/oauth/gmail";
 
 export const dynamic = "force-dynamic";
 

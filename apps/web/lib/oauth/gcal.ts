@@ -27,6 +27,15 @@ export const GOOGLE_AUTHORIZE_URL =
 export const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 export const GOOGLE_REVOKE_URL = "https://oauth2.googleapis.com/revoke";
 
+/**
+ * Name of the HttpOnly cookie that holds the signed state JWT during the
+ * OAuth round-trip. Lives here (not in the route module) because Next.js 15
+ * `route.ts` files are restricted to a fixed allowlist of named exports
+ * (GET / POST / dynamic / runtime / etc.); a non-handler export breaks the
+ * build with "is not a valid Route export field."
+ */
+export const OAUTH_STATE_COOKIE_NAME = "oauth_state_gcal";
+
 // ---------------------------------------------------------------------------
 // Scope selection
 // ---------------------------------------------------------------------------
