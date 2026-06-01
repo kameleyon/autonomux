@@ -24,6 +24,24 @@ type Card = {
 
 const CARDS: ReadonlyArray<Card> = [
   {
+    href: "/app/chat",
+    title: "Chat with AlterEgo",
+    desc: "Open a thread and put it to work — triage your inbox, check today's calendar, draft a reply, surface what changed.",
+    state: "available",
+  },
+  {
+    href: "/app/settings/integrations",
+    title: "Integrations",
+    desc: "Connect the apps AlterEgo can reach into — Gmail, Google Calendar, more on the way.",
+    state: "available",
+  },
+  {
+    href: "/app/chat",
+    title: "Sub-agents",
+    desc: "Mailroom and Scheduler are live. Scribe, Oracle, Treasurer, Voice, Companion follow. Invoke any of them from chat.",
+    state: "available",
+  },
+  {
     href: "/app/onboarding/totp",
     title: "Enroll 2FA",
     desc: "Add a TOTP factor — required before AlterEgo touches anything outside the browser.",
@@ -40,18 +58,6 @@ const CARDS: ReadonlyArray<Card> = [
     title: "Privacy & data",
     desc: "Export everything we have on you (GDPR Art. 20) or delete your tenant (Art. 17).",
     state: "available",
-  },
-  {
-    href: "/app/chat",
-    title: "Chat with AlterEgo",
-    desc: "Open a thread and put it to work — triage your inbox, draft a reply, surface what changed.",
-    state: "available",
-  },
-  {
-    href: "#",
-    title: "Sub-agents",
-    desc: "Mailroom · Scheduler · Scribe · Oracle · Treasurer · Voice · Companion.",
-    state: "wired-soon",
   },
 ];
 
