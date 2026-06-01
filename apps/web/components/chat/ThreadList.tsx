@@ -1,9 +1,11 @@
 /**
  * apps/web/components/chat/ThreadList.tsx
  *
- * Server Component. Renders the left-rail list of recent chat threads.
- * Receives threads as a prop (the parent page loads them with the
- * tenant-scoped Supabase client so RLS keeps cross-tenant isolation).
+ * Server Component. Renders the left-rail list of recent chat threads
+ * with full CRUD: hover kebab → popover with Rename / Archive / Delete,
+ * inline rename input, and a collapsible "Archived" group below the
+ * active list. Per-row interactivity lives in `./ThreadRow.tsx` (client
+ * island) so the surrounding rail can stay on the server.
  *
  * Visual: 268px rail, quiet "CHATS" eyebrow, dashed-border "+ New chat"
  * ghost button, soft warm fill on the active item — no left-edge accent
@@ -13,22 +15,27 @@
  *   - `<nav>` with `aria-label="Chat threads"` so SR users can jump.
  *   - Active thread carries `aria-current="page"`.
  *   - "New conversation" is a real Server Action form (no client JS).
+ *   - The archive group is a real `<details>`/`<summary>` collapsible,
+ *     keyboard-navigable for free.
  *
  * Owner: [Cluster C · Forge]
  */
 
-import Link from "next/link";
-
 import type { ChatThreadRow } from "@/lib/chat/types";
 import { createThread } from "@/app/app/chat/new/action";
 
+import { ThreadRow } from "./ThreadRow";
+import { ArchivedThreadGroup } from "./ArchivedThreadGroup";
+
 export interface ThreadListProps {
-  threads: ReadonlyArray<ChatThreadRow>;
+  activeThreads: ReadonlyArray<ChatThreadRow>;
+  archivedThreads: ReadonlyArray<ChatThreadRow>;
   activeThreadId: string | null;
 }
 
 export function ThreadList({
-  threads,
+  activeThreads,
+  archivedThreads,
   activeThreadId,
 }: ThreadListProps): React.ReactElement {
   return (
@@ -94,7 +101,7 @@ export function ThreadList({
         </form>
       </div>
 
-      {threads.length === 0 ? (
+      {activeThreads.length === 0 ? (
         <div
           style={{
             display: "flex",
@@ -133,84 +140,23 @@ export function ThreadList({
             gap: "2px",
           }}
         >
-          {threads.map((t) => {
-            const isActive = t.id === activeThreadId;
-            const stamp =
-              t.last_message_at ?? t.updated_at ?? t.created_at;
-            return (
-              <li key={t.id}>
-                <Link
-                  href={`/app/chat/${t.id}`}
-                  aria-current={isActive ? "page" : undefined}
-                  className={
-                    isActive
-                      ? "thread-list-item thread-list-item--active"
-                      : "thread-list-item"
-                  }
-                  style={{
-                    display: "block",
-                    padding: "10px 12px",
-                    borderRadius: "var(--r-md)",
-                    background: isActive
-                      ? "rgba(0, 0, 0, 0.05)"
-                      : "transparent",
-                    color: "var(--ink)",
-                    textDecoration: "none",
-                    transition: "background 120ms",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: "var(--fs-body-sm)",
-                      color: isActive
-                        ? "var(--ink)"
-                        : "var(--ink-soft)",
-                      fontWeight: isActive ? 500 : 400,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {t.title}
-                  </div>
-                  <div
-                    style={{
-                      marginTop: "var(--sp-2)",
-                      fontFamily: "DM Mono, monospace",
-                      fontSize: "calc(var(--fs-mono-meta) * 0.95)",
-                      color: "var(--muted)",
-                      letterSpacing: "0.05em",
-                    }}
-                  >
-                    {formatStamp(stamp)}
-                  </div>
-                </Link>
-              </li>
-            );
-          })}
+          {activeThreads.map((t) => (
+            <ThreadRow
+              key={t.id}
+              thread={t}
+              isActive={t.id === activeThreadId}
+              variant="active"
+            />
+          ))}
         </ul>
       )}
+
+      {archivedThreads.length > 0 ? (
+        <ArchivedThreadGroup
+          threads={archivedThreads}
+          activeThreadId={activeThreadId}
+        />
+      ) : null}
     </nav>
   );
-}
-
-function formatStamp(iso: string | null): string {
-  if (iso === null) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  const now = new Date();
-  const sameDay =
-    d.getFullYear() === now.getFullYear() &&
-    d.getMonth() === now.getMonth() &&
-    d.getDate() === now.getDate();
-  if (sameDay) {
-    return d.toLocaleTimeString(undefined, {
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  }
-  return d.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-  });
 }

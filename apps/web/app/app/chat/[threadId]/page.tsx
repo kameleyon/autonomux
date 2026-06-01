@@ -65,7 +65,7 @@ export default async function ChatThreadPage(props: {
   )
     .from("chat_threads")
     .select(
-      "id,tenant_id,user_id,title,created_at,updated_at,last_message_at",
+      "id,tenant_id,user_id,title,created_at,updated_at,last_message_at,archived_at",
     )
     .eq("id", threadId)
     .eq("tenant_id", tenantId)
@@ -76,38 +76,69 @@ export default async function ChatThreadPage(props: {
   }
   const thread = threadRes.data;
 
-  // Load all threads for the rail (sibling navigation) AND the last 50
-  // messages for the active thread. Parallel-await so the round trips
-  // overlap.
-  const [allThreadsRes, messagesRes] = await Promise.all([
-    (
-      service as unknown as {
-        from: (t: string) => {
-          select: (cols: string) => {
-            eq: (
+  /* Load active + archived threads in parallel with the last 50 messages
+   * for the open thread. The active list filters `archived_at IS NULL`
+   * (matches the partial index from 0014); the archived list filters the
+   * inverse. Both are tenant-scoped. */
+  type ThreadsQuery = {
+    from: (t: string) => {
+      select: (cols: string) => {
+        eq: (
+          col: string,
+          v: string,
+        ) => {
+          is: (
+            col: string,
+            v: null,
+          ) => {
+            order: (
               col: string,
-              v: string,
+              opts: { ascending: boolean; nullsFirst?: boolean },
             ) => {
-              order: (
-                col: string,
-                opts: { ascending: boolean; nullsFirst?: boolean },
-              ) => {
-                limit: (n: number) => Promise<{
-                  data: ChatThreadRow[] | null;
-                  error: { message: string } | null;
-                }>;
-              };
+              limit: (n: number) => Promise<{
+                data: ChatThreadRow[] | null;
+                error: { message: string } | null;
+              }>;
+            };
+          };
+          not: (
+            col: string,
+            op: "is",
+            v: null,
+          ) => {
+            order: (
+              col: string,
+              opts: { ascending: boolean; nullsFirst?: boolean },
+            ) => {
+              limit: (n: number) => Promise<{
+                data: ChatThreadRow[] | null;
+                error: { message: string } | null;
+              }>;
             };
           };
         };
-      }
-    )
+      };
+    };
+  };
+
+  const [activeThreadsRes, archivedThreadsRes, messagesRes] = await Promise.all([
+    (service as unknown as ThreadsQuery)
       .from("chat_threads")
       .select(
-        "id,tenant_id,user_id,title,created_at,updated_at,last_message_at",
+        "id,tenant_id,user_id,title,created_at,updated_at,last_message_at,archived_at",
       )
       .eq("tenant_id", tenantId)
+      .is("archived_at", null)
       .order("last_message_at", { ascending: false, nullsFirst: false })
+      .limit(50),
+    (service as unknown as ThreadsQuery)
+      .from("chat_threads")
+      .select(
+        "id,tenant_id,user_id,title,created_at,updated_at,last_message_at,archived_at",
+      )
+      .eq("tenant_id", tenantId)
+      .not("archived_at", "is", null)
+      .order("archived_at", { ascending: false, nullsFirst: false })
       .limit(50),
     (
       service as unknown as {
@@ -140,12 +171,17 @@ export default async function ChatThreadPage(props: {
       .limit(50),
   ]);
 
-  const threads = allThreadsRes.data ?? [];
+  const activeThreads = activeThreadsRes.data ?? [];
+  const archivedThreads = archivedThreadsRes.data ?? [];
   const messages = messagesRes.data ?? [];
 
   return (
     <>
-      <ThreadList threads={threads} activeThreadId={thread.id} />
+      <ThreadList
+        activeThreads={activeThreads}
+        archivedThreads={archivedThreads}
+        activeThreadId={thread.id}
+      />
       <section
         aria-label={`Conversation: ${thread.title}`}
         style={{

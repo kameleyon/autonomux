@@ -1,8 +1,11 @@
 /**
  * apps/web/app/app/chat/layout.tsx
  *
- * Two-column shell for /app/chat/*. Left rail = ThreadList (240px fixed),
- * right pane = active thread (children).
+ * Two-column shell for /app/chat/*. Left rail = ThreadList (secondary
+ * contextual nav), right pane = active thread (children). This sits
+ * INSIDE the primary app shell — the outer <AppShell> already provides
+ * the brand sidebar + topbar, so this layout no longer carries its own
+ * width / centering constraints. It just flexes to fill the main pane.
  *
  * The thread list itself is rendered inside this layout via the page
  * components so it can share the loaded thread set without an extra
@@ -24,12 +27,13 @@ export default function ChatLayout({
       tabIndex={-1}
       style={{
         display: "flex",
-        gap: "var(--sp-20)",
-        maxWidth: "1280px",
-        margin: "0 auto",
-        padding: "var(--sp-16) var(--sp-16)",
-        minHeight: "calc(100vh - 64px)",
+        gap: "var(--sp-16)",
+        flex: 1,
+        minWidth: 0,
+        minHeight: 0,
+        padding: "var(--sp-16)",
         alignItems: "stretch",
+        overflow: "hidden",
       }}
     >
       {children}

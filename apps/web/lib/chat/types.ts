@@ -133,6 +133,8 @@ export interface ChatThreadRow {
   created_at: string;
   updated_at: string;
   last_message_at: string | null;
+  /** When the thread was soft-archived. NULL = active. See 0014. */
+  archived_at: string | null;
 }
 
 export type ChatMessageRole = "user" | "assistant" | "system" | "tool";

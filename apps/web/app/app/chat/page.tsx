@@ -54,14 +54,19 @@ export default async function ChatIndexPage(props: {
             col: string,
             v: string,
           ) => {
-            order: (
+            is: (
               col: string,
-              opts: { ascending: boolean; nullsFirst?: boolean },
+              v: null,
             ) => {
-              limit: (n: number) => Promise<{
-                data: ChatThreadRow[] | null;
-                error: { message: string } | null;
-              }>;
+              order: (
+                col: string,
+                opts: { ascending: boolean; nullsFirst?: boolean },
+              ) => {
+                limit: (n: number) => Promise<{
+                  data: ChatThreadRow[] | null;
+                  error: { message: string } | null;
+                }>;
+              };
             };
           };
         };
@@ -70,9 +75,10 @@ export default async function ChatIndexPage(props: {
   )
     .from("chat_threads")
     .select(
-      "id,tenant_id,user_id,title,created_at,updated_at,last_message_at",
+      "id,tenant_id,user_id,title,created_at,updated_at,last_message_at,archived_at",
     )
     .eq("tenant_id", tenantId)
+    .is("archived_at", null)
     .order("last_message_at", { ascending: false, nullsFirst: false })
     .limit(50);
 
