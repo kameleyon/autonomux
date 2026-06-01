@@ -5,19 +5,25 @@
  *
  * Client island for the active thread view.
  *
+ * Visual model (2026 refresh):
+ *   - The chat surface is a frosted-white card on a fiery wash. Inside the
+ *     card text is dark ink.
+ *   - AI turns: full-width prose, no bubble, no border, no shadow. A small
+ *     "ALTEREGO" label sits above the body with a timestamp.
+ *   - User turns: right-aligned cream-tinted bubble, max 70% width. A small
+ *     "YOU" label sits above the bubble with a timestamp.
+ *   - Sub-agent result cards render full-width inside the AI body.
+ *   - All turn content is centered in an 820px column.
+ *   - Hovering a turn reveals a Copy (and Regenerate, on AI turns) action.
+ *
  * Responsibilities:
- *   - Hydrate from the server-loaded `initialMessages` (history of the
- *     conversation; immutable across renders).
+ *   - Hydrate from server-loaded `initialMessages` (immutable across renders).
  *   - On Composer submit: optimistic-append the user turn, open the SSE
- *     POST stream (lib/chat/sse-client), and accumulate events into an
- *     in-flight assistant message (text deltas + inline SubAgentCards).
- *   - Mount an ARIA-live="polite" region for the streaming text (Halo
- *     requirement — SC 4.1.3 Status Messages).
- *   - Auto-scroll to bottom when the message list grows OR the in-flight
- *     text appends, UNLESS the user has scrolled up to read history
- *     (manual scroll suppression — never yank them back).
- *   - On unmount / route change: abort the in-flight fetch so the server
- *     fires `request.signal.aborted` and writes `agent_runs.status='cancelled'`.
+ *     POST stream, accumulate events into an in-flight assistant message.
+ *   - Mount an ARIA-live="polite" region for the streaming text (SC 4.1.3).
+ *   - Auto-scroll to bottom unless the user scrolled up to read history.
+ *   - On unmount: abort the in-flight fetch so the server writes
+ *     `agent_runs.status='cancelled'`.
  *
  * Owner: [Cluster C · Vega + Forge + Halo]
  */
@@ -26,6 +32,7 @@ import {
   memo,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -152,7 +159,7 @@ function stripEmoji(text: string): string {
     .replace(/\p{Extended_Pictographic}/gu, "")
     .replace(/[\u{1F1E6}-\u{1F1FF}]/gu, "") // regional indicators (flags)
     .replace(/[\u{1F3FB}-\u{1F3FF}]/gu, "") // skin-tone modifiers
-    .replace(/[\u200D\uFE0E\uFE0F\u20E3]/gu, "") // ZWJ + variation selectors + keycap
+    .replace(/[‍︎️⃣]/gu, "") // ZWJ + variation selectors + keycap
     .replace(/[ \t]{2,}/g, " ")
     .replace(/ +([.,!?;:])/g, "$1")
     .replace(/[ \t]+$/gm, "");
@@ -168,6 +175,46 @@ function fromHistory(row: ChatMessageRow): UiMessage | null {
     createdAt: new Date(row.created_at).getTime(),
   };
 }
+
+/* ──────────────────────────────────────────────────────────────────────
+ * Empty-state prompt chips.
+ *
+ * Four starter prompts inviting the user into the most-wired sub-agents
+ * (Mailroom + Scheduler). Each chip carries a short title and a longer
+ * `prompt` that becomes the seed message when clicked.
+ * ────────────────────────────────────────────────────────────────────── */
+interface PromptChip {
+  readonly title: string;
+  readonly subtitle: string;
+  readonly prompt: string;
+}
+
+const EMPTY_CHIPS: ReadonlyArray<PromptChip> = [
+  {
+    title: "Triage my inbox",
+    subtitle: "Pull the last 24 hours and rank by importance.",
+    prompt:
+      "Triage my inbox. Pull the last 24 hours and rank by importance.",
+  },
+  {
+    title: "What's on my calendar today?",
+    subtitle: "Show me today and tomorrow, flag any conflicts.",
+    prompt:
+      "What's on my calendar today? Show me today and tomorrow, and flag any conflicts.",
+  },
+  {
+    title: "Summarize unread emails",
+    subtitle: "Surface what changed since I last looked.",
+    prompt:
+      "Summarize my unread emails. Surface what changed since I last looked.",
+  },
+  {
+    title: "Show my mailroom rules",
+    subtitle: "List the active triage rules and what they do.",
+    prompt:
+      "Show my mailroom rules. List the active triage rules and what they do.",
+  },
+];
 
 export function ChatStream({
   threadId,
@@ -190,6 +237,10 @@ export function ChatStream({
   const abortRef = useRef<AbortController | null>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const userScrolledUpRef = useRef(false);
+  // Tracks whether THIS run is the first message in the thread so we can
+  // force the AI's birth into view (otherwise a long initial reply can
+  // render below the fold).
+  const isFirstTurnRef = useRef(initialUi.length === 0);
 
   // ── Auto-scroll ─────────────────────────────────────────────────────
   // Track whether the user is pinned near the bottom; if they scrolled
@@ -207,8 +258,10 @@ export function ChatStream({
     return () => el.removeEventListener("scroll", handler);
   }, []);
 
-  useEffect(() => {
-    if (userScrolledUpRef.current) return;
+  // Layout effect so the scroll happens before paint — kills the "first
+  // assistant turn flashes below the fold" race on slow machines.
+  useLayoutEffect(() => {
+    if (userScrolledUpRef.current && !isFirstTurnRef.current) return;
     const el = scrollerRef.current;
     if (el === null) return;
     // Smooth scroll on user/assistant turn-add; instant for token-by-token
@@ -217,6 +270,9 @@ export function ChatStream({
       top: el.scrollHeight,
       behavior: messages.length > 0 && inFlight ? "auto" : "smooth",
     });
+    if (isFirstTurnRef.current && messages.length > 0) {
+      isFirstTurnRef.current = false;
+    }
   }, [messages, inFlight]);
 
   // ── Cleanup on unmount → cancel server stream ────────────────────────
@@ -312,6 +368,16 @@ export function ChatStream({
     [inFlight, threadId],
   );
 
+  const handleChipClick = useCallback(
+    (prompt: string): void => {
+      handleSubmit({ text: prompt, attachments: [] });
+    },
+    [handleSubmit],
+  );
+
+  const lastClientId =
+    messages.length > 0 ? (messages[messages.length - 1]?.clientId ?? null) : null;
+
   return (
     <div
       style={{
@@ -321,8 +387,7 @@ export function ChatStream({
         minHeight: 0,
       }}
     >
-      {/* Live region for SR-only stream announcements. Visually-hidden
-          summary of the last text-delta burst keeps verbosity sane. */}
+      {/* Live region for SR-only stream announcements. */}
       <div
         ref={scrollerRef}
         role="log"
@@ -335,33 +400,46 @@ export function ChatStream({
           padding: "var(--sp-24) var(--sp-24) var(--sp-12) var(--sp-24)",
           display: "flex",
           flexDirection: "column",
-          gap: "var(--sp-16)",
           minHeight: 0,
         }}
       >
         {messages.length === 0 ? (
-          <EmptyConversationHint />
+          <EmptyConversationHint onChipClick={handleChipClick} />
         ) : (
-          messages.map((m) => {
-            // If this is an assistant message with no text yet AND no
-            // sub-agents in flight, render a standalone "thinking" indicator
-            // INSTEAD of an empty bubble.
-            const hasText = m.blocks.some(
-              (b) => b.type === "text" && b.text.length > 0,
-            );
-            const hasResults = m.blocks.some(
-              (b) => b.type === "sub_agent_result",
-            );
-            if (
-              m.role === "assistant" &&
-              !hasText &&
-              !hasResults &&
-              m.pendingSubAgents.length === 0
-            ) {
-              return <ThinkingIndicator key={m.clientId} createdAt={m.createdAt} />;
-            }
-            return <MessageBubble key={m.clientId} message={m} />;
-          })
+          <div className="chat-stream">
+            {messages.map((m) => {
+              // An assistant message with no text and no sub-agent state yet
+              // is the "thinking" phase — render the typing indicator inline
+              // in the same slot the body would occupy.
+              const hasText = m.blocks.some(
+                (b) => b.type === "text" && b.text.length > 0,
+              );
+              const hasResults = m.blocks.some(
+                (b) => b.type === "sub_agent_result",
+              );
+              if (
+                m.role === "assistant" &&
+                !hasText &&
+                !hasResults &&
+                m.pendingSubAgents.length === 0
+              ) {
+                return (
+                  <ThinkingTurn key={m.clientId} createdAt={m.createdAt} />
+                );
+              }
+              const isStreamingTail =
+                m.role === "assistant" &&
+                inFlight &&
+                m.clientId === lastClientId;
+              return (
+                <MessageTurn
+                  key={m.clientId}
+                  message={m}
+                  isStreamingTail={isStreamingTail}
+                />
+              );
+            })}
+          </div>
         )}
       </div>
 
@@ -474,94 +552,102 @@ function reduceAssistant(msg: UiMessage, event: OrchestratorEvent): UiMessage {
   }
 }
 
+// ── Helpers ─────────────────────────────────────────────────────────────
+
+function plainTextOf(message: UiMessage): string {
+  // Flatten the message into a copy-able string. User turns are a single
+  // text block; assistant turns may interleave text + sub-agent results
+  // (the latter we skip — the structured cards copy nothing meaningful).
+  const parts: string[] = [];
+  for (const b of message.blocks) {
+    if (b.type === "text") {
+      parts.push(message.role === "assistant" ? stripEmoji(b.text) : b.text);
+    }
+  }
+  return parts.join("\n").trim();
+}
+
 // ── Visual subcomponents ────────────────────────────────────────────────
 
-const MessageBubble = memo(MessageBubbleRaw, (a, b) =>
-  a.message === b.message,
+interface MessageTurnProps {
+  readonly message: UiMessage;
+  readonly isStreamingTail: boolean;
+}
+
+const MessageTurn = memo(
+  MessageTurnRaw,
+  (a, b) =>
+    a.message === b.message && a.isStreamingTail === b.isStreamingTail,
 );
 
-function MessageBubbleRaw({ message }: { message: UiMessage }): React.ReactElement {
+function MessageTurnRaw({
+  message,
+  isStreamingTail,
+}: MessageTurnProps): React.ReactElement {
   const isUser = message.role === "user";
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback((): void => {
+    const text = plainTextOf(message);
+    if (text.length === 0) return;
+    if (typeof navigator === "undefined" || navigator.clipboard === undefined) {
+      return;
+    }
+    void navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 1400);
+      })
+      .catch(() => {
+        // Clipboard permission denied or unavailable — silent no-op rather
+        // than a toast; the user can re-select the text manually.
+      });
+  }, [message]);
+
+  const handleRegenerate = useCallback((): void => {
+    // Regeneration wiring lands when the orchestrator supports a
+    // turn-replay event. For now the button must render so the layout
+    // doesn't shift when the feature flips on.
+    // eslint-disable-next-line no-console
+    console.log("regenerate not yet wired");
+  }, []);
+
   return (
     <article
       data-role={message.role}
-      className="msg-anim"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: isUser ? "flex-end" : "flex-start",
-        gap: "var(--sp-8)",
-      }}
+      className="chat-turn msg-anim"
     >
+      <div className="chat-turn-meta">
+        <span
+          className={
+            isUser
+              ? "chat-turn-meta-label--user"
+              : "chat-turn-meta-label--assistant"
+          }
+        >
+          {isUser ? "You" : "AlterEgo"}
+        </span>
+        <span suppressHydrationWarning className="chat-turn-meta-time">
+          {formatTime(message.createdAt)}
+        </span>
+      </div>
+
       <div
         className={
-          "app-shell-bubble" + (isUser ? " app-shell-bubble--user" : "")
+          isUser ? "chat-turn-body--user" : "chat-turn-body--assistant"
         }
-        style={{
-          maxWidth: "min(720px, 95%)",
-          // Balanced interior: 12 vertical / 16 horizontal. Both exist on the
-          // --sp scale (unlike --sp-14, which silently resolved to 0 and caused
-          // the earlier "no padding" regression). Paired with the
-          // `.msg-md > :last-child { margin-bottom: 0 }` reset in app-shell.css
-          // so top and bottom interior space stay symmetric.
-          paddingTop: "var(--sp-12)",
-          paddingRight: "var(--sp-16)",
-          paddingBottom: "var(--sp-12)",
-          paddingLeft: "var(--sp-16)",
-          borderRadius: "var(--r-xl)",
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-          boxSizing: "border-box",
-        }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "baseline",
-            gap: "var(--sp-8)",
-            fontFamily: "DM Mono, monospace",
-            fontSize: "var(--fs-mono-meta)",
-            letterSpacing: "0.18em",
-            textTransform: "uppercase",
-            marginBottom: "var(--sp-6)",
-          }}
-        >
-          <span style={{ color: isUser ? "var(--brand-orange)" : "var(--muted)" }}>
-            {isUser ? "You" : "AlterEgo"}
-          </span>
-          <span
-            suppressHydrationWarning
-            style={{
-              color: "var(--muted)",
-              letterSpacing: "0.06em",
-              fontSize: "calc(var(--fs-mono-meta) * 0.92)",
-              opacity: 0.7,
-            }}
-          >
-            {formatTime(message.createdAt)}
-          </span>
-        </div>
         {message.blocks.map((b, idx) =>
           b.type === "text" ? (
-            <div
+            <TextBlock
               key={idx}
-              className="msg-md"
-              style={{
-                fontSize: "var(--fs-body)",
-                color: "var(--ink)",
-                lineHeight: "var(--lh-body)",
-              }}
-            >
-              {isUser ? (
-                // User text is the user's own words — render verbatim (their
-                // emoji are their choice). Only AlterEgo output is stripped.
-                <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{b.text}</p>
-              ) : stripEmoji(b.text).length === 0 ? null : (
-                <ReactMarkdown remarkPlugins={MD_PLUGINS} components={MD_COMPONENTS}>
-                  {stripEmoji(b.text)}
-                </ReactMarkdown>
-              )}
-            </div>
+              role={message.role}
+              text={b.text}
+              showCursor={
+                isStreamingTail && idx === lastTextBlockIndex(message.blocks)
+              }
+            />
           ) : (
             <div key={idx} className="card-anim" style={{ width: "100%" }}>
               <SubAgentCard
@@ -575,14 +661,87 @@ function MessageBubbleRaw({ message }: { message: UiMessage }): React.ReactEleme
         {/* In-flight sub-agent skeleton card(s). */}
         {message.pendingSubAgents.map((p) => (
           <div key={p.invocationId} className="card-anim" style={{ width: "100%" }}>
-            <SubAgentCard
-              invocationId={p.invocationId}
-              subAgent={p.subAgent}
-            />
+            <SubAgentCard invocationId={p.invocationId} subAgent={p.subAgent} />
           </div>
         ))}
       </div>
+
+      {/* Action row — fades in on hover. Suppressed while the assistant is
+          still streaming (copying a half-written reply is rarely useful and
+          a flashing button mid-stream feels noisy). */}
+      {!isStreamingTail ? (
+        <div className="chat-turn-actions" aria-hidden={false}>
+          <button
+            type="button"
+            className={
+              "chat-turn-action" +
+              (copied ? " chat-turn-action-feedback" : "")
+            }
+            onClick={handleCopy}
+            aria-label={copied ? "Copied" : "Copy message"}
+          >
+            <span className="chat-turn-action-glyph" aria-hidden="true">
+              {"⧉"}
+            </span>
+            <span>{copied ? "Copied" : "Copy"}</span>
+          </button>
+          {!isUser ? (
+            <button
+              type="button"
+              className="chat-turn-action"
+              onClick={handleRegenerate}
+              aria-label="Regenerate response"
+            >
+              <span className="chat-turn-action-glyph" aria-hidden="true">
+                {"↻"}
+              </span>
+              <span>Regenerate</span>
+            </button>
+          ) : null}
+        </div>
+      ) : null}
     </article>
+  );
+}
+
+function lastTextBlockIndex(blocks: ReadonlyArray<StoredContentBlock>): number {
+  for (let i = blocks.length - 1; i >= 0; i--) {
+    if (blocks[i]?.type === "text") return i;
+  }
+  return -1;
+}
+
+function TextBlock({
+  role,
+  text,
+  showCursor,
+}: {
+  role: "user" | "assistant";
+  text: string;
+  showCursor: boolean;
+}): React.ReactElement | null {
+  if (role === "user") {
+    // User text is the user's own words — render verbatim (their emoji
+    // are their choice). Only AlterEgo output is stripped.
+    return <p>{text}</p>;
+  }
+  const safe = stripEmoji(text);
+  if (safe.length === 0 && !showCursor) return null;
+  return (
+    <>
+      {safe.length > 0 ? (
+        <ReactMarkdown remarkPlugins={MD_PLUGINS} components={MD_COMPONENTS}>
+          {safe}
+        </ReactMarkdown>
+      ) : null}
+      {showCursor ? (
+        <span
+          className="streaming-cursor"
+          aria-hidden="true"
+          data-testid="streaming-cursor"
+        />
+      ) : null}
+    </>
   );
 }
 
@@ -600,94 +759,60 @@ function formatTime(ms: number): string {
   });
 }
 
-/** Thinking indicator — sits where the bubble WILL be, no bubble chrome. */
-function ThinkingIndicator({
+/** Thinking turn — same outer shell as a message turn, dots inline. */
+function ThinkingTurn({
   createdAt,
 }: {
   createdAt: number;
 }): React.ReactElement {
   return (
-    <div
-      className="msg-anim"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "var(--sp-10)",
-        paddingLeft: "var(--sp-4)",
-      }}
-    >
-      <span
-        style={{
-          fontFamily: "DM Mono, monospace",
-          fontSize: "var(--fs-mono-meta)",
-          letterSpacing: "0.18em",
-          textTransform: "uppercase",
-          // Quiet caption on the wash, NOT bold white body text. Matches the
-          // muted weight of the in-bubble "AlterEgo" meta label so the
-          // transition into a bubble (once text arrives) isn't a jarring
-          // bright-white → muted flip.
-          color: "rgba(255, 240, 225, 0.66)",
-          textShadow: "0 1px 1px rgba(0,0,0,0.2)",
-        }}
-      >
-        AlterEgo
-      </span>
-      <span
-        suppressHydrationWarning
-        style={{
-          fontFamily: "DM Mono, monospace",
-          fontSize: "calc(var(--fs-mono-meta) * 0.92)",
-          color: "rgba(255, 245, 235, 0.7)",
-          letterSpacing: "0.06em",
-          textShadow: "0 1px 2px rgba(0,0,0,0.3)",
-        }}
-      >
-        {formatTime(createdAt)}
-      </span>
-      <span
-        className="typing-dots typing-dots--on-wash"
-        aria-label="AlterEgo is thinking"
-      >
-        <span />
-        <span />
-        <span />
-      </span>
-    </div>
+    <article data-role="assistant" className="chat-turn msg-anim">
+      <div className="chat-turn-meta">
+        <span className="chat-turn-meta-label--assistant">AlterEgo</span>
+        <span suppressHydrationWarning className="chat-turn-meta-time">
+          {formatTime(createdAt)}
+        </span>
+        <span
+          className="typing-dots typing-dots--on-wash"
+          aria-label="AlterEgo is thinking"
+        >
+          <span />
+          <span />
+          <span />
+        </span>
+      </div>
+    </article>
   );
 }
 
-function EmptyConversationHint(): React.ReactElement {
+function EmptyConversationHint({
+  onChipClick,
+}: {
+  onChipClick: (prompt: string) => void;
+}): React.ReactElement {
   return (
-    <div
-      style={{
-        margin: "auto",
-        textAlign: "center",
-        maxWidth: "440px",
-        padding: "var(--sp-32)",
-      }}
-    >
-      <p
-        style={{
-          fontFamily: "DM Mono, monospace",
-          fontSize: "var(--fs-mono-meta)",
-          letterSpacing: "0.25em",
-          textTransform: "uppercase",
-          color: "var(--brand-orange)",
-          marginBottom: "var(--sp-12)",
-        }}
-      >
-        Empty thread
-      </p>
-      <p
-        style={{
-          fontSize: "var(--fs-body-lg)",
-          color: "var(--ink-soft)",
-          margin: 0,
-        }}
-      >
-        Type below to start your first conversation. Ask AlterEgo to triage
-        your inbox, summarise a thread, or draft a reply.
-      </p>
+    <div className="chat-empty">
+      <div style={{ display: "flex", flexDirection: "column", gap: "var(--sp-12)" }}>
+        <h1 className="chat-empty-hero">
+          What can <em>I</em> help with?
+        </h1>
+        <p className="chat-empty-sub">
+          Mailroom and Scheduler are wired. Ask AlterEgo to do something.
+        </p>
+      </div>
+      <div className="chat-empty-chips">
+        {EMPTY_CHIPS.map((chip) => (
+          <button
+            key={chip.title}
+            type="button"
+            className="chat-chip"
+            onClick={() => onChipClick(chip.prompt)}
+          >
+            <span className="chat-chip-title">{chip.title}</span>
+            <span className="chat-chip-sub">{chip.subtitle}</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

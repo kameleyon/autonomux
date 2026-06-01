@@ -3,25 +3,32 @@
 /**
  * apps/web/components/chat/Composer.tsx
  *
- * Auto-growing textarea + send button + attachment chips.
+ * Modern chat composer — single bordered card holding attachments,
+ * auto-growing textarea, attach button, character count, and a
+ * circular icon-only send/stop button.
  *
  * Keyboard
- *   - Enter → send.
- *   - Shift + Enter → newline.
+ *   - Enter        → send.
+ *   - Shift+Enter  → newline.
  *
  * Attachments (Claude.ai-style)
- *   - Click the paperclip → file picker (multi-select).
+ *   - Click the + button → file picker (multi-select).
  *   - Drag + drop files onto the composer.
  *   - Paste an image or PDF from the clipboard → chip.
- *   - Paste plain text > LARGE_PASTE_CHARS (15 000) → chip (as a .txt
- *     attachment) instead of stuffing the textarea.
+ *   - Paste plain text > LARGE_PASTE_CHARS → chip (as a .txt attachment)
+ *     instead of stuffing the textarea.
  *
  * Accepted types: png, jpeg, gif, webp, pdf, text/* (md/csv/json/plain).
  * Max 5 MB per file; max 5 attachments per turn.
  *
+ * Streaming
+ *   - `disabled` flips to true while a stream is in flight.
+ *   - When the parent also passes `onStop`, the send button morphs into a
+ *     red-tinted stop button that cancels the active stream.
+ *
  * The Composer is presentational: it bundles `{ text, attachments[] }`
- * into a single `onSubmit` payload and lets the parent decide what to
- * do with the FileList. The parent (ChatStream) uploads + sends.
+ * into a single `onSubmit` payload and lets the parent decide what to do
+ * with the FileList. The parent (ChatStream) uploads + sends.
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -37,6 +44,8 @@ const MAX_CHARS = 12_000;
 const LARGE_PASTE_CHARS = 6_000;
 const MAX_FILES = 5;
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
+/** When count crosses this fraction of the cap, the counter turns orange. */
+const CHAR_WARN_RATIO = 0.8;
 
 const ACCEPTED_MIME = new Set([
   "image/png",
@@ -58,6 +67,13 @@ export interface ComposerSubmitPayload {
 export interface ComposerProps {
   disabled: boolean;
   onSubmit: (payload: ComposerSubmitPayload) => void;
+  /**
+   * Optional. When provided AND `disabled` is true, the send button morphs
+   * into a stop button that invokes this callback to cancel the in-flight
+   * stream. When omitted, the button stays disabled while `disabled` is true
+   * (legacy behaviour).
+   */
+  onStop?: () => void;
 }
 
 interface AttachmentItem {
@@ -68,6 +84,7 @@ interface AttachmentItem {
 export function Composer({
   disabled,
   onSubmit,
+  onStop,
 }: ComposerProps): React.ReactElement {
   const [value, setValue] = useState("");
   const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
@@ -79,11 +96,10 @@ export function Composer({
   useEffect(() => {
     const ta = textareaRef.current;
     if (ta === null) return;
-    // Start at 3 lines, grow to 9 lines max. Scrollbar shows up only when
-    // content exceeds the cap (overflow-y: auto + a "polite" scrollbar
-    // style applied via the className below).
+    // Start at 1 line (~24px), grow up to ~200px, then scroll. The scrollbar
+    // appears only on hover/focus via the .composer-textarea class rules.
     ta.style.height = "auto";
-    ta.style.height = `${Math.min(Math.max(ta.scrollHeight, 84), 220)}px`;
+    ta.style.height = `${Math.min(Math.max(ta.scrollHeight, 24), 200)}px`;
   }, [value]);
 
   const wasDisabledRef = useRef(disabled);
@@ -177,6 +193,12 @@ export function Composer({
     setWarning(null);
   }, [value, attachments, disabled, onSubmit]);
 
+  const isEmpty = value.trim().length === 0 && attachments.length === 0;
+  const showStop = disabled && typeof onStop === "function";
+  // Send is "ready" (orange) only when not streaming and there is content.
+  const sendReady = !disabled && !isEmpty;
+  const overWarn = value.length >= MAX_CHARS * CHAR_WARN_RATIO;
+
   return (
     <form
       onSubmit={(e) => {
@@ -192,242 +214,260 @@ export function Composer({
       className="app-shell-composer"
       style={{
         padding: "var(--sp-12) var(--sp-20) var(--sp-16) var(--sp-20)",
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--sp-8)",
-        outline: dragOver
-          ? "2px dashed var(--brand-orange)"
-          : "2px solid transparent",
-        outlineOffset: "-4px",
-        borderRadius: "var(--r-md)",
-        transition: "outline-color 120ms",
       }}
     >
-      {attachments.length > 0 && (
-        <ul
-          aria-label="Attachments"
-          style={{
-            listStyle: "none",
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "var(--sp-6)",
-            margin: 0,
-            padding: 0,
-          }}
-        >
-          {attachments.map((a) => (
-            <li
-              key={a.id}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "var(--sp-8)",
-                padding: "var(--sp-6) var(--sp-10)",
-                borderRadius: "var(--r-md)",
-                background: "rgba(0,0,0,0.06)",
-                border: "1px solid rgba(0,0,0,0.1)",
-                fontSize: "var(--fs-body-sm)",
-                color: "var(--ink)",
-                maxWidth: "260px",
-              }}
-            >
-              <span
-                aria-hidden="true"
-                style={{
-                  fontFamily: "DM Mono, monospace",
-                  fontSize: "var(--fs-mono-meta)",
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  color: "var(--brand-orange)",
-                }}
-              >
-                {fileKindLabel(a.file)}
-              </span>
-              <span
-                style={{
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                  minWidth: 0,
-                }}
-                title={a.file.name}
-              >
-                {a.file.name}
-              </span>
-              <span style={{ color: "var(--muted)" }}>
-                {formatBytes(a.file.size)}
-              </span>
-              <button
-                type="button"
-                onClick={() => removeAttachment(a.id)}
-                aria-label={`Remove ${a.file.name}`}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "var(--ink-soft)",
-                  fontSize: "var(--fs-body)",
-                  lineHeight: 1,
-                  padding: 0,
-                }}
-              >
-                ×
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <label htmlFor="chat-composer-input" className="visually-hidden">
-        Message AlterEgo
-      </label>
-      <textarea
-        id="chat-composer-input"
-        ref={textareaRef}
-        className="composer-textarea"
-        value={value}
-        onChange={(e) => setValue(e.target.value.slice(0, MAX_CHARS))}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            submit();
-          }
-        }}
-        onPaste={handlePaste}
-        rows={3}
-        placeholder={
-          disabled
-            ? "Streaming response…"
-            : "Ask AlterEgo. Enter to send, Shift+Enter for a new line. Paste or drop a file to attach."
-        }
-        disabled={disabled}
-        aria-disabled={disabled}
-        aria-describedby="chat-composer-hint"
-        style={{
-          width: "100%",
-          minHeight: "84px",
-          maxHeight: "220px",
-          resize: "none",
-          padding: "var(--sp-10) var(--sp-12)",
-          borderRadius: "var(--r-md)",
-          border: "1px solid var(--border-strong)",
-          background: "var(--brand-white)",
-          color: "var(--ink)",
-          fontFamily: "Inter, system-ui, sans-serif",
-          fontSize: "var(--fs-body-sm)",
-          lineHeight: "var(--lh-body)",
-          outline: "none",
-          overflowY: "auto",
-        }}
-      />
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        multiple
-        accept={Array.from(ACCEPTED_MIME).join(",") + ",text/*"}
-        style={{ display: "none" }}
-        onChange={(e) => {
-          if (e.target.files !== null) {
-            addFiles(Array.from(e.target.files));
-            e.target.value = "";
-          }
-        }}
-      />
-
-      {warning !== null && (
-        <p
-          role="alert"
-          style={{
-            margin: 0,
-            fontSize: "var(--fs-body-sm)",
-            color: "var(--brand-red)",
-          }}
-        >
-          {warning}
-        </p>
-      )}
-
       <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "var(--sp-12)",
-        }}
+        className="composer-card"
+        data-dragover={dragOver ? "true" : "false"}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-8)" }}>
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={disabled}
-            aria-label="Attach files"
-            title="Attach files (paste or drop also works)"
+        {attachments.length > 0 && (
+          <ul
+            aria-label="Attachments"
             style={{
-              background: "transparent",
-              border: "1px solid var(--border-strong)",
-              borderRadius: "var(--r-md)",
-              padding: "var(--sp-6) var(--sp-10)",
-              cursor: disabled ? "not-allowed" : "pointer",
-              fontSize: "var(--fs-body)",
-              color: "var(--ink-soft)",
-              lineHeight: 1,
+              listStyle: "none",
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "var(--sp-6)",
+              margin: 0,
+              padding: 0,
             }}
           >
-            ⎘
-          </button>
+            {attachments.map((a) => (
+              <li
+                key={a.id}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "var(--sp-8)",
+                  padding: "var(--sp-6) var(--sp-10)",
+                  borderRadius: "var(--r-md)",
+                  background: "rgba(0,0,0,0.06)",
+                  border: "1px solid rgba(0,0,0,0.1)",
+                  fontSize: "var(--fs-body-sm)",
+                  color: "var(--ink)",
+                  maxWidth: "260px",
+                }}
+              >
+                <span
+                  aria-hidden="true"
+                  style={{
+                    fontFamily: "DM Mono, monospace",
+                    fontSize: "var(--fs-mono-meta)",
+                    letterSpacing: "0.12em",
+                    textTransform: "uppercase",
+                    color: "var(--brand-orange)",
+                  }}
+                >
+                  {fileKindLabel(a.file)}
+                </span>
+                <span
+                  style={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    minWidth: 0,
+                  }}
+                  title={a.file.name}
+                >
+                  {a.file.name}
+                </span>
+                <span style={{ color: "var(--muted)" }}>
+                  {formatBytes(a.file.size)}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => removeAttachment(a.id)}
+                  aria-label={`Remove ${a.file.name}`}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "var(--ink-soft)",
+                    fontSize: "var(--fs-body)",
+                    lineHeight: 1,
+                    padding: 0,
+                  }}
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <label htmlFor="chat-composer-input" className="visually-hidden">
+          Message AlterEgo
+        </label>
+        <textarea
+          id="chat-composer-input"
+          ref={textareaRef}
+          className="composer-textarea"
+          value={value}
+          onChange={(e) => setValue(e.target.value.slice(0, MAX_CHARS))}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              submit();
+            }
+          }}
+          onPaste={handlePaste}
+          rows={1}
+          placeholder={
+            disabled
+              ? "Streaming response…"
+              : "Ask AlterEgo. Paste or drop a file to attach."
+          }
+          disabled={disabled}
+          aria-disabled={disabled}
+          aria-describedby="chat-composer-hint"
+          style={{
+            width: "100%",
+            minHeight: "24px",
+            maxHeight: "200px",
+            resize: "none",
+            padding: "var(--sp-4) 0",
+            border: "none",
+            background: "transparent",
+            color: "var(--ink)",
+            fontFamily: "Inter, system-ui, sans-serif",
+            fontSize: "var(--fs-body-sm)",
+            lineHeight: 1.5,
+            outline: "none",
+            overflowY: "auto",
+          }}
+        />
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          accept={Array.from(ACCEPTED_MIME).join(",") + ",text/*"}
+          style={{ display: "none" }}
+          onChange={(e) => {
+            if (e.target.files !== null) {
+              addFiles(Array.from(e.target.files));
+              e.target.value = "";
+            }
+          }}
+        />
+
+        {warning !== null && (
           <p
-            id="chat-composer-hint"
-            aria-live="polite"
+            role="alert"
             style={{
               margin: 0,
-              fontFamily: "DM Mono, monospace",
-              fontSize: "var(--fs-mono-meta)",
-              color: "var(--muted)",
-              letterSpacing: "0.08em",
+              fontSize: "var(--fs-body-sm)",
+              color: "var(--brand-red)",
             }}
           >
-            {value.length} / {MAX_CHARS}
-            {attachments.length > 0
-              ? ` · ${attachments.length}/${MAX_FILES} files`
-              : ""}
-            <span style={{ marginLeft: "var(--sp-12)" }}>
-              Enter sends · Shift+Enter newline
-            </span>
+            {warning}
           </p>
-        </div>
-        <button
-          type="submit"
-          disabled={
-            disabled ||
-            (value.trim().length === 0 && attachments.length === 0)
-          }
-          aria-disabled={
-            disabled ||
-            (value.trim().length === 0 && attachments.length === 0)
-          }
+        )}
+
+        <div
           style={{
-            background:
-              disabled ||
-              (value.trim().length === 0 && attachments.length === 0)
-                ? "var(--muted-soft)"
-                : "var(--brand-orange)",
-            color: "var(--brand-white)",
-            border: "none",
-            borderRadius: "var(--r-md)",
-            padding: "var(--sp-10) var(--sp-20)",
-            fontSize: "var(--fs-body-sm)",
-            fontWeight: 500,
-            cursor:
-              disabled ||
-              (value.trim().length === 0 && attachments.length === 0)
-                ? "not-allowed"
-                : "pointer",
-            transition: "background 120ms",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "var(--sp-12)",
           }}
         >
-          {disabled ? "Streaming…" : "Send"}
-        </button>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "var(--sp-8)",
+              minWidth: 0,
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={disabled}
+              aria-label="Attach files"
+              title="Attach files (paste or drop also works)"
+              className="composer-attach-btn"
+            >
+              <span aria-hidden="true">+</span>
+            </button>
+            <span
+              aria-hidden="true"
+              style={{
+                fontFamily: "DM Mono, monospace",
+                fontSize: "var(--fs-mono-meta)",
+                color: "var(--muted-soft)",
+                letterSpacing: "0.08em",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              / for commands
+            </span>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "var(--sp-12)",
+            }}
+          >
+            <p
+              id="chat-composer-hint"
+              aria-live="polite"
+              style={{
+                margin: 0,
+                fontFamily: "DM Mono, monospace",
+                fontSize: "10px",
+                color: overWarn ? "var(--brand-orange)" : "var(--muted)",
+                letterSpacing: "0.06em",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {formatCount(value.length)} / {formatCount(MAX_CHARS)}
+              {attachments.length > 0
+                ? ` · ${attachments.length}/${MAX_FILES}`
+                : ""}
+            </p>
+            {showStop ? (
+              <button
+                type="button"
+                onClick={() => onStop?.()}
+                aria-label="Stop streaming"
+                title="Stop"
+                className="composer-send-btn composer-send-btn--stop"
+              >
+                <span
+                  aria-hidden="true"
+                  style={{
+                    display: "inline-block",
+                    width: "10px",
+                    height: "10px",
+                    background: "currentColor",
+                    borderRadius: "2px",
+                  }}
+                />
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={!sendReady}
+                aria-disabled={!sendReady}
+                aria-label="Send message"
+                title="Send (Enter)"
+                className={
+                  "composer-send-btn" +
+                  (sendReady ? " composer-send-btn--ready" : "")
+                }
+              >
+                <span aria-hidden="true" style={{ lineHeight: 1 }}>
+                  ↑
+                </span>
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     </form>
   );
@@ -437,6 +477,10 @@ function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`;
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(0)} KB`;
   return `${(n / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function formatCount(n: number): string {
+  return n.toLocaleString("en-US");
 }
 
 function fileKindLabel(f: File): string {

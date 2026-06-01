@@ -161,7 +161,7 @@ export default async function ChatThreadPage(props: {
       >
         <header
           style={{
-            padding: "var(--sp-16) var(--sp-24)",
+            padding: "14px 24px",
             borderBottom: "1px solid var(--border)",
             display: "flex",
             alignItems: "baseline",
@@ -184,14 +184,15 @@ export default async function ChatThreadPage(props: {
           <p
             style={{
               fontFamily: "DM Mono, monospace",
-              fontSize: "var(--fs-mono-meta)",
+              fontSize: "10px",
               letterSpacing: "0.18em",
               textTransform: "uppercase",
               color: "var(--muted)",
               margin: 0,
+              flexShrink: 0,
             }}
           >
-            Tenant-scoped
+            Sonnet 4.6
           </p>
         </header>
         <ChatStream threadId={thread.id} initialMessages={messages} />

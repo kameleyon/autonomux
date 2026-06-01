@@ -182,6 +182,24 @@
   color: var(--ink);
 }
 
+/* ── Thread list rail ────────────────────────────────────────────────── */
+
+.thread-list-new:hover,
+.thread-list-new:focus-visible {
+  border-color: rgba(var(--brand-orange-rgb), 0.9);
+  color: var(--brand-orange);
+  outline: none;
+}
+
+.thread-list-item:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.thread-list-item--active,
+.thread-list-item--active:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
 /* ── Chat-specific surfaces ──────────────────────────────────────────── */
 
 .app-shell-chat {
@@ -327,6 +345,114 @@
   box-shadow: 0 1px 2px rgba(0,0,0,0.25);
 }
 
+/* ── Composer card ────────────────────────────────────────────────────
+ * The Composer renders inside the frosted .app-shell-composer band as a
+ * single bordered card holding the textarea, attachments, attach button,
+ * char count, and send/stop button. This block styles the card itself.
+ */
+.composer-card {
+  max-width: 820px;
+  margin: 0 auto;
+  background: var(--brand-white);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: var(--r-xl);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+  transition: box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.composer-card:focus-within {
+  border-color: rgba(0, 0, 0, 0.18);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.composer-card[data-dragover="true"] {
+  outline: 2px dashed var(--brand-orange);
+  outline-offset: -4px;
+}
+
+/* Ghost + button on the left of the button row. */
+.composer-attach-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: var(--r-md);
+  color: var(--ink-soft);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.composer-attach-btn:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.18);
+  color: var(--ink);
+}
+
+.composer-attach-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Circular icon-only send button on the right. */
+.composer-send-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--muted-soft);
+  color: var(--brand-white);
+  border: none;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: not-allowed;
+  padding: 0;
+  transition: background 120ms ease, transform 100ms ease, box-shadow 120ms ease;
+}
+
+.composer-send-btn--ready {
+  background: var(--brand-orange);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(var(--brand-orange-rgb), 0.4);
+}
+
+.composer-send-btn--ready:hover {
+  background: var(--brand-red-deep);
+  transform: scale(1.04);
+}
+
+.composer-send-btn--ready:active {
+  transform: scale(0.98);
+}
+
+.composer-send-btn--stop {
+  background: var(--brand-white);
+  color: var(--brand-red);
+  border: 2px solid var(--brand-red);
+  cursor: pointer;
+}
+
+.composer-send-btn--stop:hover {
+  background: var(--brand-red);
+  color: var(--brand-white);
+  transform: scale(1.04);
+}
+
+.composer-send-btn--stop:active {
+  transform: scale(0.98);
+}
+
 /* Composer textarea — scrollbar appears only when content overflows + on hover. */
 .composer-textarea {
   scrollbar-width: thin;
@@ -365,5 +491,278 @@
 @media (prefers-reduced-motion: reduce) {
   .msg-anim, .card-anim, .typing-dots span, .streaming-cursor {
     animation: none !important;
+  }
+}
+
+/* ── 2026 chat turn layout ──────────────────────────────────────────────
+ *
+ * Modern asymmetric rendering:
+ *   - AI turns: full-width prose, NO bubble, NO border, NO shadow.
+ *   - User turns: right-aligned, soft cream bubble, max 70% width.
+ *
+ * The two share a `.chat-turn` shell that centers content in an 820px
+ * column so wide displays don't sprawl. Action buttons (Copy / Regenerate)
+ * sit beneath each turn body and fade in on hover.
+ * ──────────────────────────────────────────────────────────────────── */
+
+.chat-stream {
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-24);
+}
+
+.chat-turn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+}
+
+.chat-turn[data-role="user"] {
+  align-items: flex-end;
+}
+
+.chat-turn[data-role="assistant"] {
+  align-items: stretch;
+}
+
+.chat-turn-meta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-8);
+  font-family: "DM Mono", monospace;
+  font-size: var(--fs-mono-meta);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.chat-turn[data-role="user"] .chat-turn-meta {
+  justify-content: flex-end;
+}
+
+.chat-turn-meta-label--user {
+  color: var(--brand-orange);
+}
+
+.chat-turn-meta-label--assistant {
+  color: rgba(255, 240, 225, 0.66);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.chat-turn-meta-time {
+  font-family: "DM Mono", monospace;
+  font-size: calc(var(--fs-mono-meta) * 0.92);
+  letter-spacing: 0.06em;
+  opacity: 0.7;
+}
+
+.chat-turn[data-role="assistant"] .chat-turn-meta-time {
+  color: rgba(255, 245, 235, 0.7);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.chat-turn[data-role="user"] .chat-turn-meta-time {
+  color: var(--muted);
+}
+
+/* AI body: full width, ink on card-like translucent panel, no border. */
+.chat-turn-body--assistant {
+  width: 100%;
+  color: var(--ink);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  background: rgba(255, 250, 245, 0.94);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  border-radius: var(--r-xl);
+  padding: var(--sp-16) var(--sp-20);
+  box-shadow: 0 2px 8px rgba(40, 8, 0, 0.18);
+}
+
+.chat-turn-body--assistant p,
+.chat-turn-body--assistant span,
+.chat-turn-body--assistant li,
+.chat-turn-body--assistant div {
+  color: var(--ink);
+}
+
+/* User bubble: soft cream-tinted, right-aligned, max 70%. */
+.chat-turn-body--user {
+  max-width: 70%;
+  background: rgba(255, 250, 245, 0.98);
+  border: 1px solid rgba(var(--brand-orange-rgb), 0.35);
+  border-radius: var(--r-lg);
+  padding: var(--sp-12) var(--sp-16);
+  color: var(--ink);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  white-space: pre-wrap;
+  word-break: break-word;
+  box-shadow: 0 2px 6px rgba(40, 8, 0, 0.14);
+}
+
+.chat-turn-body--user p {
+  margin: 0;
+  color: var(--ink);
+}
+
+/* Hover-revealed action row beneath each turn. */
+.chat-turn-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  opacity: 0;
+  transition: opacity 150ms ease;
+  margin-top: var(--sp-2);
+}
+
+.chat-turn[data-role="user"] .chat-turn-actions {
+  justify-content: flex-end;
+}
+
+.chat-turn[data-role="assistant"] .chat-turn-actions {
+  justify-content: flex-start;
+}
+
+.chat-turn:hover .chat-turn-actions,
+.chat-turn:focus-within .chat-turn-actions {
+  opacity: 1;
+}
+
+.chat-turn-action {
+  background: transparent;
+  border: none;
+  color: rgba(255, 240, 225, 0.78);
+  font-family: "DM Mono", monospace;
+  font-size: var(--fs-mono-data);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: var(--sp-4) var(--sp-8);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-4);
+  transition: background 120ms ease, color 120ms ease;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.chat-turn-action:hover,
+.chat-turn-action:focus-visible {
+  background: rgba(255, 250, 245, 0.18);
+  color: rgba(255, 250, 245, 1);
+}
+
+.chat-turn-action-glyph {
+  font-size: calc(var(--fs-mono-data) * 1.25);
+  line-height: 1;
+}
+
+.chat-turn-action-feedback {
+  color: var(--brand-gold-soft);
+}
+
+/* ── Empty-state hero ────────────────────────────────────────────────── */
+
+.chat-empty {
+  width: 100%;
+  max-width: 720px;
+  margin: 12vh auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-32);
+  padding: var(--sp-24);
+  text-align: center;
+}
+
+.chat-empty-hero {
+  font-family: "Cormorant Garamond", "Times New Roman", serif;
+  font-size: var(--fs-display-s);
+  line-height: var(--lh-h);
+  color: var(--brand-cream);
+  margin: 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.chat-empty-hero em {
+  font-style: italic;
+  color: rgba(255, 252, 248, 1);
+}
+
+.chat-empty-sub {
+  font-size: var(--fs-body-lg);
+  color: rgba(255, 240, 225, 0.82);
+  margin: 0;
+  max-width: 520px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.chat-empty-chips {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-12);
+  width: 100%;
+  max-width: 640px;
+}
+
+@media (max-width: 640px) {
+  .chat-empty-chips {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chat-chip {
+  text-align: left;
+  background: rgba(255, 250, 245, 0.08);
+  border: 1px solid rgba(255, 250, 245, 0.18);
+  border-radius: var(--r-md);
+  padding: var(--sp-12) var(--sp-16);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  color: var(--brand-cream);
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+  backdrop-filter: blur(6px) saturate(120%);
+  -webkit-backdrop-filter: blur(6px) saturate(120%);
+}
+
+.chat-chip:hover,
+.chat-chip:focus-visible {
+  background: rgba(255, 250, 245, 0.18);
+  border-color: rgba(255, 250, 245, 0.32);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(40, 8, 0, 0.28);
+  outline: none;
+}
+
+.chat-chip-title {
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--brand-cream);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.chat-chip-sub {
+  font-size: var(--fs-body-sm);
+  color: rgba(255, 240, 225, 0.75);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-chip,
+  .chat-turn-actions {
+    transition: none !important;
+  }
+  .composer-send-btn--ready:hover,
+  .composer-send-btn--stop:hover {
+    transform: none;
   }
 }

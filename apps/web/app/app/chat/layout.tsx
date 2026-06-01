@@ -24,11 +24,11 @@ export default function ChatLayout({
       tabIndex={-1}
       style={{
         display: "flex",
-        gap: "var(--sp-24)",
-        maxWidth: "1200px",
+        gap: "var(--sp-20)",
+        maxWidth: "1280px",
         margin: "0 auto",
-        padding: "var(--sp-24) var(--sp-16)",
-        minHeight: "calc(100vh - 80px)",
+        padding: "var(--sp-16) var(--sp-16)",
+        minHeight: "calc(100vh - 64px)",
         alignItems: "stretch",
       }}
     >

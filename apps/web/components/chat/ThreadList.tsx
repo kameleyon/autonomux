@@ -5,8 +5,9 @@
  * Receives threads as a prop (the parent page loads them with the
  * tenant-scoped Supabase client so RLS keeps cross-tenant isolation).
  *
- * Visual: warm palette only, `--r-xl` rail, --r-md per row. Active thread
- * uses a subtle warm fill (--surface-warm) and a left-edge gold accent.
+ * Visual: 268px rail, quiet "CHATS" eyebrow, dashed-border "+ New chat"
+ * ghost button, soft warm fill on the active item — no left-edge accent
+ * stripe. Tuned to read as calm and scannable next to the messages pane.
  *
  * a11y:
  *   - `<nav>` with `aria-label="Chat threads"` so SR users can jump.
@@ -34,15 +35,15 @@ export function ThreadList({
     <nav
       aria-label="Chat threads"
       style={{
-        width: "240px",
+        width: "268px",
         flexShrink: 0,
         borderRadius: "var(--r-xl)",
         border: "1px solid var(--border)",
         background: "var(--surface)",
-        padding: "var(--sp-16)",
+        padding: "var(--sp-12)",
         display: "flex",
         flexDirection: "column",
-        gap: "var(--sp-12)",
+        gap: "var(--sp-16)",
         alignSelf: "stretch",
         maxHeight: "calc(100vh - 120px)",
         overflowY: "auto",
@@ -51,52 +52,76 @@ export function ThreadList({
       <div
         style={{
           display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: "var(--sp-4)",
+          flexDirection: "column",
+          gap: "var(--sp-8)",
         }}
       >
-        <h2
+        <p
           style={{
-            fontSize: "var(--fs-h-step)",
+            fontFamily: "DM Mono, monospace",
+            fontSize: "11px",
+            letterSpacing: "0.22em",
+            textTransform: "uppercase",
+            color: "var(--ink-soft)",
             margin: 0,
-            color: "var(--ink)",
+            padding: "0 var(--sp-4)",
           }}
         >
-          Threads
-        </h2>
+          Chats
+        </p>
         <form action={createThread}>
           <button
             type="submit"
-            style={{
-              background: "var(--brand-orange)",
-              color: "var(--brand-white)",
-              border: "none",
-              borderRadius: "var(--r-md)",
-              padding: "var(--sp-6) var(--sp-12)",
-              fontFamily: "DM Mono, monospace",
-              fontSize: "var(--fs-mono-meta)",
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              cursor: "pointer",
-            }}
+            className="thread-list-new"
             aria-label="Start a new conversation"
+            style={{
+              display: "block",
+              width: "100%",
+              background: "transparent",
+              border: "1px dashed rgba(0, 0, 0, 0.18)",
+              borderRadius: "var(--r-md)",
+              padding: "10px 12px",
+              color: "var(--ink-soft)",
+              fontSize: "var(--fs-body-sm)",
+              fontFamily: "inherit",
+              textAlign: "center",
+              cursor: "pointer",
+              transition: "border-color 120ms, color 120ms",
+            }}
           >
-            New
+            + New chat
           </button>
         </form>
       </div>
 
       {threads.length === 0 ? (
-        <p
+        <div
           style={{
-            fontSize: "var(--fs-body-sm)",
-            color: "var(--muted)",
-            margin: 0,
+            display: "flex",
+            flexDirection: "column",
+            gap: "var(--sp-4)",
+            padding: "var(--sp-4) var(--sp-4)",
           }}
         >
-          No threads yet.
-        </p>
+          <p
+            style={{
+              fontSize: "var(--fs-body-sm)",
+              color: "var(--ink-soft)",
+              margin: 0,
+            }}
+          >
+            No conversations yet.
+          </p>
+          <p
+            style={{
+              fontSize: "var(--fs-body-sm)",
+              color: "var(--muted)",
+              margin: 0,
+            }}
+          >
+            Click + New chat to start one.
+          </p>
+        </div>
       ) : (
         <ul
           style={{
@@ -105,7 +130,7 @@ export function ThreadList({
             padding: 0,
             display: "flex",
             flexDirection: "column",
-            gap: "var(--sp-4)",
+            gap: "2px",
           }}
         >
           {threads.map((t) => {
@@ -117,16 +142,18 @@ export function ThreadList({
                 <Link
                   href={`/app/chat/${t.id}`}
                   aria-current={isActive ? "page" : undefined}
+                  className={
+                    isActive
+                      ? "thread-list-item thread-list-item--active"
+                      : "thread-list-item"
+                  }
                   style={{
                     display: "block",
-                    padding: "var(--sp-10) var(--sp-12)",
+                    padding: "10px 12px",
                     borderRadius: "var(--r-md)",
                     background: isActive
-                      ? "var(--surface-warm)"
+                      ? "rgba(0, 0, 0, 0.05)"
                       : "transparent",
-                    borderLeft: isActive
-                      ? "3px solid var(--brand-gold)"
-                      : "3px solid transparent",
                     color: "var(--ink)",
                     textDecoration: "none",
                     transition: "background 120ms",
@@ -135,8 +162,10 @@ export function ThreadList({
                   <div
                     style={{
                       fontSize: "var(--fs-body-sm)",
-                      color: isActive ? "var(--ink)" : "var(--ink-soft)",
-                      fontWeight: isActive ? 600 : 400,
+                      color: isActive
+                        ? "var(--ink)"
+                        : "var(--ink-soft)",
+                      fontWeight: isActive ? 500 : 400,
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       whiteSpace: "nowrap",
@@ -148,7 +177,7 @@ export function ThreadList({
                     style={{
                       marginTop: "var(--sp-2)",
                       fontFamily: "DM Mono, monospace",
-                      fontSize: "var(--fs-mono-meta)",
+                      fontSize: "calc(var(--fs-mono-meta) * 0.95)",
                       color: "var(--muted)",
                       letterSpacing: "0.05em",
                     }}

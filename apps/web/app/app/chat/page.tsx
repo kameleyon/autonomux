@@ -80,7 +80,10 @@ export default async function ChatIndexPage(props: {
   const err = typeof searchParams.err === "string" ? searchParams.err : null;
 
   // Empty state — render a single, full-width card. No left rail (nothing
-  // to list) so the user's attention lands squarely on the CTA.
+  // to list) so the user's attention lands squarely on the CTA. The card
+  // styling matches the rest of the chat surface: subtle surface, ink
+  // copy, a single ghost-style "+ New conversation" button driving the
+  // same `createThread` server action used by the sidebar.
   if (threads.length === 0) {
     return (
       <section
@@ -96,6 +99,7 @@ export default async function ChatIndexPage(props: {
         <div
           style={{
             maxWidth: "560px",
+            width: "100%",
             padding: "var(--sp-32)",
             borderRadius: "var(--r-xl)",
             border: "1px solid var(--border)",
@@ -106,36 +110,36 @@ export default async function ChatIndexPage(props: {
           <p
             style={{
               fontFamily: "DM Mono, monospace",
-              fontSize: "var(--fs-mono-meta)",
-              letterSpacing: "0.25em",
+              fontSize: "11px",
+              letterSpacing: "0.22em",
               textTransform: "uppercase",
-              color: "var(--brand-orange)",
+              color: "var(--ink-soft)",
               marginBottom: "var(--sp-12)",
             }}
           >
-            AlterEgo
+            Chats
           </p>
           <h1
             id="chat-empty-heading"
             style={{
-              fontSize: "var(--fs-display-s)",
-              marginBottom: "var(--sp-16)",
+              fontSize: "var(--fs-h-card)",
+              marginBottom: "var(--sp-12)",
               color: "var(--ink)",
+              lineHeight: "var(--lh-h)",
             }}
           >
-            Start your first <em>conversation</em>.
+            Pick a conversation or start a new one.
           </h1>
           <p
             style={{
-              fontSize: "var(--fs-body-lg)",
+              fontSize: "var(--fs-body)",
               color: "var(--ink-soft)",
               marginBottom: "var(--sp-24)",
               lineHeight: "var(--lh-body)",
             }}
           >
-            Ask it to triage your inbox, draft a reply, or surface what
-            shifted while you were away. Each thread keeps its own context
-            and audit trail — nothing leaves your tenant.
+            Each thread keeps its own context and audit trail. Nothing
+            leaves your tenant.
           </p>
           {err !== null ? (
             <p
@@ -155,18 +159,23 @@ export default async function ChatIndexPage(props: {
           <form action={createThread}>
             <button
               type="submit"
+              className="thread-list-new"
               style={{
-                background: "var(--brand-orange)",
-                color: "var(--brand-white)",
-                border: "none",
+                display: "block",
+                width: "100%",
+                background: "transparent",
+                border: "1px dashed rgba(0, 0, 0, 0.18)",
                 borderRadius: "var(--r-md)",
-                padding: "var(--sp-12) var(--sp-20)",
-                fontSize: "var(--fs-body)",
-                fontWeight: 500,
+                padding: "10px 12px",
+                color: "var(--ink-soft)",
+                fontSize: "var(--fs-body-sm)",
+                fontFamily: "inherit",
+                textAlign: "center",
                 cursor: "pointer",
+                transition: "border-color 120ms, color 120ms",
               }}
             >
-              Start a conversation
+              + New conversation
             </button>
           </form>
         </div>
