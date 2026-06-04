@@ -44,6 +44,7 @@ const SignUpSchema = z.object({
   password: z
     .string()
     .min(12, "Password must be at least 12 characters."),
+  name: z.string().trim().min(1).max(140).optional().or(z.literal("")),
   // Honeypot. Real users leave it empty.
   hp: z.string().max(0).optional(),
 });
@@ -77,10 +78,12 @@ export async function signUpAction(
   const rawEmail = formData.get("email");
   const rawPassword = formData.get("password");
   const rawHoneypot = formData.get("hp");
+  const rawName = formData.get("name");
 
   const parsed = SignUpSchema.safeParse({
     email: typeof rawEmail === "string" ? rawEmail : "",
     password: typeof rawPassword === "string" ? rawPassword : "",
+    name: typeof rawName === "string" ? rawName : "",
     hp: typeof rawHoneypot === "string" ? rawHoneypot : "",
   });
 
@@ -92,7 +95,7 @@ export async function signUpAction(
       message: issue?.message ?? "Invalid input.",
     };
   }
-  const { email, password } = parsed.data;
+  const { email, password, name } = parsed.data;
 
   // Strength gate: zxcvbn score must be ≥3 (good).
   const strength = zxcvbn(password, [email, email.split("@")[0] ?? ""]);
@@ -149,7 +152,13 @@ export async function signUpAction(
   const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
     email,
     password,
-    options: { emailRedirectTo },
+    options: {
+      emailRedirectTo,
+      data:
+        name !== undefined && name !== null && name.length > 0
+          ? { full_name: name }
+          : undefined,
+    },
   });
 
   if (signUpError !== null) {
@@ -247,6 +256,8 @@ export async function signUpAction(
     // expose the failure to the user — they'd be unable to act on it.
   }
 
-  // Email verification gate — redirect to sign-in with check_email banner.
-  redirect("/sign-in?check_email=1");
+  // Email verification gate — redirect to /verify-email so the user can
+  // enter the 6-digit code Supabase sent. The email-verification page
+  // calls supabase.auth.verifyOtp with type='signup'.
+  redirect(`/verify-email?email=${encodeURIComponent(email)}`);
 }

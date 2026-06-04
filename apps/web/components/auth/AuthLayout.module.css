@@ -1,0 +1,498 @@
+/*
+ * apps/web/components/auth/AuthLayout.module.css
+ *
+ * Split-pane auth surface: hero image (with brand gradient fallback) on the
+ * left, form on the right. Mobile collapses to single column with the hero
+ * shrunk to a banner.
+ *
+ * Token source: matches autonomux brand (orange #f26b1a, deep red #b81f00,
+ * cream #fff8f3, ink #1a1410). Self-contained — does not depend on the app
+ * shell's tokens since auth pages don't load the app shell CSS.
+ */
+
+.authSplit {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  min-height: 100vh;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  color: #1a1410;
+  background: #fff;
+}
+
+/* ── Left: visual panel ───────────────────────────────────────────── */
+
+.visual {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 40px 44px;
+}
+
+.bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 55% at 8% 0%, rgba(242, 107, 26, 0.78) 0%, transparent 60%),
+    radial-gradient(ellipse 90% 80% at 50% 55%, rgba(242, 107, 26, 0.72) 0%, transparent 72%),
+    radial-gradient(ellipse 100% 70% at 75% 100%, rgba(230, 51, 18, 0.95) 0%, transparent 75%),
+    linear-gradient(135deg, #c43811 0%, #b02810 28%, #8a1a08 60%, #5a0e06 100%);
+}
+
+.bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.06;
+  background-image: radial-gradient(rgba(255, 230, 200, 0.9) 1px, transparent 1px);
+  background-size: 3px 3px;
+}
+
+.heroImage {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(40, 8, 0, 0.30) 0%,
+    rgba(40, 8, 0, 0) 26%,
+    rgba(40, 8, 0, 0) 58%,
+    rgba(40, 8, 0, 0.52) 100%
+  );
+}
+
+.brand {
+  position: relative;
+  z-index: 3;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.brandLogo {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
+}
+
+.brandWord {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 26px;
+  color: #fff8f3;
+  letter-spacing: -0.01em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.brandWord em {
+  font-style: italic;
+}
+
+.copy {
+  position: relative;
+  z-index: 3;
+  pointer-events: none;
+  max-width: 460px;
+}
+
+.headline {
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 500;
+  font-size: clamp(34px, 3.6vw, 50px);
+  line-height: 1.04;
+  color: #fff8f3;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.32);
+  margin: 0;
+}
+
+.headline em {
+  font-style: italic;
+  color: #fffdfb;
+}
+
+.sub {
+  margin: 16px 0 0;
+  font-size: 16px;
+  line-height: 1.55;
+  color: rgba(255, 243, 231, 0.88);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+}
+
+/* ── Right: form panel ────────────────────────────────────────────── */
+
+.formWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 40px;
+  position: relative;
+}
+
+.topbar {
+  position: absolute;
+  top: 28px;
+  right: 40px;
+  left: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  font-size: 13.5px;
+  color: #6b5f54;
+}
+
+.topbar a {
+  color: #b81f00;
+  font-weight: 500;
+  text-decoration: none;
+  margin-left: 6px;
+}
+
+.topbar a:hover {
+  text-decoration: underline;
+}
+
+.card {
+  width: 100%;
+  max-width: 384px;
+}
+
+.cardHead {
+  margin-bottom: 28px;
+}
+
+.cardTitle {
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 500;
+  font-size: 34px;
+  line-height: 1.08;
+  color: #1a1410;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.cardSubtitle {
+  margin: 7px 0 0;
+  font-size: 14.5px;
+  color: #6b5f54;
+  line-height: 1.5;
+}
+
+.cardBody {
+  animation: fadeSwap 280ms ease;
+}
+
+@keyframes fadeSwap {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Social button (Google — visual only) ─────────────────────────── */
+
+.social {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 46px;
+  border: 1px solid #ddd0bd;
+  border-radius: 11px;
+  background: #fff;
+  color: #1a1410;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 500;
+  cursor: not-allowed;
+  opacity: 0.65;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.socialIcon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 20px 0;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #ece3d6;
+}
+
+.divider span {
+  font-family: "DM Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9a8f82;
+}
+
+/* ── Fields ──────────────────────────────────────────────────────── */
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.field label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #3a302a;
+}
+
+.fieldLink {
+  font-size: 12.5px;
+  color: #b81f00;
+  text-decoration: none;
+}
+
+.fieldLink:hover {
+  text-decoration: underline;
+}
+
+.field input {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px;
+  border: 1px solid #ddd0bd;
+  border-radius: 11px;
+  background: #fbf7f1;
+  color: #1a1410;
+  font-family: inherit;
+  font-size: 14.5px;
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+.field input::placeholder {
+  color: #9a8f82;
+}
+
+.field input:focus {
+  border-color: #f26b1a;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(242, 107, 26, 0.14);
+}
+
+.field input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Password show/hide */
+
+.pwWrap {
+  position: relative;
+}
+
+.pwToggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: #6b5f54;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.pwToggle:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #3a302a;
+}
+
+.pwToggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ── 6-digit OTP input ───────────────────────────────────────────── */
+
+.otpInput {
+  font-family: "DM Mono", monospace !important;
+  font-size: 22px !important;
+  letter-spacing: 0.45em;
+  text-align: center;
+  font-weight: 500;
+  text-indent: 0.45em;
+}
+
+/* ── Submit / actions ────────────────────────────────────────────── */
+
+.submit {
+  width: 100%;
+  height: 47px;
+  margin-top: 4px;
+  border: none;
+  border-radius: 11px;
+  background: #f26b1a;
+  color: #fff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(242, 107, 26, 0.4);
+  transition: background 130ms ease, transform 90ms ease;
+}
+
+.submit:hover:not(:disabled) {
+  background: #b81f00;
+}
+
+.submit:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+.submit:disabled {
+  background: #9a8f82;
+  cursor: wait;
+}
+
+.terms {
+  margin-top: 16px;
+  font-size: 12px;
+  color: #9a8f82;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.terms a {
+  color: #6b5f54;
+  text-decoration: underline;
+}
+
+.swap {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 14px;
+  color: #6b5f54;
+}
+
+.swap a,
+.swap button {
+  background: none;
+  border: none;
+  color: #b81f00;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 4px;
+  text-decoration: none;
+}
+
+.swap a:hover,
+.swap button:hover {
+  text-decoration: underline;
+}
+
+/* ── Banners (error / success) ──────────────────────────────────── */
+
+.banner {
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #fbf7f1;
+  border-left: 3px solid #f26b1a;
+  font-size: 13.5px;
+  color: #3a302a;
+  line-height: 1.45;
+}
+
+.bannerSuccess {
+  border-left-color: #2d7a3a;
+  background: #f4faf4;
+}
+
+.bannerError {
+  border-left-color: #b81f00;
+  background: #fdf3ef;
+  color: #7a1d0e;
+}
+
+.muted {
+  font-size: 12.5px;
+  color: #9a8f82;
+  margin-top: 8px;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+
+@media (max-width: 880px) {
+  .authSplit {
+    grid-template-columns: 1fr;
+  }
+  .visual {
+    min-height: 240px;
+    padding: 28px 30px;
+  }
+  .copy {
+    display: none;
+  }
+  .formWrap {
+    padding: 56px 26px 40px;
+  }
+  .topbar {
+    top: 18px;
+    right: 26px;
+    left: 26px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardBody {
+    animation: none;
+  }
+}

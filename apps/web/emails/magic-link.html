@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sign in to autonomux</title>
+</head>
+<body style="margin:0;padding:0;background:#f6f0e6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#1a1410;">
+
+<div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#f6f0e6;">
+  Your sign-in code is {{ .Token }}. It expires in 60 minutes.
+</div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f6f0e6;padding:40px 16px;">
+  <tr>
+    <td align="center">
+
+      <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;width:100%;background:#fff8f3;border-radius:14px;overflow:hidden;box-shadow:0 6px 24px rgba(40,8,0,0.10);">
+
+        <tr>
+          <td style="background:linear-gradient(135deg,#c43811 0%,#b02810 28%,#8a1a08 60%,#5a0e06 100%);padding:32px 36px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td align="left" style="font-family:'Cormorant Garamond',Georgia,serif;font-size:26px;color:#fff8f3;letter-spacing:-0.01em;">
+                  autonom<em style="font-style:italic;">ux</em>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:40px 44px 24px;">
+            <h1 style="margin:0 0 12px;font-family:'Cormorant Garamond',Georgia,serif;font-weight:500;font-size:32px;line-height:1.1;color:#1a1410;">
+              Sign in to autonomux
+            </h1>
+            <p style="margin:0 0 28px;font-size:15px;line-height:1.55;color:#3a302a;">
+              Tap the button to sign in, or enter this code on the sign-in page.
+            </p>
+
+            <!-- Code block -->
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fff;border:1px solid #ddd0bd;border-radius:11px;margin:0 0 24px;">
+              <tr>
+                <td align="center" style="padding:24px 16px;font-family:'Courier New',Courier,monospace;font-size:36px;letter-spacing:0.35em;font-weight:600;color:#1a1410;">
+                  {{ .Token }}
+                </td>
+              </tr>
+            </table>
+
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="left" style="margin-bottom:24px;">
+              <tr>
+                <td align="center" style="background:#f26b1a;border-radius:11px;">
+                  <a href="{{ .ConfirmationURL }}"
+                     style="display:inline-block;padding:14px 26px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:11px;">
+                    Sign in
+                  </a>
+                </td>
+              </tr>
+            </table>
+
+            <p style="margin:0;font-size:13.5px;line-height:1.5;color:#6b5f54;">
+              This code expires in 60 minutes. If you didn't request a sign-in link, ignore this email.
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:20px 44px 36px;border-top:1px solid #ece3d6;">
+            <p style="margin:0;font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#9a8f82;">
+              autonomux &middot; your AlterEgo, ready
+            </p>
+          </td>
+        </tr>
+      </table>
+
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>
