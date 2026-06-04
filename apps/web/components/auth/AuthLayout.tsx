@@ -55,12 +55,8 @@ export function AuthLayout({
         <div className={styles.brand}>
           <img
             className={styles.brandLogo}
-            src="/autonomux-logo.png"
+            src="/logo.png"
             alt="autonomux"
-            onError={(e) => {
-              // Fallback if logo file isn't present — render an "A" tile via CSS.
-              (e.target as HTMLImageElement).style.display = "none";
-            }}
           />
           <span className={styles.brandWord}>
             autonom<em>ux</em>
