@@ -55,7 +55,7 @@ export function AuthLayout({
         <div className={styles.brand}>
           <img
             className={styles.brandLogo}
-            src="/logo.png"
+            src="/logowhite.png"
             alt="autonomux"
           />
           <span className={styles.brandWord}>
