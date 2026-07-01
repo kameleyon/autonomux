@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>autonomux — Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=DM+Mono:wght@400;500&family=Inter:wght@400;450;500;600&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --brand-orange: #f26b1a;
+  --brand-orange-rgb: 242, 107, 26;
+  --brand-red: #e63312;
+  --brand-red-deep: #b81f00;
+  --brand-wine: #7a2010;
+  --brand-cream: #fff8f3;
+  --ink: #1a1410;
+  --ink-soft: #3a302a;
+  --muted: #6b5f54;
+  --muted-soft: #9a8f82;
+  --border: #ece3d6;
+  --border-strong: #ddd0bd;
+  --field-bg: #fbf7f1;
+}
+* , *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #fff;
+}
+.auth-split { display: grid; grid-template-columns: 1.05fr 1fr; min-height: 100vh; }
+
+/* ── Left visual panel ───────────────────────────────────────── */
+.auth-visual {
+  position: relative; overflow: hidden; isolation: isolate;
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: 40px 44px;
+}
+.auth-visual__bg {
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 55% at 8% 0%, rgba(var(--brand-orange-rgb), 0.78) 0%, transparent 60%),
+    radial-gradient(ellipse 90% 80% at 50% 55%, rgba(var(--brand-orange-rgb), 0.72) 0%, transparent 72%),
+    radial-gradient(ellipse 100% 70% at 75% 100%, rgba(var(--brand-red-rgb, 230,51,18), 0.95) 0%, transparent 75%),
+    linear-gradient(135deg, #c43811 0%, #b02810 28%, #8a1a08 60%, #5a0e06 100%);
+}
+.auth-visual__bg::after {
+  content: ""; position: absolute; inset: 0; opacity: 0.06;
+  background-image: radial-gradient(rgba(255,230,200,0.9) 1px, transparent 1px);
+  background-size: 3px 3px;
+}
+/* full-bleed user image */
+.auth-visual image-slot {
+  position: absolute; inset: 0; z-index: 1;
+  width: 100%; height: 100%; display: block;
+}
+/* scrim so brand text stays legible over any dropped image */
+.auth-visual__scrim {
+  position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: linear-gradient(180deg, rgba(40,8,0,0.30) 0%, rgba(40,8,0,0) 26%, rgba(40,8,0,0) 58%, rgba(40,8,0,0.52) 100%);
+}
+.auth-brand { position: relative; z-index: 3; pointer-events: none; display: flex; align-items: center; gap: 11px; }
+.auth-brand img { width: 34px; height: 34px; object-fit: contain; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.3)); }
+.auth-brand__word {
+  font-family: "Cormorant Garamond", serif; font-size: 26px; color: var(--brand-cream);
+  letter-spacing: -0.01em; text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.auth-brand__word em { font-style: italic; }
+
+.auth-visual__copy { position: relative; z-index: 3; pointer-events: none; max-width: 460px; }
+.auth-visual__headline {
+  font-family: "Cormorant Garamond", serif; font-weight: 500;
+  font-size: clamp(34px, 3.6vw, 50px); line-height: 1.04; color: var(--brand-cream);
+  text-shadow: 0 2px 12px rgba(0,0,0,0.32);
+}
+.auth-visual__headline em { font-style: italic; color: #fffdfb; }
+.auth-visual__sub {
+  margin-top: 16px; font-size: 16px; line-height: 1.55;
+  color: rgba(255,243,231,0.88); text-shadow: 0 1px 4px rgba(0,0,0,0.3); max-width: 400px;
+}
+.auth-visual__hint {
+  position: absolute; z-index: 3; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  pointer-events: none; text-align: center;
+  font-family: "DM Mono", monospace; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: rgba(255,243,231,0.6); text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+/* ── Right form panel ────────────────────────────────────────── */
+.auth-form-wrap {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 48px 40px; position: relative;
+}
+.auth-topbar {
+  position: absolute; top: 28px; right: 40px; left: 40px;
+  display: flex; align-items: center; justify-content: flex-end;
+  font-size: 13.5px; color: var(--muted);
+}
+.auth-topbar a { color: var(--brand-red-deep); font-weight: 500; text-decoration: none; margin-left: 6px; }
+.auth-topbar a:hover { text-decoration: underline; }
+
+.auth-card { width: 100%; max-width: 384px; }
+.auth-card__head { margin-bottom: 28px; }
+.auth-card__title { font-family: "Cormorant Garamond", serif; font-weight: 500; font-size: 34px; line-height: 1.08; color: var(--ink); letter-spacing: -0.01em; }
+.auth-card__subtitle { margin-top: 7px; font-size: 14.5px; color: var(--muted); line-height: 1.5; }
+
+.auth-social {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; height: 46px; border: 1px solid var(--border-strong); border-radius: 11px;
+  background: #fff; color: var(--ink); font-size: 14.5px; font-weight: 500; cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.auth-social:hover { background: var(--field-bg); border-color: var(--muted-soft); }
+.auth-social svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+.auth-divider { display: flex; align-items: center; gap: 14px; margin: 20px 0; }
+.auth-divider::before, .auth-divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+.auth-divider span { font-family: "DM Mono", monospace; font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted-soft); }
+
+.auth-fields { display: flex; flex-direction: column; gap: 15px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field__row { display: flex; align-items: center; justify-content: space-between; }
+.field label { font-size: 13px; font-weight: 500; color: var(--ink-soft); }
+.field__link { font-size: 12.5px; color: var(--brand-red-deep); text-decoration: none; }
+.field__link:hover { text-decoration: underline; }
+.field input {
+  width: 100%; height: 46px; padding: 0 14px; border: 1px solid var(--border-strong);
+  border-radius: 11px; background: var(--field-bg); color: var(--ink);
+  font-family: inherit; font-size: 14.5px; outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+.field input::placeholder { color: var(--muted-soft); }
+.field input:focus { border-color: var(--brand-orange); background: #fff; box-shadow: 0 0 0 3px rgba(var(--brand-orange-rgb),0.14); }
+
+.pw-wrap { position: relative; }
+.pw-toggle {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center;
+  border: none; background: transparent; color: var(--muted); cursor: pointer; border-radius: 8px;
+}
+.pw-toggle:hover { background: rgba(0,0,0,0.05); color: var(--ink-soft); }
+.pw-toggle svg { width: 18px; height: 18px; }
+
+.auth-submit {
+  width: 100%; height: 47px; margin-top: 4px; border: none; border-radius: 11px;
+  background: var(--brand-orange); color: #fff; font-family: inherit; font-size: 15px; font-weight: 600;
+  cursor: pointer; box-shadow: 0 1px 3px rgba(var(--brand-orange-rgb),0.4);
+  transition: background 130ms ease, transform 90ms ease;
+}
+.auth-submit:hover { background: var(--brand-red-deep); }
+.auth-submit:active { transform: scale(0.99); }
+
+.auth-terms { margin-top: 16px; font-size: 12px; color: var(--muted-soft); line-height: 1.5; text-align: center; }
+.auth-terms a { color: var(--muted); text-decoration: underline; }
+
+.auth-swap { margin-top: 22px; text-align: center; font-size: 14px; color: var(--muted); }
+.auth-swap button {
+  background: none; border: none; color: var(--brand-red-deep); font-family: inherit; font-size: 14px;
+  font-weight: 600; cursor: pointer; padding: 0; margin-left: 4px;
+}
+.auth-swap button:hover { text-decoration: underline; }
+
+.field[data-signup-only] { display: none; }
+.auth-card[data-mode="signup"] .field[data-signup-only] { display: flex; }
+.auth-card[data-mode="signup"] [data-signin-only] { display: none !important; }
+.auth-card[data-mode="signin"] [data-signup-only] { display: none !important; }
+
+/* fade between modes */
+.auth-card__body { animation: fade-swap 280ms ease; }
+@keyframes fade-swap { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 880px) {
+  .auth-split { grid-template-columns: 1fr; }
+  .auth-visual { min-height: 240px; padding: 28px 30px; }
+  .auth-visual__copy { display: none; }
+  .auth-form-wrap { padding: 56px 26px 40px; }
+  .auth-topbar { top: 18px; right: 26px; left: 26px; }
+}
+@media (prefers-reduced-motion: reduce) { .auth-card__body { animation: none; } }
+</style>
+</head>
+<body>
+<div class="auth-split">
+  <!-- Left: gradient + full-bleed user image -->
+  <section class="auth-visual">
+    <div class="auth-visual__bg"></div>
+    <image-slot id="auth-hero" shape="rect" fit="cover" placeholder=""></image-slot>
+    <div class="auth-visual__hint">Drop your image here</div>
+    <div class="auth-visual__scrim"></div>
+
+    <div class="auth-brand">
+      <img src="alterego/logo.png" alt="autonomux" />
+      <span class="auth-brand__word">autonom<em>ux</em></span>
+    </div>
+
+    <div class="auth-visual__copy">
+      <h1 class="auth-visual__headline">Your <em>AlterEgo</em> is&nbsp;ready.</h1>
+      <p class="auth-visual__sub">A second self that reads your inbox, your calendar, your cards, and your money — and acts while you live your life.</p>
+    </div>
+  </section>
+
+  <!-- Right: auth form -->
+  <section class="auth-form-wrap">
+    <div class="auth-topbar" id="topbar-swap">
+      <span id="topbar-text">New here?</span><a href="#" id="topbar-link">Create an account</a>
+    </div>
+
+    <div class="auth-card" id="auth-card" data-mode="signin">
+      <div class="auth-card__head">
+        <h2 class="auth-card__title" id="card-title">Welcome back</h2>
+        <p class="auth-card__subtitle" id="card-subtitle">Sign in to pick up where your AlterEgo left off.</p>
+      </div>
+
+      <div class="auth-card__body" id="auth-body">
+        <button class="auth-social" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#EA4335" d="M12 10.2v3.9h5.5c-.24 1.4-1.7 4.1-5.5 4.1-3.3 0-6-2.7-6-6.1S8.7 6 12 6c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.4 14.6 2.5 12 2.5 6.8 2.5 2.6 6.7 2.6 12S6.8 21.5 12 21.5c6 0 9.3-4.2 9.3-9.1 0-.6 0-1-.1-1.5H12z"/></svg>
+        Continue with Google
+        </button>
+
+        <div class="auth-divider"><span>or</span></div>
+
+        <form class="auth-fields" id="auth-form" novalidate>
+          <div class="field" data-signup-only>
+            <label for="name">Full name</label>
+            <input id="name" type="text" autocomplete="name" placeholder="Your name" />
+          </div>
+
+          <div class="field">
+            <label for="email">Email</label>
+            <input id="email" type="email" autocomplete="email" placeholder="you@example.com" required />
+          </div>
+
+          <div class="field">
+            <div class="field__row">
+              <label for="password">Password</label>
+              <a class="field__link" href="#" data-signin-only>Forgot password?</a>
+            </div>
+            <div class="pw-wrap">
+              <input id="password" type="password" autocomplete="current-password" placeholder="••••••••" required />
+              <button class="pw-toggle" type="button" id="pw-toggle" aria-label="Show password">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <button class="auth-submit" type="submit" id="submit-btn">Sign in</button>
+        </form>
+
+        <p class="auth-terms" data-signup-only>
+          By creating an account you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.
+        </p>
+
+        <p class="auth-swap" id="swap-line">
+          <span id="swap-text">Don't have an account?</span>
+          <button type="button" id="swap-btn">Sign up</button>
+        </p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="alterego/image-slot.js"></script>
+<script>
+(function () {
+  var card = document.getElementById("auth-card");
+  var title = document.getElementById("card-title");
+  var subtitle = document.getElementById("card-subtitle");
+  var submitBtn = document.getElementById("submit-btn");
+  var swapText = document.getElementById("swap-text");
+  var swapBtn = document.getElementById("swap-btn");
+  var topbarText = document.getElementById("topbar-text");
+  var topbarLink = document.getElementById("topbar-link");
+  var body = document.getElementById("auth-body");
+  var pw = document.getElementById("password");
+
+  var COPY = {
+    signin: {
+      title: "Welcome back",
+      subtitle: "Sign in to pick up where your AlterEgo left off.",
+      submit: "Sign in",
+      swapText: "Don't have an account?",
+      swapBtn: "Sign up",
+      topbarText: "New here?",
+      topbarLink: "Create an account",
+      pwAutocomplete: "current-password",
+    },
+    signup: {
+      title: "Create your account",
+      subtitle: "Set up your AlterEgo in under a minute.",
+      submit: "Create account",
+      swapText: "Already have an account?",
+      swapBtn: "Sign in",
+      topbarText: "Have an account?",
+      topbarLink: "Sign in",
+      pwAutocomplete: "new-password",
+    },
+  };
+
+  function setMode(mode) {
+    var c = COPY[mode];
+    card.setAttribute("data-mode", mode);
+    title.textContent = c.title;
+    subtitle.textContent = c.subtitle;
+    submitBtn.textContent = c.submit;
+    swapText.textContent = c.swapText;
+    swapBtn.textContent = c.swapBtn;
+    topbarText.textContent = c.topbarText;
+    topbarLink.textContent = c.topbarLink;
+    pw.setAttribute("autocomplete", c.pwAutocomplete);
+    // retrigger fade
+    body.style.animation = "none"; void body.offsetWidth; body.style.animation = "";
+  }
+
+  function toggle(e) { if (e) e.preventDefault(); setMode(card.getAttribute("data-mode") === "signin" ? "signup" : "signin"); }
+  swapBtn.addEventListener("click", toggle);
+  topbarLink.addEventListener("click", toggle);
+
+  // password visibility
+  document.getElementById("pw-toggle").addEventListener("click", function () {
+    var showing = pw.type === "text";
+    pw.type = showing ? "password" : "text";
+    this.setAttribute("aria-label", showing ? "Show password" : "Hide password");
+    this.style.color = showing ? "" : "var(--brand-orange)";
+  });
+
+  // demo submit
+  document.getElementById("auth-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    submitBtn.textContent = card.getAttribute("data-mode") === "signin" ? "Signing in…" : "Creating account…";
+    submitBtn.disabled = true;
+    setTimeout(function () { window.location.href = "AlterEgo.html"; }, 850);
+  });
+})();
+</script>
+</body>
+</html>
