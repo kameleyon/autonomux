@@ -55,7 +55,12 @@ export async function forgotPasswordAction(
     process.env["NEXT_PUBLIC_SITE_URL"] ??
     requestHeaders.get("origin") ??
     `https://${requestHeaders.get("host") ?? ""}`;
-  const redirectTo = `${siteUrlRaw.replace(/\/+$/, "")}/reset-password`;
+  /* Route the recovery link through /auth/callback — that handler exchanges
+   * the recovery code/token for a session (exchangeCodeForSession / verifyOtp)
+   * and then forwards to `next`. Pointing straight at /reset-password skipped
+   * the exchange, so getUser() there was always null → "link expired". */
+  const siteUrl = siteUrlRaw.replace(/\/+$/, "");
+  const redirectTo = `${siteUrl}/auth/callback?next=${encodeURIComponent("/reset-password")}`;
 
   const supabase = await createClient();
   /* We intentionally do NOT inspect the response error — Supabase returns

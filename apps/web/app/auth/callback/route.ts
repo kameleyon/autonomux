@@ -18,6 +18,22 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
 
+/**
+ * Resolve the post-auth destination. Callers (e.g. the password-recovery
+ * email) pass ?next=/some/path so the exchange lands them on the right page
+ * with a live session. We only accept same-origin relative paths — a single
+ * leading slash, never `//` or a scheme — to prevent open-redirect abuse.
+ * Falls back to the TOTP onboarding surface (the signup-confirm destination).
+ */
+function resolveTarget(next: string | null, origin: string): URL {
+  // Single leading slash, and the next char must not be `/` or `\` — both
+  // would let `//host` / `/\host` normalize into a cross-origin redirect.
+  if (next !== null && /^\/(?![/\\])/.test(next)) {
+    return new URL(next, origin);
+  }
+  return new URL("/app/onboarding/totp", origin);
+}
+
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const url = request.nextUrl;
   const code = url.searchParams.get("code");
@@ -26,7 +42,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const errorParam = url.searchParams.get("error");
   const errorDescription = url.searchParams.get("error_description");
 
-  const target = new URL("/app/onboarding/totp", url.origin);
+  const target = resolveTarget(url.searchParams.get("next"), url.origin);
 
   if (errorParam !== null) {
     const fail = new URL("/sign-in", url.origin);
