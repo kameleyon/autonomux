@@ -1,42 +1,26 @@
 /**
  * apps/web/app/app/layout.tsx
  *
- * Shell for every signed-in route. Two responsibilities:
+ * Signed-in shell for /app/*. Only job now: enforce auth server-side.
  *
- *   1. Paint the fiery red→orange app wash that signals "you're inside
- *      the app." Marketing surfaces stay neutral; once a user crosses
- *      into /app/* the brand temperature jumps to match the logo.
- *
- *   2. Mount the primary nav chrome — collapsible sidebar + topbar +
- *      mobile drawer — via `<AppShell>`. Every page underneath this
- *      layout renders inside that chrome's main pane. Pages that need
- *      a secondary contextual rail (e.g. /app/chat with its ThreadList)
- *      add their own layout INSIDE the main pane.
- *
- * The user email comes from a single server-side fetch here so the
- * sidebar doesn't need its own round trip. If auth resolution throws
- * we let middleware redirect to /sign-in.
+ * The old AppShell (its Home/Chat/Integrations/Settings sidebar) and the
+ * red→orange background wash have been REMOVED. The AlterEgo template
+ * rendered by the /app home brings its own full sidebar, navigation, and
+ * background — wrapping it in a second shell produced the double-sidebar
+ * you did not want. This layout now renders children raw, full-bleed.
  *
  * Owner: [Cluster C · App Shell]
  */
-import "./app-shell.css";
-
-import { AppShell } from "@/components/app/AppShell";
 import { requireAuth } from "@/lib/auth-helpers";
 import { createClient } from "@/lib/supabase/server";
 
-export default async function AppShellLayout({
+export default async function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }): Promise<React.ReactElement> {
   const supabase = await createClient();
-  const user = await requireAuth(supabase);
-  const email = user.email ?? "";
+  await requireAuth(supabase);
 
-  return (
-    <div className="app-shell">
-      <AppShell userEmail={email}>{children}</AppShell>
-    </div>
-  );
+  return <>{children}</>;
 }
