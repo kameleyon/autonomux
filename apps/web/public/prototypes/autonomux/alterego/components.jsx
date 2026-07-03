@@ -41,25 +41,74 @@ function aeInline(text, keyBase) {
   return nodes;
 }
 
+function aeIsTableSep(line) {
+  // a GFM header separator row: | --- | :--: | --- |
+  return /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)+\|?\s*$/.test(line);
+}
+function aeSplitRow(line) {
+  return line.replace(/^\s*\|/, "").replace(/\|\s*$/, "").split("|").map((c) => c.trim());
+}
+
 function AeMarkdown({ text }) {
   const blocks = [];
   const lines = (text || "").split("\n");
   let list = null;
-  lines.forEach((line, idx) => {
+  for (let idx = 0; idx < lines.length; idx++) {
+    const line = lines[idx];
+    const heading = /^\s*(#{1,4})\s+(.*)$/.exec(line);
     const bullet = /^\s*[-*]\s+(.*)/.exec(line);
     const num = /^\s*\d+\.\s+(.*)/.exec(line);
-    if (bullet || num) {
+
+    // GFM table: a `| ... |` line followed by a `|---|` separator line.
+    if (line.indexOf("|") !== -1 && idx + 1 < lines.length && aeIsTableSep(lines[idx + 1])) {
+      const header = aeSplitRow(line);
+      const rows = [];
+      idx += 2; // skip header + separator
+      while (idx < lines.length && lines[idx].indexOf("|") !== -1 && lines[idx].trim().length) {
+        rows.push(aeSplitRow(lines[idx]));
+        idx++;
+      }
+      idx--; // for-loop will ++
+      list = null;
+      blocks.push({ type: "table", header, rows });
+      continue;
+    }
+
+    if (heading) {
+      list = null;
+      blocks.push({ type: "h", level: heading[1].length, text: heading[2] });
+    } else if (bullet || num) {
       const ordered = !!num;
       if (!list || list.ordered !== ordered) { list = { ordered, items: [] }; blocks.push({ type: "list", list }); }
       list.items.push((bullet ? bullet[1] : num[1]));
     } else if (line.trim().length) {
       list = null;
       blocks.push({ type: "p", text: line });
+    } else {
+      list = null; // blank line ends a list
     }
-  });
+  }
   return (
     <React.Fragment>
       {blocks.map((b, i) => {
+        if (b.type === "table") {
+          return (
+            <div key={i} className="ae-md-tablewrap">
+              <table className="ae-md-table">
+                <thead><tr>{b.header.map((h, j) => <th key={j}>{aeInline(h, `h${i}-${j}`)}</th>)}</tr></thead>
+                <tbody>
+                  {b.rows.map((r, j) => (
+                    <tr key={j}>{r.map((c, k) => <td key={k}>{aeInline(c, `${i}-${j}-${k}`)}</td>)}</tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        }
+        if (b.type === "h") {
+          const Tag = b.level <= 2 ? "h3" : "h4";
+          return <Tag key={i} className="ae-md-h">{aeInline(b.text, i)}</Tag>;
+        }
         if (b.type === "list") {
           const Tag = b.list.ordered ? "ol" : "ul";
           return <Tag key={i}>{b.list.items.map((it, j) => <li key={j}>{aeInline(it, `${i}-${j}`)}</li>)}</Tag>;

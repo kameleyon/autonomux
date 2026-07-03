@@ -421,6 +421,27 @@ button { font-family: inherit; }
 .chat-turn-body--assistant li { margin: var(--sp-4) 0; }
 .chat-turn-body--assistant h3 { font-family: "Inter", sans-serif; font-size: var(--fs-body-lg); font-weight: 600; color: #fffaf5; margin: var(--sp-12) 0 var(--sp-6); text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
 .chat-turn-thinking { text-shadow: none; }
+
+/* markdown headings + tables inside an assistant reply */
+.chat-turn-body--assistant .ae-md-h {
+  font-family: "Inter", sans-serif; font-weight: 600; color: #fffaf5;
+  font-size: var(--fs-body-lg); margin: var(--sp-12) 0 var(--sp-6);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+.chat-turn-body--assistant .ae-md-tablewrap { overflow-x: auto; margin: var(--sp-8) 0 var(--sp-12); -webkit-overflow-scrolling: touch; }
+.ae-md-table {
+  border-collapse: collapse; width: 100%; font-size: var(--fs-body-sm);
+  background: rgba(255,250,245,0.06); border-radius: var(--r-md); overflow: hidden;
+}
+.ae-md-table th, .ae-md-table td {
+  text-align: left; padding: 8px 12px; border-bottom: 1px solid rgba(255,240,225,0.14);
+  color: rgba(255,248,242,0.94); white-space: nowrap;
+}
+.ae-md-table th {
+  font-family: "DM Mono", monospace; font-size: 11px; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--brand-gold-soft); background: rgba(255,240,225,0.06);
+}
+.ae-md-table tr:last-child td { border-bottom: none; }
 .chat-turn-body--assistant code {
   font-family: "DM Mono", monospace; font-size: 0.92em; color: #fffaf5;
   background: rgba(255,255,255,0.14); padding: 0.1em 0.35em; border-radius: var(--r-sm); text-shadow: none;
