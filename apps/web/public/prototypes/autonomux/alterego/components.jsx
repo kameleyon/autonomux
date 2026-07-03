@@ -204,19 +204,8 @@ function EmptyState({ skills, onPickSkill, onPrompt }) {
         <h1 className="chat-empty-hero">Talk to your <em>AlterEgo</em>.</h1>
         <p className="chat-empty-sub">
           I'm you — with more time, a longer memory, and a way into your inbox, calendar,
-          cards, and money. Type, talk, or hand me a task.
+          cards, and money. Ask me anything, think out loud, or hand me a task.
         </p>
-      </div>
-      <div className="ae-skill-grid">
-        {skills.filter((s) => !s.hidden).map((s) => (
-          <button key={s.id} className="ae-skill-chip" onClick={() => onPickSkill(s.id)}>
-            <span className="ae-skill-mark">{s.mark}</span>
-            <span className="ae-skill-text">
-              <span className="ae-skill-name">{s.name}</span>
-              <span className="ae-skill-desc">{s.desc}</span>
-            </span>
-          </button>
-        ))}
       </div>
     </div>
   );

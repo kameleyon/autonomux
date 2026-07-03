@@ -32,6 +32,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getSupabaseServiceClient } from "@/lib/supabase/service";
 import { buildAlterEgoRuntime } from "@/lib/orchestrator/factory";
 
+import { composeSystemPrompt } from "@autonomux/orchestrator";
 import type { OrchestratorEvent } from "@autonomux/orchestrator";
 
 import type {
@@ -254,6 +255,21 @@ export async function POST(request: NextRequest): Promise<Response> {
     request.headers.get("x-request-id") ?? crypto.randomUUID();
   const runtime = buildAlterEgoRuntime({ requestId, tenantId });
 
+  /* Compose the REAL AlterEgo system prompt (bigBrain persona: a
+   * general-purpose assistant that can chat, brainstorm, reason, write, and
+   * only reaches for a tool when it helps). Without this the runtime falls
+   * back to a one-line neutral default and the model — seeing only the
+   * email/calendar tools — wrongly decides it's an email/calendar bot and
+   * refuses everything else. personality + facts degrade gracefully to null
+   * for tenants that have none yet. */
+  const systemPrompt = await composeSystemPrompt({
+    tenantId,
+    personality: null,
+    factsEnvelope: null,
+    registeredSubAgents: ["mailroom", "scheduler"],
+    logger: log,
+  });
+
   // Accumulate the assistant turn so we can persist it on completion
   // (or on early termination via abort) — see finalisePersistence().
   let assistantText = "";
@@ -276,6 +292,7 @@ export async function POST(request: NextRequest): Promise<Response> {
           })),
           signal: ac.signal,
           requestId,
+          system: systemPrompt,
         })) {
           if (event.type === "text_delta") {
             assistantText += event.text;

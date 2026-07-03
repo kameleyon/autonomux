@@ -646,7 +646,7 @@ button { font-family: inherit; }
   -webkit-backdrop-filter: blur(8px);
   padding: var(--sp-10) var(--sp-24) var(--sp-16);
 }
-.composer-wrap { max-width: 820px; margin: 0 auto; position: relative; }
+.composer-wrap { max-width: 680px; margin: 0 auto; position: relative; }
 
 /* skill bar */
 .ae-skillbar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: var(--sp-8); }
