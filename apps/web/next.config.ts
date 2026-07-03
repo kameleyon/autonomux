@@ -6,18 +6,29 @@ const config: NextConfig = {
   images: {
     remotePatterns: [],
   },
-  /* Security headers (Phase 0 Blocker). `frame-ancestors 'self'` blocks
-   * cross-origin clickjacking while still allowing the same-origin /app iframe
-   * bridge; a full script-src CSP lands with the native AppShell port, once the
-   * eval + unpkg-CDN prototype is removed. */
+  /* Security headers (Phase 0 Blocker B4). The prototype iframes are gone
+   * (landing + /app are native now), so we lock framing down hard:
+   * `frame-ancestors 'none'` + `X-Frame-Options: DENY` (no one may embed us),
+   * `frame-src https://cdn.plaid.com` (only Plaid Link may be embedded BY us,
+   * Phase 1), plus COOP for cross-origin isolation of the browsing context.
+   *
+   * A full `script-src`/`connect-src` CSP is deliberately NOT here yet: Next's
+   * inline hydration bootstrap needs nonces and `connect-src` must enumerate
+   * Supabase + Upstash + Plaid exactly. Per the ledger that lands as
+   * report-only → enforce against a preview URL, gated on grade A. */
   async headers() {
     const securityHeaders = [
       { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
       { key: "X-Content-Type-Options", value: "nosniff" },
-      { key: "X-Frame-Options", value: "SAMEORIGIN" },
+      { key: "X-Frame-Options", value: "DENY" },
       { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
       { key: "Permissions-Policy", value: "camera=(), geolocation=(), browsing-topics=()" },
-      { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
+      { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
+      {
+        key: "Content-Security-Policy",
+        value:
+          "frame-ancestors 'none'; frame-src https://cdn.plaid.com; object-src 'none'; base-uri 'self'",
+      },
     ];
     return [{ source: "/:path*", headers: securityHeaders }];
   },

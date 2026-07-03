@@ -36,12 +36,15 @@ export interface SubAgentCardProps {
   subAgent: SubAgentName;
   /** Undefined while the sub-agent is still running (sub_agent_start only). */
   result?: SubAgentResultPayload;
+  /** Latest `sub_agent_progress` message while running; drives live feedback. */
+  progress?: string;
 }
 
 export function SubAgentCard({
   invocationId,
   subAgent,
   result,
+  progress,
 }: SubAgentCardProps): React.ReactElement {
   // Loading state — we received `sub_agent_start` but no `sub_agent_result`
   // yet. Show a tasteful skeleton card with the sub-agent name + spinner.
@@ -73,9 +76,11 @@ export function SubAgentCard({
             fontSize: "var(--fs-body-sm)",
           }}
         >
-          {subAgent === "mailroom"
-            ? "Fetching and ranking recent messages."
-            : "Working."}
+          {progress !== undefined && progress.length > 0
+            ? progress
+            : subAgent === "mailroom"
+              ? "Fetching and ranking recent messages."
+              : "Working."}
         </p>
       </article>
     );

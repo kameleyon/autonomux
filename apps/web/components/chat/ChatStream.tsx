@@ -96,6 +96,8 @@ interface UiMessage {
 interface PendingSubAgent {
   invocationId: string;
   subAgent: SubAgentName;
+  /** Latest sub_agent_progress message for this invocation, if any. */
+  progress?: string;
 }
 
 /* ──────────────────────────────────────────────────────────────────────
@@ -414,6 +416,14 @@ export function ChatStream({
     [handleSubmit],
   );
 
+  // Cancel the in-flight stream. Aborting the fetch tears down the SSE
+  // connection, which the server observes as `request.signal.aborted` and
+  // uses to stop the orchestrator + mark the run cancelled (no orphan charge).
+  // The for-await loop throws AbortError → the finally clears inFlight.
+  const handleStop = useCallback((): void => {
+    abortRef.current?.abort();
+  }, []);
+
   // ── Inline-edit handlers ───────────────────────────────────────────
   // Edit-mode is exclusive: only one bubble is editable at a time. The
   // textarea writes a new text-block back into the UI immediately for
@@ -583,7 +593,7 @@ export function ChatStream({
         </div>
       ) : null}
 
-      <Composer disabled={inFlight} onSubmit={handleSubmit} />
+      <Composer disabled={inFlight} onSubmit={handleSubmit} onStop={handleStop} />
     </div>
   );
 }
@@ -648,7 +658,23 @@ function reduceAssistant(msg: UiMessage, event: OrchestratorEvent): UiMessage {
       };
     }
     case "sub_agent_progress": {
-      return msg;
+      // Live feedback contract: surface the latest progress line on the
+      // matching pending sub-agent card. Match by invocation id; fall back to
+      // sub-agent name so a progress event that predates the start event (or
+      // omits the id) still lands somewhere visible.
+      const invocationId = e.tool_use_id ?? e.invocation_id ?? null;
+      const progressName = e.sub_agent_name ?? e.sub_agent ?? null;
+      const message = (e as { message?: string }).message ?? "";
+      if (message.length === 0) return msg;
+      return {
+        ...msg,
+        pendingSubAgents: msg.pendingSubAgents.map((p) =>
+          (invocationId !== null && p.invocationId === invocationId) ||
+          (invocationId === null && p.subAgent === progressName)
+            ? { ...p, progress: message }
+            : p,
+        ),
+      };
     }
     case "sub_agent_result": {
       const invocationId = e.tool_use_id ?? e.invocation_id ?? "unknown";
@@ -838,7 +864,11 @@ function MessageTurnRaw({
           {/* In-flight sub-agent skeleton card(s). */}
           {message.pendingSubAgents.map((p) => (
             <div key={p.invocationId} className="card-anim" style={{ width: "100%" }}>
-              <SubAgentCard invocationId={p.invocationId} subAgent={p.subAgent} />
+              <SubAgentCard
+                invocationId={p.invocationId}
+                subAgent={p.subAgent}
+                progress={p.progress}
+              />
             </div>
           ))}
         </div>

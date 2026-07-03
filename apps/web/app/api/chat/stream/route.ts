@@ -60,10 +60,11 @@ function parseBody(value: unknown): ChatStreamBody | null {
   if (typeof v.threadId !== "string" || v.threadId.length === 0) return null;
   if (typeof v.userMessage !== "string" || v.userMessage.length === 0)
     return null;
-  /* 200kB ceiling — big enough to hold a typed message + several
-   * inline-folded text attachments (paste-to-attach). Hard cap is here
-   * so a malicious client can't flood the LLM with a 10MB blob. */
-  if (v.userMessage.length > 200_000) return null;
+  /* 16k-char ceiling (CR4). Big enough for a long typed message plus a
+   * couple of inline-folded text attachments, small enough that a client
+   * can't flood the LLM with a novel-sized blob (cost + latency + abuse).
+   * The composer enforces 12k; this is the server-side hard cap. */
+  if (v.userMessage.length > 16_000) return null;
   return { threadId: v.threadId, userMessage: v.userMessage };
 }
 
