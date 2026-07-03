@@ -81,6 +81,10 @@ html, body {
   line-height: var(--lh-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Stop iOS Safari from auto-inflating text (it was blowing dashboard copy
+     up well past its set sizes on mobile). */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 #root { height: 100%; }
@@ -808,6 +812,25 @@ button { font-family: inherit; }
   }
   /* Its popover now opens downward (it sat at the bottom before). */
   .ae-profile-menu { top: calc(100% + 6px); bottom: auto; }
+}
+
+/* Mobile: scale the dashboard content down — the empty-state hero, skill cards,
+   and message text were desktop-sized and read as oversized on a phone. */
+@media (max-width: 640px) {
+  .chat-empty { gap: var(--sp-20); padding: var(--sp-24) var(--sp-16); }
+  .chat-empty-hero { font-size: 30px; }
+  .chat-empty-sub { font-size: 14.5px; line-height: 1.5; }
+  .ae-skill-grid { gap: var(--sp-10); }
+  .ae-skill-chip { padding: var(--sp-10) var(--sp-12); gap: var(--sp-10); }
+  .ae-skill-mark { width: 26px; height: 26px; font-size: 12px; }
+  .ae-skill-name { font-size: 14px; }
+  .ae-skill-desc { font-size: 12.5px; line-height: 1.35; }
+  .chat-turn-body--assistant { font-size: 14px; }
+  .chat-turn-body--user { font-size: 13.5px; }
+  .chat-scroller { padding: var(--sp-16) var(--sp-12) var(--sp-8); }
+  .ae-composer-band { padding: var(--sp-8) var(--sp-12) var(--sp-12); }
+  /* "/ for skills" hint was overlapping the char counter on narrow screens. */
+  .composer-hint { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
