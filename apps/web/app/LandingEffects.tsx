@@ -87,10 +87,29 @@ export function LandingEffects(): null {
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
 
+    /* ── mobile menu toggle ───────────────────────────────────── */
+    const burger = root.querySelector<HTMLButtonElement>("#nav-burger");
+    const closeMenu = (): void => {
+      nav?.classList.remove("menu-open");
+      burger?.setAttribute("aria-expanded", "false");
+    };
+    const onBurger = (): void => {
+      if (nav === null) return;
+      const open = nav.classList.toggle("menu-open");
+      burger?.setAttribute("aria-expanded", open ? "true" : "false");
+    };
+    burger?.addEventListener("click", onBurger);
+    const mobileLinks = Array.from(
+      root.querySelectorAll<HTMLAnchorElement>("#nav-mobile a"),
+    );
+    mobileLinks.forEach((a) => a.addEventListener("click", closeMenu));
+
     return () => {
       if (tickerId !== undefined) clearInterval(tickerId);
       io.disconnect();
       window.removeEventListener("scroll", onScroll);
+      burger?.removeEventListener("click", onBurger);
+      mobileLinks.forEach((a) => a.removeEventListener("click", closeMenu));
     };
   }, []);
 

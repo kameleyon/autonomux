@@ -40,6 +40,28 @@ export default function HomePage(): React.ReactElement {
               Get your AlterEgo <Icon name="arrow" />
             </Link>
           </div>
+          <button
+            type="button"
+            className="nav__burger"
+            id="nav-burger"
+            aria-label="Open menu"
+            aria-expanded="false"
+            aria-controls="nav-mobile"
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+        </div>
+        <div className="nav__mobile" id="nav-mobile">
+          <a className="nav__mobile-link" href="#agents">What it does</a>
+          <a className="nav__mobile-link" href="#how">How it works</a>
+          <a className="nav__mobile-link" href="#trust">Accountability</a>
+          <a className="nav__mobile-link" href="#pricing">Pricing</a>
+          <Link className="nav__mobile-link" href="/sign-in">Log in</Link>
+          <Link className="btn btn--primary" href="/sign-up">
+            Get your AlterEgo <Icon name="arrow" />
+          </Link>
         </div>
       </nav>
 

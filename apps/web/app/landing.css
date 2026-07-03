@@ -5,6 +5,11 @@
    into the rest of the app's global CSS bundle.
    Warm-only palette · Cormorant Garamond / Inter / DM Mono · r=12
    ============================================================ */
+
+/* Kill sideways pan on mobile — nothing (fixed nav, wide hero) may make the
+   document scroll horizontally. */
+html, body { overflow-x: hidden; max-width: 100%; }
+
 .lp {
   --orange: #f26b1a; --orange-soft: #ff9050;
   --red: #e63312; --red-deep: #b81f00; --wine: #7a2010;
@@ -97,7 +102,23 @@
 .lp .nav.is-hero .nav__login, .lp .nav.is-stuck .nav__login { color: var(--cream); }
 .lp .nav__login { font-size: 15px; font-weight: 500; color: var(--ink); white-space: nowrap; }
 .lp .nav__login:hover { color: var(--orange); }
-.lp .nav__burger { display: none; }
+.lp .nav__burger {
+  display: none; flex-direction: column; gap: 5px; flex-shrink: 0;
+  width: 42px; height: 42px; align-items: center; justify-content: center;
+  background: rgba(255,250,245,0.12); border: 1px solid rgba(255,248,243,0.28);
+  border-radius: 10px; cursor: pointer; padding: 0;
+}
+.lp .nav__burger span { display: block; width: 20px; height: 2px; background: var(--cream); border-radius: 1px; }
+.lp .nav__mobile { display: none; flex-direction: column; gap: 2px; padding: 8px 20px 18px; }
+.lp .nav__mobile-link { padding: 13px 10px; color: var(--cream); font-size: 16px; border-radius: 10px; }
+.lp .nav__mobile-link:hover { background: rgba(255,250,245,0.1); }
+.lp .nav__mobile .btn { margin-top: 10px; width: 100%; justify-content: center; }
+.lp .nav.menu-open {
+  background: rgba(38,12,4,0.95); backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border-bottom-color: rgba(255,240,225,0.12);
+}
+.lp .nav.menu-open .nav__mobile { display: flex; }
 
 /* ── hero ────────────────────────────────────────────────────── */
 .lp .hero {
@@ -308,7 +329,8 @@
 @media (max-width: 640px) {
   .lp .wrap { padding: 0 20px; }
   .lp { font-size: 16px; }
-  .lp .nav__links, .lp .nav__login { display: none; }
+  .lp .nav__links, .lp .nav__login, .lp .nav__cta { display: none; }
+  .lp .nav__burger { display: flex; }
   .lp .section { padding: 76px 0; }
   .lp .hero { padding: 124px 0 70px; }
   .lp .agents { grid-template-columns: 1fr; }
