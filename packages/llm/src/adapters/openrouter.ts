@@ -351,6 +351,19 @@ interface OABody {
   stream_options?: { include_usage: boolean };
   /** OpenRouter extension: include cost in response. */
   usage?: { include: boolean };
+  /** OpenRouter extension: enable the built-in web-search plugin. */
+  plugins?: { id: string; max_results?: number }[];
+}
+
+/**
+ * Web search is ON unless OPENROUTER_WEB_SEARCH is explicitly "0"/"false"/"off".
+ * When on, OpenRouter runs a live web search per request and folds the results
+ * into the model's context (~$0.02/search). Turn it off by setting the env var
+ * to "0" if you want to cut that cost.
+ */
+function webSearchEnabled(): boolean {
+  const raw = process.env["OPENROUTER_WEB_SEARCH"]?.trim().toLowerCase();
+  return raw !== "0" && raw !== "false" && raw !== "off" && raw !== "no";
 }
 
 function buildBody(
@@ -372,6 +385,11 @@ function buildBody(
     max_tokens: req.max_tokens,
     usage: { include: true },
   };
+  // Live web search via OpenRouter's built-in plugin — lets the model pull
+  // current info (news, prices, standings) instead of only training data.
+  if (webSearchEnabled()) {
+    body.plugins = [{ id: "web", max_results: 3 }];
+  }
   if (req.temperature !== undefined) body.temperature = req.temperature;
   if (stream) {
     body.stream = true;
