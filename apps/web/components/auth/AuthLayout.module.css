@@ -474,18 +474,25 @@
   .authSplit {
     grid-template-columns: 1fr;
   }
+  /* Slim brand banner on mobile — the full-height busy line-art crop ate ~40%
+     of the screen. Keep the warm gradient + the autonomux logo, drop the
+     illustration, centre the brand. */
   .visual {
-    min-height: 240px;
-    padding: 28px 30px;
+    min-height: 116px;
+    padding: 20px 26px;
+    justify-content: center;
+  }
+  .heroImage {
+    display: none;
   }
   .copy {
     display: none;
   }
   .formWrap {
-    padding: 56px 26px 40px;
+    padding: 40px 26px 40px;
   }
   .topbar {
-    top: 18px;
+    top: 16px;
     right: 26px;
     left: 26px;
   }

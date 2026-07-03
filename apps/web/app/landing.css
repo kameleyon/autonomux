@@ -334,7 +334,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
   .lp .wrap { padding: 0 20px; }
   .lp { font-size: 16px; }
   .lp .nav__links, .lp .nav__login, .lp .nav__cta { display: none; }
-  .lp .nav__burger { display: flex; }
+  .lp .nav__burger { display: flex; order: -1; margin-right: 6px; } /* menu on the LEFT, like the app */
   .lp .section { padding: 76px 0; }
   .lp .hero { padding: 124px 0 70px; }
   .lp .agents { grid-template-columns: 1fr; }

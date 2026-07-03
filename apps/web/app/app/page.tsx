@@ -29,7 +29,10 @@ export default async function AppHomePage(): Promise<React.ReactElement> {
         position: "fixed",
         inset: 0,
         width: "100vw",
-        height: "100vh",
+        // 100dvh (dynamic viewport height), not 100vh: on mobile Safari 100vh
+        // is the LARGE viewport (behind the URL bar), which pushed the chat
+        // composer off the bottom of the screen. dvh tracks the visible area.
+        height: "100dvh",
         border: "none",
         zIndex: 50,
       }}
