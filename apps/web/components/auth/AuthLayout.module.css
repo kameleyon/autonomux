@@ -78,10 +78,18 @@
 .brand {
   position: relative;
   z-index: 3;
-  pointer-events: none;
-  display: flex;
+  /* Clickable — links back to the landing so users on an auth page can leave. */
+  pointer-events: auto;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
   align-items: center;
   gap: 11px;
+  align-self: flex-start;
+}
+
+.brand:hover .brandWord {
+  opacity: 0.88;
 }
 
 .brandLogo {

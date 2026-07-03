@@ -52,7 +52,7 @@ export function AuthLayout({
         />
         <div className={styles.scrim} />
 
-        <div className={styles.brand}>
+        <a className={styles.brand} href="/" aria-label="Back to autonomux home">
           <img
             className={styles.brandLogo}
             src="/logowhite.png"
@@ -61,7 +61,7 @@ export function AuthLayout({
           <span className={styles.brandWord}>
             autonom<em>ux</em>
           </span>
-        </div>
+        </a>
 
         <div className={styles.copy}>
           <h1 className={styles.headline}>
