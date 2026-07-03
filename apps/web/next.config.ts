@@ -6,6 +6,21 @@ const config: NextConfig = {
   images: {
     remotePatterns: [],
   },
+  /* Security headers (Phase 0 Blocker). `frame-ancestors 'self'` blocks
+   * cross-origin clickjacking while still allowing the same-origin /app iframe
+   * bridge; a full script-src CSP lands with the native AppShell port, once the
+   * eval + unpkg-CDN prototype is removed. */
+  async headers() {
+    const securityHeaders = [
+      { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      { key: "X-Frame-Options", value: "SAMEORIGIN" },
+      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+      { key: "Permissions-Policy", value: "camera=(), geolocation=(), browsing-topics=()" },
+      { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
+    ];
+    return [{ source: "/:path*", headers: securityHeaders }];
+  },
   /* Workspace packages consumed as TypeScript source (package.json main
    * points at ./src/index.ts, not a built dist/). Next webpack won't
    * transpile node_modules by default — opt them in explicitly or it
