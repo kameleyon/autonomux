@@ -6,6 +6,7 @@ import "@autonomux/ui/Dialog.css";
 import "./globals.css";
 
 import { CookieBannerSlot } from "@/components/CookieBannerSlot";
+import { HideOnApp } from "@/components/HideOnApp";
 import { SiteFooter } from "@/components/SiteFooter";
 
 /* Defensive: NEXT_PUBLIC_SITE_URL must be a fully-qualified URL with scheme.
@@ -68,11 +69,15 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <a className="sz-skip" href="#main">
-          Skip to content
-        </a>
+        <HideOnApp>
+          <a className="sz-skip" href="#main">
+            Skip to content
+          </a>
+        </HideOnApp>
         {children}
-        <SiteFooter />
+        <HideOnApp>
+          <SiteFooter />
+        </HideOnApp>
         <CookieBannerSlot />
       </body>
     </html>
