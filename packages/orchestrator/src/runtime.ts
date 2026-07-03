@@ -319,6 +319,14 @@ export class AlterEgoRuntime {
           const subRequestId = `${args.requestId}.${String(hops)}.${tu.id}`;
           const subStart = Date.now();
 
+          // Per-invocation progress buffer. MUST stay local to this sub-agent
+          // invocation. A shared/module-level buffer drains one tenant's
+          // progress events into another tenant's concurrent stream — a
+          // cross-tenant data leak (Jury Blocker; GDPR Art. 5(1)(f)). The
+          // onProgress closure below and the drain after invoke() both capture
+          // THIS local so events never cross requests.
+          const progressBuffer: OrchestratorEvent[] = [];
+
           // Persist a pending sub_agent_run row.
           await this.persistence.recordSubAgentRun({
             id: subAgentRunId,
@@ -803,9 +811,6 @@ interface HopResult {
  * still usable from tests / cron contexts.
  */
 const DEFAULT_SYSTEM_FALLBACK = "You are the user's AlterEgo. Reply briefly and helpfully.";
-
-/** Used inside runOneHop to gate yields on the outer signal. */
-const progressBuffer: OrchestratorEvent[] = [];
 
 class AbortedError extends Error {
   constructor(message: string) {

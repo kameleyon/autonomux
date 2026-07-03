@@ -44,6 +44,23 @@ import type {
   RecordAgentRunArgs,
 } from "@autonomux/db";
 
+/* Controllable agent-bus for the cross-tenant progress-isolation test. Other
+   tests never call subscribeToJob (their stubs resolve directly), so this mock
+   stays inert unless `busMock.subscribe` is set. */
+const busMock = vi.hoisted(() => ({
+  subscribe: null as ((requestId: string) => AsyncIterable<unknown>) | null,
+}));
+vi.mock("../agent-bus", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../agent-bus")>();
+  return {
+    ...actual,
+    subscribeToJob: ((_redis: unknown, requestId: string) =>
+      busMock.subscribe
+        ? busMock.subscribe(requestId)
+        : (async function* () {})()) as unknown as typeof actual.subscribeToJob,
+  };
+});
+
 /* ────────────────────────────────────────────────────────────────────────── */
 /*  Test doubles                                                               */
 /* ────────────────────────────────────────────────────────────────────────── */
@@ -293,6 +310,84 @@ describe("AlterEgoRuntime.runStream", () => {
     expect(subRuns.some((s) => s.status === "success" && s.subAgentName === "mailroom")).toBe(true);
     // No bump when costCents == 0; verify path is at least wired up:
     expect(bumps.length).toBeGreaterThanOrEqual(0);
+  });
+
+  it("does not leak sub-agent progress across concurrent tenants (runtime.ts:808 regression)", async () => {
+    const busEntry = (): SubAgentEntry => ({
+      name: "mailroom",
+      tool: {
+        name: "mailroom",
+        description: "stub",
+        input_schema: { type: "object", properties: { action: { type: "string" } }, required: ["action"] },
+      },
+      invoke: async (_input, ctx) =>
+        ctx.enqueueAndAwait({ queueName: "mailroom", jobName: "run", payload: {} }),
+    });
+    const toolScript = (): StreamChunk[][] => [
+      [
+        { type: "message_start", provider: "openrouter", model_used: "m", id: "m1" },
+        { type: "tool_use_start", id: "tu_1", name: "mailroom" },
+        { type: "tool_use_delta", id: "tu_1", partial_json: '{"action":"triage"}' },
+        { type: "message_stop", stop_reason: "tool_use", usage: { input_tokens: 1, output_tokens: 1 }, cost_usd: 0, latency_ms: 1 },
+      ],
+      [
+        { type: "message_start", provider: "openrouter", model_used: "m", id: "m2" },
+        { type: "text_delta", text: "done" },
+        { type: "message_stop", stop_reason: "end_turn", usage: { input_tokens: 1, output_tokens: 1 }, cost_usd: 0, latency_ms: 1 },
+      ],
+    ];
+    const enqueue = vi.fn(async () => undefined);
+    const mkRuntime = (): AlterEgoRuntime =>
+      new AlterEgoRuntime({
+        llm: makeScriptedLlm(toolScript()),
+        registry: new SubAgentRegistry([busEntry()]),
+        redis: makeRedisStub(),
+        logger: makeLogger(),
+        persistence: makeFakePersistence().layer,
+        enqueue,
+      });
+
+    let releaseA!: () => void;
+    const aBarrier = new Promise<void>((r) => { releaseA = r; });
+    let aEmitted!: () => void;
+    const aEmittedP = new Promise<void>((r) => { aEmitted = r; });
+    const complete = { kind: "complete", content: [{ type: "tool_result", tool_use_id: "tu_1", content: "ok" }] };
+
+    // A pushes its progress, then blocks before draining. B then runs to
+    // completion and drains. With a shared/module-level buffer B's drain would
+    // sweep up A's progress — the leak. Per-invocation buffers prevent it.
+    busMock.subscribe = (requestId: string): AsyncIterable<unknown> => {
+      const isA = requestId.startsWith("req-A");
+      return (async function* () {
+        yield { kind: "progress", message: isA ? "A-PROGRESS" : "B-PROGRESS" };
+        if (isA) {
+          aEmitted();
+          await aBarrier;
+        }
+        yield complete;
+      })();
+    };
+
+    const aP = collect(
+      mkRuntime().runStream({ tenantId: "tenant-A", userId: "uA", requestId: "req-A", messages: [{ role: "user", content: "hi" }] }),
+    );
+    await aEmittedP;
+    const bEvents = await collect(
+      mkRuntime().runStream({ tenantId: "tenant-B", userId: "uB", requestId: "req-B", messages: [{ role: "user", content: "hi" }] }),
+    );
+    releaseA();
+    const aEvents = await aP;
+
+    const progressMsgs = (evs: OrchestratorEvent[]): string[] =>
+      evs.filter((e) => e.type === "sub_agent_progress").map((e) => (e as { message?: string }).message ?? "");
+
+    // The leak: tenant B must NEVER see tenant A's progress.
+    expect(progressMsgs(bEvents)).not.toContain("A-PROGRESS");
+    expect(progressMsgs(bEvents)).toContain("B-PROGRESS");
+    // A keeps its own.
+    expect(progressMsgs(aEvents)).toContain("A-PROGRESS");
+
+    busMock.subscribe = null;
   });
 
   it("replays prior run on duplicate requestId (no second LLM call)", async () => {
