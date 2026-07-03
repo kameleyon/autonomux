@@ -1,0 +1,14 @@
+# XcodeGen output (regenerated from project.yml)
+Autonomux.xcodeproj/
+
+# Xcode / SPM build artifacts
+DerivedData/
+.build/
+build/
+*.xcuserstate
+xcuserdata/
+.swiftpm/
+Package.resolved
+
+# macOS
+.DS_Store
