@@ -1,42 +1,25 @@
 /**
  * apps/web/app/app/page.tsx
  *
- * /app landing — the post-sign-in surface.
+ * /app home. The signed-in landing IS the AlterEgo chat, so this route
+ * sends the user straight to the native chat surface (/app/chat), which
+ * resolves to their most-recent thread or the skill-chip empty state.
  *
- * Bridge: renders the imported AlterEgo prototype (public/prototypes/autonomux/
- * AlterEgo.html) full-viewport inside the authenticated app so signing in lands
- * on the real AlterEgo design — the "Talk to your AlterEgo" home, sub-agent
- * skill cards, Autoroom, Notifications, Archive. Auth is still enforced
- * server-side (requireAuth) before the prototype is served.
- *
- * This is a deliberate bridge over the working prototype. The native React
- * port (real components wired to Supabase + the finance agent) replaces this
- * iframe surface as those screens are built.
+ * This replaces the old full-viewport iframe of the static AlterEgo.html
+ * prototype — the chat is now native React wired to the orchestrator SSE
+ * runtime (see components/chat/ChatStream.tsx).
  *
  * Owner: [Arch + Forge]
  */
-import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+
 import { requireAuth } from "@/lib/auth-helpers";
+import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-export default async function AppHomePage(): Promise<React.ReactElement> {
+export default async function AppHomePage(): Promise<never> {
   const supabase = await createClient();
   await requireAuth(supabase);
-
-  return (
-    <iframe
-      src="/prototypes/autonomux/AlterEgo.html"
-      title="AlterEgo"
-      allow="microphone"
-      style={{
-        position: "fixed",
-        inset: 0,
-        width: "100vw",
-        height: "100vh",
-        border: "none",
-        zIndex: 50,
-      }}
-    />
-  );
+  redirect("/app/chat");
 }

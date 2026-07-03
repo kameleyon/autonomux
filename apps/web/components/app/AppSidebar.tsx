@@ -14,16 +14,17 @@
  *   4. Account footer — user email (truncated) + sign-out form. Collapsed:
  *      only the avatar chip is shown.
  *
- * Sign-out is wired to the existing `signOutAction` Server Action at
- * `apps/web/app/sign-out/action.ts` — no new route needed.
+ * Sign-out navigates to the `/sign-out` page — the "clear session + cache
+ * completely, every time" logout (kills the Supabase cookies via
+ * POST /api/sign-out, then wipes localStorage / sessionStorage / Cache
+ * Storage / service workers and hard-replaces to /sign-in). We deliberately
+ * use that full client nuke here rather than the lighter server action.
  *
  * Owner: [Cluster C · App Shell]
  */
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-import { signOutAction } from "@/app/sign-out/action";
 
 type NavItem = {
   readonly href: string;
@@ -188,14 +189,13 @@ export function AppSidebar({
             <div className="app-shell-account-email" title={userEmail}>
               {userEmail}
             </div>
-            <form action={signOutAction}>
-              <button
-                type="submit"
-                className="app-shell-account-signout"
-              >
-                Sign out
-              </button>
-            </form>
+            <Link
+              href="/sign-out"
+              className="app-shell-account-signout"
+              prefetch={false}
+            >
+              Sign out
+            </Link>
           </>
         )}
       </div>
