@@ -107,8 +107,12 @@ button { font-family: inherit; }
 /* ── The blaze ─────────────────────────────────────────────── */
 .ae-shell {
   position: relative;
-  min-height: 100vh;
-  height: 100vh;
+  /* dvh, not vh: on mobile Safari 100vh is the LARGE viewport (taller than
+     the visible area / the iframe), which made the whole shell scroll and
+     dragged the topbar (menu + search) off-screen. dvh matches the visible
+     height so only the chat scroller scrolls and the topbar stays pinned. */
+  min-height: 100dvh;
+  height: 100dvh;
   isolation: isolate;
   color: var(--brand-cream);
   display: flex;
@@ -825,10 +829,13 @@ button { font-family: inherit; }
   .ae-skill-mark { width: 26px; height: 26px; font-size: 12px; }
   .ae-skill-name { font-size: 14px; }
   .ae-skill-desc { font-size: 12.5px; line-height: 1.35; }
-  .chat-turn-body--assistant { font-size: 14px; }
-  .chat-turn-body--user { font-size: 13.5px; }
-  .chat-scroller { padding: var(--sp-16) var(--sp-12) var(--sp-8); }
-  .ae-composer-band { padding: var(--sp-8) var(--sp-16) var(--sp-14); }
+  .chat-turn-body--assistant { font-size: 14px; max-width: 100%; }
+  .chat-turn-body--user { font-size: 13.5px; max-width: 85%; }
+  /* Generous L/R gutters so message text + the composer never touch the
+     screen edges. */
+  .chat-scroller { padding: var(--sp-16) var(--sp-20) var(--sp-8); }
+  .ae-composer-band { padding: var(--sp-8) var(--sp-20) var(--sp-16); }
+  .composer-card { padding: 12px 16px; }
   /* "/ for skills" hint was overlapping the char counter on narrow screens. */
   .composer-hint { display: none; }
   /* Keep the top bar below the status bar/notch and make its buttons
