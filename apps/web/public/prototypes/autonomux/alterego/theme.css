@@ -828,9 +828,14 @@ button { font-family: inherit; }
   .chat-turn-body--assistant { font-size: 14px; }
   .chat-turn-body--user { font-size: 13.5px; }
   .chat-scroller { padding: var(--sp-16) var(--sp-12) var(--sp-8); }
-  .ae-composer-band { padding: var(--sp-8) var(--sp-12) var(--sp-12); }
+  .ae-composer-band { padding: var(--sp-8) var(--sp-16) var(--sp-14); }
   /* "/ for skills" hint was overlapping the char counter on narrow screens. */
   .composer-hint { display: none; }
+  /* Keep the top bar below the status bar/notch and make its buttons
+     (menu, search, read-aloud) high-contrast so they never wash out into the
+     warm background. */
+  .ae-topbar { min-height: 54px; height: auto; padding-top: max(env(safe-area-inset-top, 0px), 8px); }
+  .ae-hamburger, .ae-tb-btn { background: rgba(20,7,3,0.42); border-color: rgba(255,248,243,0.45); }
 }
 
 @media (prefers-reduced-motion: reduce) {
