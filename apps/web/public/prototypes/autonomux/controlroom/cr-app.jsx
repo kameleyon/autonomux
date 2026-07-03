@@ -78,7 +78,7 @@ function CRSidebar({ view, onNav, viewId, onView, pending, open, onClose, collap
               <a className="ae-profile-item" href="AlterEgo.html"><A.CRIcon name="Workflow" size={16} /><span>AutoRoom</span></a>
               <div className="ae-profile-sep" />
               <button className="ae-profile-item" role="menuitem"><A.CRIcon name="Settings" size={16} /><span>Settings</span></button>
-              <button className="ae-profile-item ae-profile-item--danger" role="menuitem"><A.CRIcon name="LogOut" size={16} /><span>Log out</span></button>
+              <button className="ae-profile-item ae-profile-item--danger" role="menuitem" onClick={() => { (window.top || window).location.href = "/sign-out"; }}><A.CRIcon name="LogOut" size={16} /><span>Log out</span></button>
             </div>
           ) : null}
           <button className={"ae-account-row" + (profileOpen ? " ae-account-row--open" : "")} onClick={() => setProfileOpen((v) => !v)}>

@@ -174,7 +174,7 @@ function Sidebar({ folders, openFolders, onToggleFolder, activeChatId, onSelectC
                 </button>
               ))}
               <div className="ae-profile-sep" />
-              <button className="ae-profile-item ae-profile-item--danger" role="menuitem" onClick={() => { onNav("logout"); setProfileOpen(false); }}>
+              <button className="ae-profile-item ae-profile-item--danger" role="menuitem" onClick={() => { (window.top || window).location.href = "/sign-out"; }}>
                 <Icon name="LogOut" size={16} />
                 <span>Log out</span>
               </button>
