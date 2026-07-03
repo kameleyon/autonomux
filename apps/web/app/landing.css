@@ -249,6 +249,10 @@ html, body { overflow-x: hidden; max-width: 100%; }
     linear-gradient(150deg, #a52410 0%, #7a1608 50%, #4c0d05 100%);
 }
 .lp .trust-grid { display: grid; grid-template-columns: 0.95fr 1.05fr; gap: 60px; align-items: center; }
+/* Grid items must be allowed to shrink below their content's min-width, else a
+   wide ledger row blows the whole column past the viewport (dragging the trust
+   copy off-screen on mobile). */
+.lp .trust-grid > * { min-width: 0; }
 .lp .trust__head h2 { color: var(--cream); margin-bottom: 20px; }
 .lp .trust__head .section-lede { color: rgba(255,246,238,0.82); }
 .lp .trust__list { list-style: none; margin-top: 34px; display: flex; flex-direction: column; gap: 22px; }
@@ -339,8 +343,22 @@ html, body { overflow-x: hidden; max-width: 100%; }
   .lp .step::after { display: none !important; }
   .lp .pricing { grid-template-columns: 1fr; }
   .lp .footer__top { grid-template-columns: 1fr; }
-  .lp .runson__inner { gap: 18px; }
+  .lp .runson__inner { gap: 14px; }
   .lp .console__body { min-height: 300px; }
+
+  /* Works-across: tighter, not sprawled across the width. */
+  .lp .runson__list { gap: 10px 18px; }
+  .lp .runson__item { font-size: 14px; }
+
+  /* Audit log: compact so the class badges stop overflowing off the right. */
+  .lp .trust__head, .lp .ledger { min-width: 0; }
+  .lp .ledger__head { flex-wrap: wrap; padding: 12px 12px 10px; }
+  .lp .ledger__head span { font-size: 10px; }
+  .lp .ledger__verify { font-size: 9px; }
+  .lp .ledger__row { grid-template-columns: 48px 1fr auto; gap: 8px; padding: 10px 12px; }
+  .lp .ledger__time { font-size: 10px; }
+  .lp .ledger__act { font-size: 11px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lp .ledger__class { font-size: 8.5px; padding: 2px 6px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
