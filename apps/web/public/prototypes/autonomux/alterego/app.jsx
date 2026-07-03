@@ -189,6 +189,10 @@ function App() {
 
   const onNav = auseCallback((id) => {
     if (id === "search") { setSearchOpen(true); setNavOpen(false); return; }
+    if (id === "admin") { window.location.href = "Admin.html"; return; }
+    if (id === "controlroom") { window.location.href = "ControlRoom.html"; return; }
+    if (id === "treasurer") { window.location.href = "Treasurer.html"; return; }
+    if (id === "logout") { window.location.href = "Login.html"; return; }
     setActiveNav(id); setActiveChatId(null); setNavOpen(false);
   }, []);
 
@@ -197,7 +201,8 @@ function App() {
   }, []);
 
   const lastId = messages.length ? messages[messages.length - 1].id : null;
-  const screenNav = (activeNav === "autoroom" || activeNav === "notifications" || activeNav === "archive") ? activeNav : null;
+  const SCREEN_NAVS = ["autoroom", "notifications", "archive", "settings", "usage", "billing"];
+  const screenNav = SCREEN_NAVS.indexOf(activeNav) !== -1 ? activeNav : null;
 
   return (
     <div className="ae-shell">
@@ -222,6 +227,9 @@ function App() {
             {screenNav === "autoroom" ? <AutoroomView onNav={onNav} /> : null}
             {screenNav === "notifications" ? <NotificationsView /> : null}
             {screenNav === "archive" ? <ArchiveView onOpenChat={openChatFromSearch} /> : null}
+            {screenNav === "settings" ? <SettingsView /> : null}
+            {screenNav === "usage" ? <UsageView /> : null}
+            {screenNav === "billing" ? <BillingView /> : null}
           </div>
         ) : (
         <div className="chat-section">

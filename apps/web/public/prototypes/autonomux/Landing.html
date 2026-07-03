@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>autonomux — your AlterEgo runs your life, so you can run the rest</title>
+<meta name="description" content="A personal AI orchestrator that acts on your behalf across email, calendar, money, and writing — under explicit, audited control." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="landing/landing.css" />
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav is-hero" id="nav">
+  <div class="wrap nav__inner">
+    <a class="brand" href="#top">
+      <img src="landing/logo.png" alt="autonomux" />
+      <span class="brand__word">autonom<em>ux</em></span>
+    </a>
+    <div class="nav__links">
+      <a class="nav__link" href="#agents">What it does</a>
+      <a class="nav__link" href="#how">How it works</a>
+      <a class="nav__link" href="#trust">Accountability</a>
+      <a class="nav__link" href="#pricing">Pricing</a>
+    </div>
+    <div class="nav__spacer"></div>
+    <div class="nav__cta">
+      <a class="nav__login" href="/sign-in" target="_top">Log in</a>
+      <a class="btn btn--primary btn--sm" href="/sign-up" target="_top">Get your AlterEgo <span data-i="arrow"></span></a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero" id="top">
+  <div class="hero__grid"></div>
+  <div class="wrap hero__inner">
+    <div>
+      <div class="eyebrow eyebrow--light hero__eyebrow">Personal AI orchestrator</div>
+      <h1 class="display hero__title">Your <em>AlterEgo</em> runs your inbox, calendar, money&nbsp;&amp; writing.</h1>
+      <p class="lede hero__lede">One AI that lives inside your digital life and acts on your behalf — so you can run the rest.</p>
+      <div class="hero__cta">
+        <a class="btn btn--primary" href="/sign-up" target="_top">Get your AlterEgo <span data-i="arrow"></span></a>
+        <a class="btn btn--onwash" href="#how">See how it works</a>
+      </div>
+      <div class="hero__note"><span data-i="shieldcheck"></span> Every action confirmed, reversible, and audit-logged.</div>
+    </div>
+
+    <!-- live console -->
+    <div class="console reveal in">
+      <div class="console__bar">
+        <span class="console__dot" style="background:#ff5f57"></span>
+        <span class="console__dot" style="background:#ff9050"></span>
+        <span class="console__dot" style="background:#e6a06a"></span>
+        <span class="console__title">AlterEgo · today</span>
+        <span class="console__live"><span class="console__pulse"></span> Live</span>
+      </div>
+      <div class="console__body" id="console-body"></div>
+    </div>
+  </div>
+
+  <!-- runs on -->
+  <div class="runson">
+    <div class="wrap runson__inner">
+      <span class="runson__label">Works across</span>
+      <div class="runson__list">
+        <span class="runson__item">Gmail</span>
+        <span class="runson__item">Google Calendar</span>
+        <span class="runson__item">Plaid</span>
+        <span class="runson__item">Substack</span>
+        <span class="runson__item">X</span>
+        <span class="runson__item">LinkedIn</span>
+        <span class="runson__item">Outlook</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- MANIFESTO -->
+<section class="manifesto">
+  <div class="wrap">
+    <p class="manifesto__q reveal">Too many lanes. <b>None getting the attention they deserve.</b> AlterEgo takes the repeatable weight off every one of them.</p>
+    <p class="manifesto__foot reveal" data-d="1">Built for polymath operators — the ones running four things at once.</p>
+  </div>
+</section>
+
+<!-- PILLARS -->
+<section class="section">
+  <div class="wrap">
+    <div class="section__head">
+      <div class="eyebrow reveal">Why it's different</div>
+      <h2 class="h2 reveal" data-d="1">Not another chatbot. An agent that's <em class="hot">accountable.</em></h2>
+      <p class="section-lede reveal" data-d="2">Assistants that forget you and can't be checked are toys. AlterEgo is built on three things the toys don't have.</p>
+    </div>
+    <div class="pillars">
+      <div class="pillar reveal">
+        <div class="pillar__num">01</div>
+        <span class="pillar__ico"><span data-i="brain"></span></span>
+        <h3 class="h3">Persistent memory</h3>
+        <p>It knows your people, your habits, your voice, and your recurring obligations — and gets measurably better at the things you keep asking. Your memory never leaves your tenant.</p>
+      </div>
+      <div class="pillar reveal" data-d="1">
+        <div class="pillar__num">02</div>
+        <span class="pillar__ico"><span data-i="scale"></span></span>
+        <h3 class="h3">Real judgment</h3>
+        <p>It ranks, drafts, and decides what matters before you ask. Calm and competent — it says what it knows, asks when it doesn't, and never invents.</p>
+      </div>
+      <div class="pillar reveal" data-d="2">
+        <div class="pillar__num">03</div>
+        <span class="pillar__ico"><span data-i="fileclock"></span></span>
+        <h3 class="h3">Provable accountability</h3>
+        <p>Every action it takes is confirmed when it counts, reversible when it can be, and written to a signed, tamper-evident audit log you can read and verify.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SUB-AGENTS -->
+<section class="section agents-sec" id="agents">
+  <div class="wrap">
+    <div class="section__head">
+      <div class="eyebrow reveal">One AlterEgo, seven specialists</div>
+      <h2 class="h2 reveal" data-d="1">It handles the lanes <em class="hot">you keep dropping.</em></h2>
+      <p class="section-lede reveal" data-d="2">You always talk to one AlterEgo. Behind it, specialists do the work — you never manage them.</p>
+    </div>
+    <div class="agents">
+      <div class="agent reveal">
+        <span class="agent__ico"><span data-i="mail"></span></span>
+        <div class="agent__name">Mailroom</div>
+        <div class="agent__role">Email</div>
+        <p class="agent__desc">Ranks your inbox, drafts replies in your voice, archives the noise — you approve or override.</p>
+      </div>
+      <div class="agent reveal" data-d="1">
+        <span class="agent__ico"><span data-i="calendar"></span></span>
+        <div class="agent__name">Scheduler</div>
+        <div class="agent__role">Calendar</div>
+        <p class="agent__desc">Watches for conflicts, proposes slots, and drafts the decline for the meeting with no agenda.</p>
+      </div>
+      <div class="agent reveal" data-d="2">
+        <span class="agent__ico"><span data-i="pen"></span></span>
+        <div class="agent__name">Scribe</div>
+        <div class="agent__role">Writing</div>
+        <p class="agent__desc">Turns your notes into drafts that sound like you — Substack, X, LinkedIn. Plan, draft, approve, publish.</p>
+      </div>
+      <div class="agent reveal" data-d="3">
+        <span class="agent__ico"><span data-i="landmark"></span></span>
+        <div class="agent__name">Treasurer</div>
+        <div class="agent__role">Money</div>
+        <p class="agent__desc">Bank balance, upcoming bills, and honest spend insight — "you spent 40% more on takeout this month."</p>
+      </div>
+      <div class="agent reveal">
+        <span class="agent__ico"><span data-i="sparkles"></span></span>
+        <div class="agent__name">Oracle</div>
+        <div class="agent__role">Ritual</div>
+        <p class="agent__desc">Cardology, astrology, and tarot — a daily reading rendered fresh with your date context.</p>
+      </div>
+      <div class="agent reveal" data-d="1">
+        <span class="agent__ico"><span data-i="message"></span></span>
+        <div class="agent__name">Voice</div>
+        <div class="agent__role">Conversation</div>
+        <p class="agent__desc">Long-running chat that remembers. Think out loud, and record or broadcast a topic when you want.</p>
+      </div>
+      <div class="agent reveal" data-d="2">
+        <span class="agent__ico"><span data-i="heart"></span></span>
+        <div class="agent__name">Companion</div>
+        <div class="agent__role">Wellness</div>
+        <p class="agent__desc">Reading reminders, exercise nudges, a meditation timer, gratitude capture. Soft-touch, never gamified.</p>
+      </div>
+      <div class="agent reveal" data-d="3">
+        <span class="agent__ico"><span data-i="sun"></span></span>
+        <div class="agent__name">Briefing</div>
+        <div class="agent__role">Every morning</div>
+        <p class="agent__desc">The whole roster distilled into one summary — in-app at login and in your inbox by 6 AM.</p>
+      </div>
+    </div>
+    <p class="agents-note reveal">Sub-agents are implementation detail. <b>You only ever manage one relationship.</b></p>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how">
+  <div class="wrap">
+    <div class="section__head">
+      <div class="eyebrow reveal">The accountability loop</div>
+      <h2 class="h2 reveal" data-d="1">It proposes. <em class="hot">You stay in command.</em></h2>
+      <p class="section-lede reveal" data-d="2">Delegation without losing control. Reversible work runs on its own; anything irreversible waits for your yes.</p>
+    </div>
+    <div class="loop">
+      <div class="step reveal">
+        <div class="step__dot">1</div>
+        <h3>Briefs you</h3>
+        <p>Every morning AlterEgo reads across your lanes and hands you one clear summary of what happened and what's next.</p>
+        <span class="step__tag">Reads · summarizes</span>
+      </div>
+      <div class="step reveal" data-d="1">
+        <div class="step__dot">2</div>
+        <h3>Proposes</h3>
+        <p>It drafts the reply, the decline, the reminder, the post — with its reasoning shown, never hidden.</p>
+        <span class="step__tag">Drafts · ranks</span>
+      </div>
+      <div class="step reveal" data-d="2">
+        <div class="step__dot">3</div>
+        <h3>You approve</h3>
+        <p>Irreversible actions — sending mail, paying a bill, publishing — wait for you. Set trusted rules to auto-approve the routine.</p>
+        <span class="step__tag">Confirmation gate</span>
+      </div>
+      <div class="step reveal" data-d="3">
+        <div class="step__dot">4</div>
+        <h3>Acts &amp; logs</h3>
+        <p>It executes, then writes the action to a signed audit log. Reversible? Undo it in one tap.</p>
+        <span class="step__tag">Executes · records</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST -->
+<section class="section trust-sec" id="trust">
+  <div class="wrap">
+    <div class="trust-grid">
+      <div class="trust__head">
+        <div class="eyebrow eyebrow--light reveal">Built to be trusted with the real stuff</div>
+        <h2 class="h2 reveal" data-d="1">You won't hand your money to a black box. Neither would we.</h2>
+        <p class="section-lede reveal" data-d="2">Accountability isn't a feature bolted on. It's the foundation the whole agent stands on.</p>
+        <ul class="trust__list">
+          <li class="trust__item reveal">
+            <span class="trust__ico"><span data-i="fileclock"></span></span>
+            <div><h4>Signed, tamper-evident audit log</h4><p>Every write to your data is chained with a cryptographic hash. Anyone can replay the chain and prove nothing was altered.</p></div>
+          </li>
+          <li class="trust__item reveal" data-d="1">
+            <span class="trust__ico"><span data-i="check"></span></span>
+            <div><h4>Confirmation gate on anything irreversible</h4><p>Sending, paying, publishing — none happen without your explicit yes, unless you've set a trusted rule for it.</p></div>
+          </li>
+          <li class="trust__item reveal" data-d="2">
+            <span class="trust__ico"><span data-i="lock"></span></span>
+            <div><h4>Encrypted, per-tenant, never shared</h4><p>Your memory is encrypted at rest with your own key and never used to train across accounts. Ever.</p></div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- audit ledger visual -->
+      <div class="ledger reveal" data-d="1">
+        <div class="ledger__head">
+          <span data-i="shieldcheck"></span>
+          <span>Your audit log</span>
+          <span class="ledger__verify"><span data-i="check" style="width:13px;height:13px"></span> Chain verified</span>
+        </div>
+        <div class="ledger__row">
+          <span class="ledger__time">7:01 AM</span>
+          <span class="ledger__act">mail.draft_reply</span>
+          <span class="ledger__class">reversible</span>
+        </div>
+        <div class="ledger__row">
+          <span class="ledger__time">6:35 AM</span>
+          <span class="ledger__act">calendar.decline</span>
+          <span class="ledger__class">external</span>
+        </div>
+        <div class="ledger__row">
+          <span class="ledger__time">6:34 AM</span>
+          <span class="ledger__act">treasurer.remind</span>
+          <span class="ledger__class">reversible</span>
+        </div>
+        <div class="ledger__row">
+          <span class="ledger__time">6:32 AM</span>
+          <span class="ledger__act">email.archive ×6</span>
+          <span class="ledger__class">reversible</span>
+        </div>
+        <div class="ledger__row">
+          <span class="ledger__time">6:30 AM</span>
+          <span class="ledger__act">briefing.compose</span>
+          <span class="ledger__class">read</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section" id="pricing">
+  <div class="wrap">
+    <div class="section__head center">
+      <div class="eyebrow reveal" style="justify-content:center">Pricing</div>
+      <h2 class="h2 reveal" data-d="1">Start free. Grow into your <em class="hot">full AlterEgo.</em></h2>
+    </div>
+    <div class="pricing">
+      <div class="plan reveal">
+        <div class="plan__name">Free</div>
+        <div class="plan__tag">Try it. See what a second self feels like.</div>
+        <div class="plan__price">$0</div>
+        <div class="plan__budget">100k tokens / mo</div>
+        <ul class="plan__feats">
+          <li><span data-i="check"></span> Read-only Gmail &amp; Calendar</li>
+          <li><span data-i="check"></span> Daily Oracle reading</li>
+          <li><span data-i="check"></span> Morning briefing</li>
+        </ul>
+        <a class="btn btn--ghost" href="/sign-up" target="_top">Start free</a>
+      </div>
+
+      <div class="plan reveal" data-d="1">
+        <div class="plan__name">Personal</div>
+        <div class="plan__tag">Your AlterEgo starts acting, not just watching.</div>
+        <div class="plan__price">$29<span>/mo</span></div>
+        <div class="plan__budget">1M tokens / mo</div>
+        <ul class="plan__feats">
+          <li><span data-i="check"></span> Everything in Free</li>
+          <li><span data-i="check"></span> Gmail write &amp; reply drafts</li>
+          <li><span data-i="check"></span> Scribe drafting</li>
+          <li><span data-i="check"></span> Companion wellness</li>
+        </ul>
+        <a class="btn btn--ghost" href="/sign-up" target="_top">Choose Personal</a>
+      </div>
+
+      <div class="plan plan--feature reveal" data-d="2">
+        <span class="plan__flag">Most popular</span>
+        <div class="plan__name">Pro</div>
+        <div class="plan__tag">The full agent — your AlterEgo runs your stuff.</div>
+        <div class="plan__price">$79<span>/mo</span></div>
+        <div class="plan__budget">5M tokens / mo</div>
+        <ul class="plan__feats">
+          <li><span data-i="check"></span> Everything in Personal</li>
+          <li><span data-i="check"></span> Scribe publishing</li>
+          <li><span data-i="check"></span> Treasurer with Plaid</li>
+          <li><span data-i="check"></span> Outlook + X + LinkedIn</li>
+        </ul>
+        <a class="btn btn--primary" href="/sign-up" target="_top">Choose Pro <span data-i="arrow"></span></a>
+      </div>
+
+      <div class="plan reveal" data-d="3">
+        <div class="plan__name">Founder</div>
+        <div class="plan__tag">For the polymath running four things at once.</div>
+        <div class="plan__price">$199<span>/mo</span></div>
+        <div class="plan__budget">20M tokens / mo</div>
+        <ul class="plan__feats">
+          <li><span data-i="check"></span> Everything in Pro</li>
+          <li><span data-i="check"></span> Multi-account</li>
+          <li><span data-i="check"></span> Priority queue</li>
+          <li><span data-i="check"></span> Monthly 1:1 with the team</li>
+        </ul>
+        <a class="btn btn--ghost" href="/sign-up" target="_top">Choose Founder</a>
+      </div>
+    </div>
+    <p class="pricing-note reveal">Save 20% on annual · TOTP 2FA on every account · cancel anytime</p>
+  </div>
+</section>
+
+<!-- FINALE -->
+<section class="finale">
+  <div class="wrap">
+    <h2 class="reveal">Run the things <em>only you</em> can run.</h2>
+    <p class="lede reveal" data-d="1">Let your AlterEgo handle the rest — accountably, from your very first morning.</p>
+    <div class="finale__cta reveal" data-d="2">
+      <a class="btn btn--primary" href="/sign-up" target="_top">Get your AlterEgo <span data-i="arrow"></span></a>
+      <a class="btn btn--ghost" href="#agents">Explore what it does</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__top">
+      <div class="footer__brand">
+        <a class="brand" href="#top">
+          <img src="landing/logo.png" alt="autonomux" style="width:32px;height:32px" />
+          <span class="brand__word">autonom<em>ux</em></span>
+        </a>
+        <p class="footer__tagline">Your AlterEgo runs your inbox, your calendar, your money, and your writing — so you can run the rest.</p>
+      </div>
+      <div class="footer__col">
+        <h5>Product</h5>
+        <a href="#agents">What it does</a>
+        <a href="#how">How it works</a>
+        <a href="#trust">Accountability</a>
+        <a href="#pricing">Pricing</a>
+      </div>
+      <div class="footer__col">
+        <h5>Trust</h5>
+        <a href="#trust">Security</a>
+        <a href="#trust">Audit log</a>
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+      </div>
+      <div class="footer__col">
+        <h5>Company</h5>
+        <a href="#">About</a>
+        <a href="/sign-in" target="_top">Log in</a>
+        <a href="/sign-up" target="_top">Get started</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span class="dm">© 2026 autonomux</span>
+      <span>Do not paste patient information into AlterEgo. We are not a covered entity and do not accept PHI.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="landing/landing.js"></script>
+</body>
+</html>

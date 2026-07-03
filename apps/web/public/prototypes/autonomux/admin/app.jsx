@@ -92,7 +92,7 @@ function AdminApp() {
               <button className="adm-op-item" role="menuitem"><AdmIcon name="KeyRound" size={16} />Security &amp; TOTP</button>
               <button className="adm-op-item" role="menuitem"><AdmIcon name="BookText" size={16} />Runbook</button>
               <div className="adm-op-sep" />
-              <button className="adm-op-item adm-op-item--danger" role="menuitem" onClick={() => { window.location.href = "Login.html"; }}><AdmIcon name="LogOut" size={16} />Sign out</button>
+              <button className="adm-op-item adm-op-item--danger" role="menuitem" onClick={() => { (window.top || window).location.href = "/sign-out"; }}><AdmIcon name="LogOut" size={16} />Sign out</button>
             </div>
           ) : null}
           <button className="adm-op" onClick={() => setOpMenu((v) => !v)} aria-haspopup="menu" aria-expanded={opMenu}>

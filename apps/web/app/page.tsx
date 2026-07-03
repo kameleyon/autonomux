@@ -1,11 +1,23 @@
 /**
- * Autonomux landing.
+ * apps/web/app/page.tsx
  *
- * For now the landing page IS the login page — visiting the root redirects
- * straight to /sign-in. (The marketing home returns in a later phase.)
+ * Public marketing landing. Bridges the imported Landing prototype full-viewport
+ * so `/` shows the real landing design. Its auth CTAs use target="_top" to break
+ * out of the iframe into the real /sign-in and /sign-up. (To be ported to a
+ * native Next page for SEO in a later phase.)
  */
-import { redirect } from "next/navigation";
-
-export default function HomePage(): never {
-  redirect("/sign-in");
+export default function HomePage(): React.ReactElement {
+  return (
+    <iframe
+      src="/prototypes/autonomux/Landing.html"
+      title="autonomux — your AlterEgo"
+      style={{
+        position: "fixed",
+        inset: 0,
+        width: "100vw",
+        height: "100vh",
+        border: "none",
+      }}
+    />
+  );
 }

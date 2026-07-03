@@ -75,7 +75,9 @@ const AE_NAV = [
   { id: "home", label: "Home", icon: "House" },
   { id: "new", label: "New chat", icon: "Plus" },
   { id: "search", label: "Search", icon: "Search" },
-  { id: "autoroom", label: "Autoroom", icon: "Workflow" },
+  { id: "autoroom", label: "AutoRoom", icon: "Workflow" },
+  { id: "controlroom", label: "ControlRoom", icon: "Activity" },
+  { id: "treasurer", label: "Treasurer", icon: "Landmark" },
   { id: "notifications", label: "Notifications", icon: "Bell", badge: 3 },
   { id: "archive", label: "Archive", icon: "Archive" },
 ];

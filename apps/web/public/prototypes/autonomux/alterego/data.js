@@ -329,7 +329,7 @@ const AE_TEMPLATE_ICPS = ["All", "Founder", "Creator", "Polymath", "Wellness"];
 const AE_APPROVALS = [
   { id: "ap1", agent: "Mailroom", icon: "Mail", title: "Send your reply to Dana?", detail: "Re: Q3 partnership terms — \"Wednesday works. Sending the revised terms by EOD.\"", gate: "Sending email is irreversible" },
   { id: "ap2", agent: "Treasurer", icon: "Coins", title: "Pay invoice #4821 — $340?", detail: "Stripe · 14 days overdue. Gating your next payout.", gate: "Payment is irreversible" },
-  { id: "ap3", agent: "Scribe", icon: "PenLine", title: "Publish “Velocity Is Not the Same as Wealth”?", detail: "740 words → Substack · The Long Game", gate: "Publishing is irreversible" },
+  { id: "ap3", agent: "Scribe", icon: "PenLine", title: "Publish \u201CVelocity Is Not the Same as Wealth\u201D?", detail: "740 words → Substack · The Long Game", gate: "Publishing is irreversible" },
 ];
 const AE_NOTIFS = [
   { id: "n1", agent: "Mailroom", icon: "Mail", title: "Ranked 24 new messages", time: "8m ago", unread: true },
