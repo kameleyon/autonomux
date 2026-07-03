@@ -1,0 +1,127 @@
+/* ============================================================
+   autonomux — docs section
+   Native, warm-only palette (matches the landing). Scoped under `.dx`
+   so its generic class names never leak into the rest of the app.
+   Cormorant Garamond / Inter / DM Mono · r=12
+   ============================================================ */
+.dx {
+  --orange: #f26b1a; --orange-soft: #ff9050;
+  --red: #e63312; --red-deep: #b81f00; --wine: #7a2010;
+  --gold-soft: #ffb489;
+  --cream: #fff8f3; --white: #ffffff;
+  --ink: #1a1410; --ink-soft: #3a302a; --muted: #6b5f54; --muted-soft: #9a8f82;
+  --border: #f0e8dc; --border-strong: #e4d8c6;
+  --surface: #fff8f0; --surface-warm: #fff2e6; --paper: #fdf9f4;
+  --orange-rgb: 242,107,26; --red-rgb: 230,51,18;
+  --r: 12px; --r-lg: 18px; --r-pill: 9999px;
+
+  font-family: "Inter", system-ui, sans-serif;
+  color: var(--ink); background: var(--paper);
+  font-size: 16px; line-height: 1.65; min-height: 100vh;
+  -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
+}
+.dx * { box-sizing: border-box; }
+.dx a { color: inherit; text-decoration: none; }
+
+/* ── top bar ─────────────────────────────────────────────────── */
+.dx__bar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 16px;
+  height: 62px; padding: 0 24px;
+  background: rgba(38,12,4,0.92);
+  backdrop-filter: blur(14px) saturate(140%); -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid rgba(255,240,225,0.12);
+}
+.dx__brand { display: flex; align-items: center; gap: 10px; }
+.dx__brand img { width: 30px; height: 30px; }
+.dx__brand-word { font-family: "Cormorant Garamond", serif; font-size: 22px; color: var(--cream); line-height: 1; }
+.dx__brand-word em { font-style: italic; color: var(--orange-soft); }
+.dx__bar-sep { color: rgba(255,240,225,0.4); font-size: 18px; }
+.dx__bar-title { font-family: "DM Mono", monospace; font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,240,225,0.72); }
+.dx__bar-spacer { flex: 1; }
+.dx__bar-home {
+  font-size: 14px; color: var(--cream);
+  padding: 8px 16px; border-radius: var(--r-pill);
+  border: 1px solid rgba(255,248,243,0.28); background: rgba(255,250,245,0.1);
+}
+.dx__bar-home:hover { background: rgba(255,250,245,0.2); }
+
+/* ── layout ──────────────────────────────────────────────────── */
+.dx__shell { display: grid; grid-template-columns: 264px 1fr; max-width: 1200px; margin: 0 auto; }
+
+/* ── sidebar ─────────────────────────────────────────────────── */
+.dx__side {
+  align-self: start; position: sticky; top: 62px;
+  height: calc(100vh - 62px); overflow-y: auto;
+  padding: 32px 20px 48px; border-right: 1px solid var(--border);
+}
+.dx__side-group { margin-bottom: 26px; }
+.dx__side-label {
+  font-family: "DM Mono", monospace; font-size: 11px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--muted-soft); padding: 0 10px; margin-bottom: 8px;
+}
+.dx__side-link {
+  display: block; padding: 8px 10px; border-radius: 8px;
+  font-size: 14.5px; color: var(--ink-soft); border-left: 2px solid transparent;
+}
+.dx__side-link:hover { background: var(--surface-warm); color: var(--ink); }
+.dx__side-link--active {
+  background: var(--surface-warm); color: var(--red-deep);
+  border-left-color: var(--orange); font-weight: 500;
+}
+
+/* ── content ─────────────────────────────────────────────────── */
+.dx__main { padding: 44px 56px 96px; max-width: 820px; }
+.dx__eyebrow {
+  font-family: "DM Mono", monospace; font-size: 12px; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--red-deep); margin-bottom: 14px;
+}
+.dx__h1 { font-family: "Cormorant Garamond", serif; font-weight: 500; font-size: clamp(36px, 5vw, 54px); line-height: 1.05; letter-spacing: -0.01em; margin: 0 0 16px; }
+.dx__h1 em { font-style: italic; color: var(--orange); }
+.dx__lede { font-size: 19px; color: var(--muted); line-height: 1.6; margin-bottom: 40px; max-width: 60ch; }
+.dx__h2 { font-family: "Cormorant Garamond", serif; font-weight: 500; font-size: 32px; line-height: 1.1; margin: 48px 0 14px; scroll-margin-top: 80px; }
+.dx__h3 { font-family: "Inter", sans-serif; font-weight: 600; font-size: 18px; margin: 28px 0 8px; scroll-margin-top: 80px; }
+.dx__p { color: var(--ink-soft); margin: 0 0 16px; }
+.dx__p a, .dx__li a { color: var(--red-deep); text-decoration: underline; text-underline-offset: 2px; }
+.dx__ul { margin: 0 0 16px; padding-left: 22px; }
+.dx__li { color: var(--ink-soft); margin: 6px 0; }
+.dx__code { font-family: "DM Mono", monospace; font-size: 0.9em; background: var(--surface-warm); color: var(--wine); padding: 0.12em 0.4em; border-radius: 6px; }
+.dx__pre { font-family: "DM Mono", monospace; font-size: 13.5px; background: #2a0f06; color: #ffe8d6; padding: 18px 20px; border-radius: var(--r); overflow-x: auto; margin: 0 0 20px; line-height: 1.6; }
+
+/* callout cards */
+.dx__cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 8px 0 32px; }
+.dx__card {
+  display: block; padding: 20px; border: 1px solid var(--border); border-radius: var(--r-lg);
+  background: var(--white); transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+.dx__card:hover { transform: translateY(-2px); box-shadow: 0 14px 30px -18px rgba(90,20,6,0.4); border-color: var(--border-strong); }
+.dx__card-title { font-size: 17px; font-weight: 600; margin-bottom: 6px; color: var(--ink); }
+.dx__card-desc { font-size: 14px; color: var(--muted); line-height: 1.5; }
+
+.dx__note {
+  border-left: 3px solid var(--orange); background: var(--surface-warm);
+  border-radius: 0 var(--r) var(--r) 0; padding: 14px 18px; margin: 0 0 22px;
+  font-size: 14.5px; color: var(--ink-soft);
+}
+
+/* ── mobile ──────────────────────────────────────────────────── */
+.dx__side-toggle { display: none; }
+@media (max-width: 860px) {
+  .dx__shell { grid-template-columns: 1fr; }
+  .dx__side {
+    position: static; height: auto; overflow: visible;
+    border-right: none; border-bottom: 1px solid var(--border);
+    padding: 16px 20px;
+  }
+  .dx__side-nav { display: none; }
+  .dx__side[data-open="true"] .dx__side-nav { display: block; }
+  .dx__side-toggle {
+    display: flex; align-items: center; justify-content: space-between; width: 100%;
+    background: var(--surface-warm); border: 1px solid var(--border-strong);
+    border-radius: var(--r); padding: 11px 14px; font: inherit; font-size: 14px;
+    color: var(--ink); cursor: pointer;
+  }
+  .dx__main { padding: 32px 20px 72px; }
+  .dx__cards { grid-template-columns: 1fr; }
+  .dx__bar-title { display: none; }
+}

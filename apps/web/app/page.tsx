@@ -32,6 +32,7 @@ export default function HomePage(): React.ReactElement {
             <a className="nav__link" href="#how">How it works</a>
             <a className="nav__link" href="#trust">Accountability</a>
             <a className="nav__link" href="#pricing">Pricing</a>
+            <Link className="nav__link" href="/docs">Docs</Link>
           </div>
           <div className="nav__spacer" />
           <div className="nav__cta">
@@ -58,6 +59,7 @@ export default function HomePage(): React.ReactElement {
           <a className="nav__mobile-link" href="#how">How it works</a>
           <a className="nav__mobile-link" href="#trust">Accountability</a>
           <a className="nav__mobile-link" href="#pricing">Pricing</a>
+          <Link className="nav__mobile-link" href="/docs">Docs</Link>
           <Link className="nav__mobile-link" href="/sign-in">Log in</Link>
           <Link className="btn btn--primary" href="/sign-up">
             Get your AlterEgo <Icon name="arrow" />
