@@ -6,28 +6,25 @@ const config: NextConfig = {
   images: {
     remotePatterns: [],
   },
-  /* Security headers (Phase 0 Blocker B4). The prototype iframes are gone
-   * (landing + /app are native now), so we lock framing down hard:
-   * `frame-ancestors 'none'` + `X-Frame-Options: DENY` (no one may embed us),
-   * `frame-src https://cdn.plaid.com` (only Plaid Link may be embedded BY us,
-   * Phase 1), plus COOP for cross-origin isolation of the browsing context.
-   *
-   * A full `script-src`/`connect-src` CSP is deliberately NOT here yet: Next's
-   * inline hydration bootstrap needs nonces and `connect-src` must enumerate
-   * Supabase + Upstash + Plaid exactly. Per the ledger that lands as
-   * report-only → enforce against a preview URL, gated on grade A. */
+  /* Security headers (Phase 0 Blocker B4). `/app` renders the Claude Design
+   * prototype via a SAME-ORIGIN iframe, so framing is scoped to 'self'
+   * (`frame-ancestors 'self'` + `X-Frame-Options: SAMEORIGIN`) — this blocks
+   * cross-origin clickjacking while allowing our own /app to frame the
+   * prototype. `frame-src` allows self + Plaid Link (Phase 1). A full
+   * `script-src`/`connect-src` CSP lands report-only → enforce once the
+   * prototype's unpkg/eval CDN usage is removed (native port), gated on grade A. */
   async headers() {
     const securityHeaders = [
       { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
       { key: "X-Content-Type-Options", value: "nosniff" },
-      { key: "X-Frame-Options", value: "DENY" },
+      { key: "X-Frame-Options", value: "SAMEORIGIN" },
       { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
       { key: "Permissions-Policy", value: "camera=(), geolocation=(), browsing-topics=()" },
       { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
       {
         key: "Content-Security-Policy",
         value:
-          "frame-ancestors 'none'; frame-src https://cdn.plaid.com; object-src 'none'; base-uri 'self'",
+          "frame-ancestors 'self'; frame-src 'self' https://cdn.plaid.com; object-src 'none'; base-uri 'self'",
       },
     ];
     return [{ source: "/:path*", headers: securityHeaders }];

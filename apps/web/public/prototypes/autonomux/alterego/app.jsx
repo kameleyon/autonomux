@@ -37,6 +37,8 @@ function App() {
   const stopRef = auseRef(false);
   const scrollerRef = auseRef(null);
   const pinnedRef = auseRef(true);
+  const threadRef = auseRef(null);   // real chat_threads id for this conversation
+  const abortRef = auseRef(null);    // AbortController for the active SSE fetch
 
   const skills = window.AE.SKILLS;
   const activeSkill = activeSkillId ? skills.find((s) => s.id === activeSkillId) : null;
@@ -83,17 +85,25 @@ function App() {
     } catch (e) {}
   }, []);
 
-  // ── core send ──
-  const runTurn = auseCallback(async (userText, attachments, forcedSkillId) => {
+  // Lazily create (once per conversation) a real chat_threads row so the
+  // streamed turns persist and carry context. Reset on New chat / select.
+  const ensureThread = auseCallback(async () => {
+    if (threadRef.current) return threadRef.current;
+    const r = await fetch("/api/chat/thread", { method: "POST", cache: "no-store", credentials: "same-origin" });
+    if (!r.ok) throw new Error(r.status === 401 ? "Your session expired — sign in again." : "Could not start a conversation.");
+    const j = await r.json();
+    threadRef.current = j.threadId;
+    return threadRef.current;
+  }, []);
+
+  // ── core send — streams a REAL reply from the orchestrator SSE endpoint ──
+  const runTurn = auseCallback(async (userText, attachments) => {
     setError(null);
-    const skill = window.AE.routeSkill(forcedSkillId ? "" : userText, forcedSkillId);
-    const skillResult = skill ? (window.AE.RESULTS[skill.id] || null) : null;
-    const hasCard = !!skillResult;
     const tNow = aeNow();
 
     const userMsg = { id: `u-${Date.now()}`, role: "user", text: userText, attachments: attachments || [], time: tNow };
     const aId = `a-${Date.now()}`;
-    const aiMsg = { id: aId, role: "assistant", text: "", time: tNow, skillId: hasCard ? skill.id : null, result: null };
+    const aiMsg = { id: aId, role: "assistant", text: "", time: tNow, skillId: null, result: null };
 
     setMessages((p) => [...p, userMsg, aiMsg]);
     setInFlight(true);
@@ -101,44 +111,63 @@ function App() {
     pinnedRef.current = true;
     stopRef.current = false;
 
-    // skill "runs" first (only skills that produce a result card)
-    if (hasCard) {
-      await new Promise((r) => setTimeout(r, 650));
-      if (stopRef.current) { setInFlight(false); return; }
-      setMessages((p) => p.map((m) => m.id === aId ? { ...m, result: skillResult } : m));
-    }
-
-    // get the conversational wrapper
-    const history = messages.map((m) => ({ role: m.role, text: m.text }));
-    let full = "";
-    try {
-      if (window.claude && typeof window.claude.complete === "function") {
-        const prompt = window.AE.buildPrompt(history, userText, t.voice, skill, hasCard);
-        full = await window.claude.complete(prompt);
-        full = aeStripEmoji((full || "").replace(/^AlterEgo:\s*/i, "").trim());
-      }
-    } catch (e) { /* fall through to scripted */ }
-    if (!full) full = window.AE.scriptedReply(userText, skill);
-    if (stopRef.current) { setInFlight(false); return; }
-
-    // simulate streaming — letter by letter, with natural pauses
+    const ac = new AbortController();
+    abortRef.current = ac;
     let acc = "";
-    for (let i = 0; i < full.length; i++) {
-      if (stopRef.current) break;
-      const ch = full[i];
-      acc += ch;
-      setMessages((p) => p.map((m) => m.id === aId ? { ...m, text: acc } : m));
-      let d = 17;
-      if (ch === "." || ch === "!" || ch === "?") d = 155;
-      else if (ch === "," || ch === ";" || ch === ":") d = 95;
-      else if (ch === "\n") d = 110;
-      else if (ch === " ") d = 24;
-      await new Promise((r) => setTimeout(r, d));
+
+    try {
+      const threadId = await ensureThread();
+      const resp = await fetch("/api/chat/stream", {
+        method: "POST",
+        headers: { "content-type": "application/json", accept: "text/event-stream" },
+        body: JSON.stringify({ threadId, userMessage: userText }),
+        signal: ac.signal,
+        cache: "no-store",
+        credentials: "same-origin",
+      });
+      if (!resp.ok || !resp.body) {
+        throw new Error(resp.status === 401 ? "Your session expired — sign in again." : "AlterEgo is unavailable right now.");
+      }
+
+      const reader = resp.body.getReader();
+      const dec = new TextDecoder("utf-8");
+      let buf = "";
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        let sep;
+        while ((sep = buf.indexOf("\n\n")) !== -1) {
+          const frame = buf.slice(0, sep);
+          buf = buf.slice(sep + 2);
+          let data = "";
+          for (const line of frame.split("\n")) {
+            if (line.startsWith("data:")) data += line.slice(5).replace(/^ /, "");
+          }
+          if (!data || data === "[DONE]") continue;
+          let ev;
+          try { ev = JSON.parse(data); } catch (e) { continue; }
+          if (ev.type === "text_delta") {
+            acc += (ev.text || ev.delta || "");
+            const shown = aeStripEmoji(acc);
+            setMessages((p) => p.map((m) => m.id === aId ? { ...m, text: shown } : m));
+          } else if (ev.type === "sub_agent_result") {
+            const name = ev.sub_agent_name || ev.sub_agent || "A specialist";
+            acc += (acc ? "\n\n" : "") + "_" + name + " finished._";
+            setMessages((p) => p.map((m) => m.id === aId ? { ...m, text: aeStripEmoji(acc) } : m));
+          } else if (ev.type === "error") {
+            setError(ev.message || "Something went wrong.");
+          }
+        }
+      }
+    } catch (e) {
+      if (e && e.name !== "AbortError") setError((e && e.message) || "Could not reach AlterEgo.");
+    } finally {
+      setInFlight(false);
+      if (abortRef.current === ac) abortRef.current = null;
+      if (t.readAloud && acc) speak(aeStripEmoji(acc));
     }
-    setMessages((p) => p.map((m) => m.id === aId ? { ...m, text: full } : m));
-    setInFlight(false);
-    if (t.readAloud) speak(full);
-  }, [messages, t.voice, t.readAloud, speak]);
+  }, [t.readAloud, speak, ensureThread]);
 
   const handleSubmit = auseCallback(({ text, attachments }) => {
     if (inFlight) return;
@@ -165,7 +194,7 @@ function App() {
     const ta = document.getElementById("ae-input"); if (ta) ta.focus();
   }, []);
 
-  const handleStop = auseCallback(() => { stopRef.current = true; setInFlight(false); if ("speechSynthesis" in window) window.speechSynthesis.cancel(); }, []);
+  const handleStop = auseCallback(() => { stopRef.current = true; if (abortRef.current) abortRef.current.abort(); setInFlight(false); if ("speechSynthesis" in window) window.speechSynthesis.cancel(); }, []);
 
   const scrollToBottom = auseCallback(() => {
     const el = scrollerRef.current; if (!el) return;
@@ -175,6 +204,7 @@ function App() {
   }, []);
 
   const newChat = auseCallback(() => {
+    threadRef.current = null; // next message starts a fresh real thread
     setMessages([]); setError(null); setActiveSkillId(null); setActiveChatId(null); setNavOpen(false); setActiveNav("home");
     if ("speechSynthesis" in window) window.speechSynthesis.cancel();
   }, []);
@@ -184,6 +214,7 @@ function App() {
   }, []);
 
   const selectChat = auseCallback((id) => {
+    threadRef.current = null; // library chats are not yet backed by real threads
     setActiveChatId(id); setMessages([]); setActiveSkillId(null); setNavOpen(false); setActiveNav(null);
   }, []);
 

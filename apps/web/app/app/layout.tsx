@@ -1,23 +1,15 @@
 /**
  * apps/web/app/app/layout.tsx
  *
- * Signed-in shell for /app/*. Enforces auth server-side, then wraps every
- * child route in the native AlterEgo chrome: the frosted sidebar (brand,
- * nav, account + cache-nuking sign-out) and the fiery blaze background,
- * both defined in ./app-shell.css.
- *
- * History: this used to render children raw while /app iframed the static
- * prototype (the iframe brought its own chrome, so a second shell produced
- * a double sidebar). Now that the app is native, the AppShell IS the design
- * — one sidebar, the real one.
+ * Signed-in shell for /app/*. Only job: enforce auth server-side, then render
+ * children raw. The Claude Design prototype rendered by /app brings its own
+ * full sidebar, topbar, and background — no app-shell chrome is wrapped here
+ * (that generic shell is intentionally NOT used).
  *
  * Owner: [Cluster C · App Shell]
  */
-import { AppShell } from "@/components/app/AppShell";
 import { requireAuth } from "@/lib/auth-helpers";
 import { createClient } from "@/lib/supabase/server";
-
-import "./app-shell.css";
 
 export default async function AppLayout({
   children,
@@ -25,11 +17,7 @@ export default async function AppLayout({
   children: React.ReactNode;
 }): Promise<React.ReactElement> {
   const supabase = await createClient();
-  const user = await requireAuth(supabase);
+  await requireAuth(supabase);
 
-  return (
-    <div className="app-shell">
-      <AppShell userEmail={user.email ?? ""}>{children}</AppShell>
-    </div>
-  );
+  return <>{children}</>;
 }
