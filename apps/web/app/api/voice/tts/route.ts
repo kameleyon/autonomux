@@ -18,7 +18,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const LEMONFOX_TTS = "https://api.lemonfox.ai/v1/audio/speech";
-const VOICE = "adams"; // Lemonfox's "Adam" voice (spelled "adams")
+const VOICE = "adam"; // Lemonfox "Adam" voice (verified against the live API)
 const MAX_CHARS = 6000; // cost + latency guard
 
 export async function POST(req: NextRequest): Promise<Response> {
