@@ -24,6 +24,7 @@ import {
   createAlterEgo,
   mailroomEntry,
   schedulerEntry,
+  oracleEntry,
   SubAgentRegistry,
   type AlterEgoRuntime,
 } from "@autonomux/orchestrator";
@@ -79,6 +80,7 @@ export function buildAlterEgoRuntime(opts: BuildRuntimeOpts): AlterEgoRuntime {
   const registry = new SubAgentRegistry();
   registry.register(mailroomEntry);
   registry.register(schedulerEntry);
+  registry.register(oracleEntry);
 
   return createAlterEgo({
     llm,

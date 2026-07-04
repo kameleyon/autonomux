@@ -164,7 +164,7 @@ const SUB_AGENT_HINTS: Record<string, string> = {
   scribe:
     "Notes / voice-sample synthesis. Not wired yet.",
   oracle:
-    "Daily/weekly cardology + astrology reports. Not wired yet.",
+    "Tarot + cardology grounded in the user's own reference library. birth_card(date)/day_card(date) for destiny cards, card_info(card) for a card's full meaning, search(query) for passages from the Tarot Modern + Sacred Symbols books. Use for ANY tarot/cardology/birth-card question, then interpret in your own voice.",
   treasurer:
     "Bills + budget + cash-flow projections. Not wired yet.",
   voice:

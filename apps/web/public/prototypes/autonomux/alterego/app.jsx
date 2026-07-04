@@ -113,7 +113,33 @@ function App() {
 
     const ac = new AbortController();
     abortRef.current = ac;
-    let acc = "";
+
+    // ── smooth typewriter reveal ──
+    // `target` = everything received so far; `shownLen` = how much is on
+    // screen. A rAF loop advances shownLen toward target at a steady pace so
+    // the reply types out smoothly (like Claude) regardless of how bursty the
+    // network deltas arrive. On stop, we jump to full.
+    let target = "";
+    let shownLen = 0;
+    let streamDone = false;
+    let rafId = null;
+    const paint = () => {
+      if (shownLen > target.length) shownLen = target.length;
+      const text = target.slice(0, shownLen);
+      setMessages((p) => p.map((m) => m.id === aId ? { ...m, text } : m));
+    };
+    const reveal = () => {
+      rafId = null;
+      if (stopRef.current) { shownLen = target.length; paint(); return; }
+      if (shownLen < target.length) {
+        const behind = target.length - shownLen;
+        const step = Math.max(1, Math.ceil(behind / 22)); // catch up when far behind
+        shownLen = Math.min(target.length, shownLen + step);
+        paint();
+      }
+      if (!streamDone || shownLen < target.length) rafId = requestAnimationFrame(reveal);
+    };
+    const ensureReveal = () => { if (rafId === null && !stopRef.current) rafId = requestAnimationFrame(reveal); };
 
     try {
       const threadId = await ensureThread();
@@ -148,13 +174,12 @@ function App() {
           let ev;
           try { ev = JSON.parse(data); } catch (e) { continue; }
           if (ev.type === "text_delta") {
-            acc += (ev.text || ev.delta || "");
-            const shown = aeStripEmoji(acc);
-            setMessages((p) => p.map((m) => m.id === aId ? { ...m, text: shown } : m));
+            target = aeStripEmoji(target + (ev.text || ev.delta || ""));
+            ensureReveal();
           } else if (ev.type === "sub_agent_result") {
             const name = ev.sub_agent_name || ev.sub_agent || "A specialist";
-            acc += (acc ? "\n\n" : "") + "_" + name + " finished._";
-            setMessages((p) => p.map((m) => m.id === aId ? { ...m, text: aeStripEmoji(acc) } : m));
+            target = aeStripEmoji(target + (target ? "\n\n" : "") + "_" + name + " finished._");
+            ensureReveal();
           } else if (ev.type === "error") {
             setError(ev.message || "Something went wrong.");
           }
@@ -163,9 +188,11 @@ function App() {
     } catch (e) {
       if (e && e.name !== "AbortError") setError((e && e.message) || "Could not reach AlterEgo.");
     } finally {
+      streamDone = true;
+      ensureReveal(); // let the reveal drain to the full text
       setInFlight(false);
       if (abortRef.current === ac) abortRef.current = null;
-      if (t.readAloud && acc) speak(aeStripEmoji(acc));
+      if (t.readAloud && target) speak(target);
     }
   }, [t.readAloud, speak, ensureThread]);
 

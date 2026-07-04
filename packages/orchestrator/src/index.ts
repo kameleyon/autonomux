@@ -35,6 +35,11 @@ export {
 } from "./sub-agents/scheduler.tool";
 
 export {
+  oracleEntry,
+  oracleTool,
+} from "./sub-agents/oracle.tool";
+
+export {
   composeSystemPrompt,
   type SystemPromptInputs,
 } from "./system-prompt";

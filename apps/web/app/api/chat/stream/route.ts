@@ -266,7 +266,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     tenantId,
     personality: null,
     factsEnvelope: null,
-    registeredSubAgents: ["mailroom", "scheduler"],
+    registeredSubAgents: ["mailroom", "scheduler", "oracle"],
     logger: log,
   });
 
