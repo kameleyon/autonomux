@@ -35,10 +35,10 @@ export const metadata: Metadata = {
   metadataBase: resolveMetadataBase(),
   icons: {
     icon: "/logo.png",
-    // Shown when the site is added to the phone home screen (iOS/Android).
-    apple: "/home.png",
-    shortcut: "/home.png",
   },
+  // The add-to-home-screen icon (iOS/Android) is wired via the App Router file
+  // convention: app/apple-icon.png (180x180) auto-renders the apple-touch-icon
+  // link with the correct rel + sizes — more reliable than a metadata href.
   robots: {
     index: true,
     follow: true,
