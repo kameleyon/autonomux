@@ -88,6 +88,13 @@
   align-self: flex-start;
 }
 
+.brand,
+.brand:hover,
+.brand:focus,
+.brand:visited {
+  text-decoration: none;
+}
+
 .brand:hover .brandWord {
   opacity: 0.88;
 }
@@ -105,6 +112,7 @@
   color: #fff8f3;
   letter-spacing: -0.01em;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  text-decoration: none;
 }
 
 .brandWord em {
