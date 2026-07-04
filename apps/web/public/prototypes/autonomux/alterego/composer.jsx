@@ -25,6 +25,8 @@ function Composer({ disabled, onSubmit, onStop, activeSkill, onClearSkill, onSet
   const [listening, setListening] = cuseState(false);
   const [showCmd, setShowCmd] = cuseState(false);
   const [cmdQuery, setCmdQuery] = cuseState("");
+  const [linkOpen, setLinkOpen] = cuseState(false);
+  const [linkValue, setLinkValue] = cuseState("");
   const taRef = cuseRef(null);
   const fileRef = cuseRef(null);
   const recogRef = cuseRef(null);
@@ -56,12 +58,15 @@ function Composer({ disabled, onSubmit, onStop, activeSkill, onClearSkill, onSet
     if (next.length) setAtts((p) => [...p, ...next]);
   }, [atts.length]);
 
-  const addLink = cuseCallback(() => {
-    const url = window.prompt("Paste a link to attach:");
+  const addLink = cuseCallback(() => { setLinkValue(""); setLinkOpen(true); }, []);
+
+  const confirmLink = cuseCallback(() => {
+    const url = linkValue.trim();
+    setLinkOpen(false);
     if (!url) return;
     let host = url; try { host = new URL(url).hostname.replace(/^www\./, ""); } catch (e) {}
     setAtts((p) => p.length >= AE_MAX_FILES ? p : [...p, { id: `link-${Date.now()}`, name: host, kind: "link", url: null, href: url }]);
-  }, []);
+  }, [linkValue]);
 
   const removeAtt = (id) => setAtts((p) => p.filter((a) => a.id !== id));
 
@@ -159,6 +164,31 @@ function Composer({ disabled, onSubmit, onStop, activeSkill, onClearSkill, onSet
 
   return (
     <div className="ae-composer-band">
+      {linkOpen ? (
+        <div className="ae-linkmodal-backdrop" onClick={() => setLinkOpen(false)}>
+          <div className="ae-linkmodal" role="dialog" aria-modal="true" aria-label="Attach a link" onClick={(e) => e.stopPropagation()}>
+            <div className="ae-linkmodal-title">Attach a link</div>
+            <input
+              className="ae-linkmodal-input"
+              type="url"
+              inputMode="url"
+              autoFocus
+              placeholder="https://example.com"
+              value={linkValue}
+              onChange={(e) => setLinkValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") { e.preventDefault(); confirmLink(); }
+                if (e.key === "Escape") setLinkOpen(false);
+              }}
+            />
+            <div className="ae-linkmodal-actions">
+              <button type="button" className="ae-linkmodal-btn" onClick={() => setLinkOpen(false)}>Cancel</button>
+              <button type="button" className="ae-linkmodal-btn ae-linkmodal-btn--primary" onClick={confirmLink}>Attach</button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <div className="composer-wrap">
         {/* active skill bar */}
         {activeSkill ? (
