@@ -887,6 +887,10 @@ button { font-family: inherit; }
   .chat-scroller { padding: var(--sp-16) var(--sp-20) var(--sp-8); }
   .ae-composer-band { padding: var(--sp-8) var(--sp-20) var(--sp-16); }
   .composer-card { padding: 12px 16px; }
+  /* Tighter vertical rhythm between turns on mobile (desktop keeps --sp-24). */
+  .chat-stream { gap: var(--sp-12); }
+  .chat-turn { gap: var(--sp-4); }
+  .chat-turn-body--assistant p { margin-bottom: var(--sp-6); }
   /* "/ for skills" hint was overlapping the char counter on narrow screens. */
   .composer-hint { display: none; }
   /* Keep the top bar below the status bar/notch and make its buttons
