@@ -502,10 +502,13 @@ button { font-family: inherit; }
   animation: card-enter 240ms ease both;
 }
 .ae-working-orb {
-  width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0;
-  background: conic-gradient(from 0deg, var(--brand-orange), var(--brand-red), var(--brand-orange-soft), var(--brand-orange));
-  box-shadow: 0 0 10px rgba(var(--brand-orange-rgb),0.6);
-  animation: ae-orb-spin 1s linear infinite;
+  width: 15px; height: 15px; border-radius: 50%; flex-shrink: 0;
+  /* White ring spinner — the orange conic blended into the orange wash. A
+     transparent-topped white border reads clearly on the fiery background. */
+  border: 2px solid rgba(255,250,245,0.35);
+  border-top-color: #fff8f3;
+  box-shadow: 0 0 8px rgba(255,248,243,0.35);
+  animation: ae-orb-spin 0.7s linear infinite;
 }
 @keyframes ae-orb-spin { to { transform: rotate(360deg); } }
 .ae-working-label {

@@ -51,7 +51,15 @@ function aeSplitRow(line) {
 
 function AeMarkdown({ text }) {
   const blocks = [];
-  const lines = (text || "").split("\n");
+  // Clean up chars the design doesn't want: em/en dashes → hyphen, and drop
+  // horizontal-rule + code-fence marker lines entirely (they render as ugly
+  // "---" / "```" literals in this lightweight renderer).
+  const clean = (text || "").replace(/[—–]/g, "-");
+  const lines = clean.split("\n").filter((l) => {
+    if (/^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(l)) return false; // horizontal rule
+    if (/^\s*`{3,}/.test(l)) return false;                    // code fence marker
+    return true;
+  });
   let list = null;
   for (let idx = 0; idx < lines.length; idx++) {
     const line = lines[idx];
