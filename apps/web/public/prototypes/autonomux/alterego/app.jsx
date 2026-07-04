@@ -40,6 +40,7 @@ function App() {
   const pinnedRef = auseRef(true);
   const threadRef = auseRef(null);   // real chat_threads id for this conversation
   const abortRef = auseRef(null);    // AbortController for the active SSE fetch
+  const audioRef = auseRef(null);    // currently-playing Lemonfox TTS audio
 
   const skills = window.AE.SKILLS;
   const activeSkill = activeSkillId ? skills.find((s) => s.id === activeSkillId) : null;
@@ -75,16 +76,47 @@ function App() {
     el.scrollTo({ top: el.scrollHeight, behavior: inFlight ? "auto" : "smooth" });
   }, [messages, inFlight]);
 
-  // ── TTS ──
-  const speak = auseCallback((text) => {
-    if (!("speechSynthesis" in window) || !text) return;
+  // ── TTS (Lemonfox voice "Adam") ──
+  const stopAudio = auseCallback(() => {
     try {
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(aeStripEmoji(text));
-      u.rate = 1.02; u.pitch = 1;
-      window.speechSynthesis.speak(u);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        if (audioRef.current._url) URL.revokeObjectURL(audioRef.current._url);
+        audioRef.current = null;
+      }
     } catch (e) {}
+    if ("speechSynthesis" in window) { try { window.speechSynthesis.cancel(); } catch (e) {} }
   }, []);
+
+  const speak = auseCallback(async (text) => {
+    const clean = aeStripEmoji(text || "");
+    if (!clean) return;
+    stopAudio();
+    try {
+      const r = await fetch("/api/voice/tts", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ text: clean }),
+        credentials: "same-origin",
+      });
+      if (!r.ok) throw new Error("tts " + r.status);
+      const blob = await r.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audio._url = url;
+      audioRef.current = audio;
+      audio.onended = () => { URL.revokeObjectURL(url); if (audioRef.current === audio) audioRef.current = null; };
+      await audio.play();
+    } catch (e) {
+      // Fallback to the browser voice so "read aloud" still does something.
+      try {
+        if ("speechSynthesis" in window) {
+          const u = new SpeechSynthesisUtterance(clean);
+          u.rate = 1.02; window.speechSynthesis.speak(u);
+        }
+      } catch (_) {}
+    }
+  }, [stopAudio]);
 
   // Lazily create (once per conversation) a real chat_threads row so the
   // streamed turns persist and carry context. Reset on New chat / select.
@@ -230,7 +262,7 @@ function App() {
     const ta = document.getElementById("ae-input"); if (ta) ta.focus();
   }, []);
 
-  const handleStop = auseCallback(() => { stopRef.current = true; if (abortRef.current) abortRef.current.abort(); setInFlight(false); if ("speechSynthesis" in window) window.speechSynthesis.cancel(); }, []);
+  const handleStop = auseCallback(() => { stopRef.current = true; if (abortRef.current) abortRef.current.abort(); setInFlight(false); stopAudio(); }, [stopAudio]);
 
   const scrollToBottom = auseCallback(() => {
     const el = scrollerRef.current; if (!el) return;

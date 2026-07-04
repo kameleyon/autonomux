@@ -105,23 +105,49 @@ function Composer({ disabled, onSubmit, onStop, activeSkill, onClearSkill, onSet
     taRef.current && taRef.current.focus();
   };
 
-  // ── Speech to text ──
-  const toggleMic = () => {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { setWarning("Voice input isn't supported in this browser."); return; }
-    if (listening) { recogRef.current && recogRef.current.stop(); return; }
-    const r = new SR();
-    r.continuous = true; r.interimResults = true; r.lang = "en-US";
-    baseValueRef.current = value ? value + " " : "";
-    r.onresult = (ev) => {
-      let txt = "";
-      for (let i = 0; i < ev.results.length; i++) txt += ev.results[i][0].transcript;
-      setValue((baseValueRef.current + txt).slice(0, AE_MAX_CHARS));
-    };
-    r.onerror = () => { setListening(false); };
-    r.onend = () => { setListening(false); recogRef.current = null; };
-    recogRef.current = r;
-    try { r.start(); setListening(true); } catch (e) { setWarning("Couldn't start the mic."); }
+  // ── Speech to text (record → Lemonfox transcription) ──
+  // MediaRecorder works on iOS Safari where the Web Speech API does not.
+  // Tap once to start recording, tap again to stop + transcribe.
+  const toggleMic = async () => {
+    if (listening) { // stop + transcribe
+      try { recogRef.current && recogRef.current.recorder.stop(); } catch (e) {}
+      return;
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof window.MediaRecorder === "undefined") {
+      setWarning("Voice input isn't supported in this browser.");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      const chunks = [];
+      recorder.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+      recorder.onstop = async () => {
+        setListening(false);
+        stream.getTracks().forEach((t) => t.stop());
+        recogRef.current = null;
+        const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
+        if (blob.size < 1200) return; // too short to be speech
+        setWarning("Transcribing…");
+        try {
+          const fd = new FormData();
+          fd.append("file", blob, "speech.webm");
+          const r = await fetch("/api/voice/stt", { method: "POST", body: fd, credentials: "same-origin" });
+          if (!r.ok) throw new Error("stt " + r.status);
+          const j = await r.json();
+          const txt = (j.text || "").trim();
+          setWarning(null);
+          if (txt) setValue((v) => ((v ? v + " " : "") + txt).slice(0, AE_MAX_CHARS));
+        } catch (e) {
+          setWarning("Couldn't transcribe that. Try again.");
+        }
+      };
+      recogRef.current = { recorder, stream };
+      recorder.start();
+      setListening(true);
+    } catch (e) {
+      setWarning("Microphone permission denied.");
+    }
   };
 
   const isEmpty = value.trim().length === 0 && atts.length === 0;
