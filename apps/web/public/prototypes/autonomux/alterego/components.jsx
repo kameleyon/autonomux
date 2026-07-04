@@ -479,4 +479,17 @@ function ThinkingTurn({ time }) {
   );
 }
 
-Object.assign(window, { Sidebar, EmptyState, SubAgentCard, MessageTurn, ThinkingTurn, AeMarkdown, Icon });
+/* Persistent activity indicator — shown the whole time AlterEgo is working,
+   even while text streams, so the chat never looks frozen. The label reflects
+   what's happening ("Consulting Oracle", "Searching", "Writing"). */
+function WorkingBar({ label }) {
+  return (
+    <div className="ae-working" role="status" aria-live="polite">
+      <span className="ae-working-orb" aria-hidden="true" />
+      <span className="ae-working-label">{label || "Thinking"}</span>
+      <span className="typing-dots ae-working-dots" aria-hidden="true"><span /><span /><span /></span>
+    </div>
+  );
+}
+
+Object.assign(window, { Sidebar, EmptyState, SubAgentCard, MessageTurn, ThinkingTurn, WorkingBar, AeMarkdown, Icon });

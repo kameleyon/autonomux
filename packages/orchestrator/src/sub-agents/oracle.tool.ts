@@ -69,10 +69,15 @@ export const oracleTool: Tool = {
   name: "oracle",
   description:
     "Look up tarot / cardology source material from the user's own reference library. " +
-    "Use 'birth_card' with a birthday to find someone's birth card; 'day_card' with a date for that date's destiny card; " +
-    "'card_info' for the full meaning of a named card (e.g. 'King of Spades', '7 of Hearts'); " +
-    "'search' to pull passages from the Tarot Modern and Sacred Symbols books for card meanings, spreads, symbolism, or theory. " +
-    "Call this whenever the user asks anything about tarot, cardology, birth cards, or card readings, then interpret the result in your own voice.",
+    "IMPORTANT — two different card systems: 'card_info' covers only CARDOLOGY playing cards " +
+    "(King of Spades, 7 of Hearts, etc.); it does NOT cover the tarot Major/Minor Arcana. " +
+    "For TAROT cards (The High Priestess, The Chariot, Five of Wands, etc.) use 'search' with the card name — " +
+    "that queries the Tarot Modern book. " +
+    "Use 'birth_card' with a birthday to find someone's cardology birth card; 'day_card' with a date for that date's destiny card; " +
+    "'card_info' for a cardology playing card's full profile; " +
+    "'search' for tarot card meanings, spreads, symbolism, or any theory from the Tarot Modern and Sacred Symbols books. " +
+    "For a multi-card tarot spread, call 'search' once per card name. " +
+    "Call this whenever the user asks anything about tarot, cardology, birth cards, or readings, then interpret in your own voice.",
   input_schema: {
     type: "object",
     properties: {

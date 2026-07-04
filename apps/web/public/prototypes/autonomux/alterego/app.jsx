@@ -22,6 +22,7 @@ function App() {
   const [t, setTweak] = useTweaks(AE_TWEAK_DEFAULTS);
   const [messages, setMessages] = auseState([]);
   const [inFlight, setInFlight] = auseState(false);
+  const [status, setStatus] = auseState(null); // live "what AlterEgo is doing" label
   const [error, setError] = auseState(null);
   const [activeSkillId, setActiveSkillId] = auseState(null);
   const [folders] = auseState(window.AE.FOLDERS);
@@ -107,6 +108,7 @@ function App() {
 
     setMessages((p) => [...p, userMsg, aiMsg]);
     setInFlight(true);
+    setStatus("Thinking");
     setActiveSkillId(null);
     pinnedRef.current = true;
     stopRef.current = false;
@@ -123,6 +125,7 @@ function App() {
     let shownLen = 0;
     let streamDone = false;
     let rafId = null;
+    let wroteText = false;
     const paint = () => {
       if (shownLen > target.length) shownLen = target.length;
       const text = target.slice(0, shownLen);
@@ -174,12 +177,17 @@ function App() {
           let ev;
           try { ev = JSON.parse(data); } catch (e) { continue; }
           if (ev.type === "text_delta") {
+            if (!wroteText) { wroteText = true; setStatus("Writing"); }
             target = aeStripEmoji(target + (ev.text || ev.delta || ""));
             ensureReveal();
+          } else if (ev.type === "sub_agent_start") {
+            const name = ev.sub_agent_name || ev.sub_agent || "a specialist";
+            setStatus("Consulting " + name.charAt(0).toUpperCase() + name.slice(1));
+          } else if (ev.type === "sub_agent_progress") {
+            if (ev.message) setStatus(ev.message);
           } else if (ev.type === "sub_agent_result") {
-            const name = ev.sub_agent_name || ev.sub_agent || "A specialist";
-            target = aeStripEmoji(target + (target ? "\n\n" : "") + "_" + name + " finished._");
-            ensureReveal();
+            // Result folds into the model's own reply — no placeholder text.
+            if (!wroteText) setStatus("Composing");
           } else if (ev.type === "error") {
             setError(ev.message || "Something went wrong.");
           }
@@ -191,6 +199,7 @@ function App() {
       streamDone = true;
       ensureReveal(); // let the reveal drain to the full text
       setInFlight(false);
+      setStatus(null);
       if (abortRef.current === ac) abortRef.current = null;
       if (t.readAloud && target) speak(target);
     }
@@ -298,12 +307,15 @@ function App() {
               <div className="chat-stream">
                 {messages.map((m) => {
                   const isTail = m.role === "assistant" && inFlight && m.id === lastId;
-                  if (m.role === "assistant" && !m.text && !m.result) return <ThinkingTurn key={m.id} time={m.time} />;
+                  // Empty in-flight assistant turn: no bubble — the WorkingBar
+                  // below shows the live activity instead.
+                  if (m.role === "assistant" && !m.text && !m.result) return null;
                   return (
                     <MessageTurn key={m.id} msg={m} skills={skills} isStreamingTail={isTail}
                       onAction={handleAction} onSpeak={speak} />
                   );
                 })}
+                {inFlight ? <WorkingBar label={status} /> : null}
               </div>
             )}
           </div>
