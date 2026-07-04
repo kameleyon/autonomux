@@ -110,17 +110,31 @@ function Composer({ disabled, onSubmit, onStop, activeSkill, onClearSkill, onSet
     taRef.current && taRef.current.focus();
   };
 
-  // ── Speech to text (record → Lemonfox transcription) ──
-  // MediaRecorder works on iOS Safari where the Web Speech API does not.
-  // Tap once to start recording, tap again to stop + transcribe.
-  const toggleMic = async () => {
-    if (listening) { // stop + transcribe
-      try { recogRef.current && recogRef.current.recorder.stop(); } catch (e) {}
-      return;
-    }
+  // ── Speech to text — LIVE where supported, else record → Lemonfox ──
+  // Preferred: the browser SpeechRecognition API streams interim results so
+  // words appear as you speak. Where that's unavailable, fall back to
+  // MediaRecorder + Lemonfox transcription on stop.
+  const SR = typeof window !== "undefined" && (window.SpeechRecognition || window.webkitSpeechRecognition);
+
+  const startLive = () => {
+    const r = new SR();
+    r.continuous = true; r.interimResults = true; r.lang = "en-US";
+    baseValueRef.current = value ? value + " " : "";
+    r.onresult = (ev) => {
+      let txt = "";
+      for (let i = 0; i < ev.results.length; i++) txt += ev.results[i][0].transcript;
+      setValue((baseValueRef.current + txt).slice(0, AE_MAX_CHARS)); // live update as spoken
+    };
+    r.onerror = (e) => { if (e && e.error === "not-allowed") setWarning("Microphone permission denied."); setListening(false); };
+    r.onend = () => { setListening(false); recogRef.current = null; };
+    recogRef.current = { live: r };
+    try { r.start(); setListening(true); setWarning(null); }
+    catch (e) { setListening(false); startRecord(); } // e.g. already-started → fall through
+  };
+
+  const startRecord = async () => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof window.MediaRecorder === "undefined") {
-      setWarning("Voice input isn't supported in this browser.");
-      return;
+      setWarning("Voice input isn't supported in this browser."); return;
     }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -132,27 +146,34 @@ function Composer({ disabled, onSubmit, onStop, activeSkill, onClearSkill, onSet
         stream.getTracks().forEach((t) => t.stop());
         recogRef.current = null;
         const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
-        if (blob.size < 1200) return; // too short to be speech
+        if (blob.size < 1200) return;
         setWarning("Transcribing…");
         try {
           const fd = new FormData();
           fd.append("file", blob, "speech.webm");
-          const r = await fetch("/api/voice/stt", { method: "POST", body: fd, credentials: "same-origin" });
-          if (!r.ok) throw new Error("stt " + r.status);
-          const j = await r.json();
+          const resp = await fetch("/api/voice/stt", { method: "POST", body: fd, credentials: "same-origin" });
+          if (!resp.ok) throw new Error("stt " + resp.status);
+          const j = await resp.json();
           const txt = (j.text || "").trim();
           setWarning(null);
           if (txt) setValue((v) => ((v ? v + " " : "") + txt).slice(0, AE_MAX_CHARS));
-        } catch (e) {
-          setWarning("Couldn't transcribe that. Try again.");
-        }
+        } catch (e) { setWarning("Couldn't transcribe that. Try again."); }
       };
       recogRef.current = { recorder, stream };
       recorder.start();
-      setListening(true);
-    } catch (e) {
-      setWarning("Microphone permission denied.");
+      setListening(true); setWarning(null);
+    } catch (e) { setWarning("Microphone permission denied."); }
+  };
+
+  const toggleMic = () => {
+    if (listening) { // stop whichever is running
+      try {
+        if (recogRef.current && recogRef.current.live) recogRef.current.live.stop();
+        else if (recogRef.current && recogRef.current.recorder) recogRef.current.recorder.stop();
+      } catch (e) {}
+      return;
     }
+    if (SR) startLive(); else startRecord();
   };
 
   const isEmpty = value.trim().length === 0 && atts.length === 0;

@@ -77,13 +77,32 @@ function App() {
   }, [messages, inFlight]);
 
   // ── TTS (Lemonfox voice "Adam") ──
+  // One persistent <audio> element, reused for every reply. iOS blocks
+  // programmatic playback until an element has been played during a user
+  // gesture, so we "unlock" this element on the Read-aloud toggle / send tap —
+  // after that, replies can auto-read without another tap.
+  const SILENT = "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQxAADB8AhSmxhIIEVCSiJrDCQBTcu3UrAIwUdkRgQbFAZC1CQEwTJ9mjRvBA4UOLD8nKACWQAA==";
+  const getAudioEl = auseCallback(() => {
+    if (!audioRef.current) {
+      const a = new Audio();
+      a.preload = "auto";
+      audioRef.current = a;
+    }
+    return audioRef.current;
+  }, []);
+  const unlockAudio = auseCallback(() => {
+    const a = getAudioEl();
+    if (a._unlocked) return;
+    try {
+      a.muted = true; a.src = SILENT;
+      const p = a.play();
+      if (p && p.then) p.then(() => { a.pause(); a.currentTime = 0; a.muted = false; a._unlocked = true; }).catch(() => { a.muted = false; });
+    } catch (e) {}
+  }, [getAudioEl]);
   const stopAudio = auseCallback(() => {
     try {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        if (audioRef.current._url) URL.revokeObjectURL(audioRef.current._url);
-        audioRef.current = null;
-      }
+      const a = audioRef.current;
+      if (a) { a.pause(); if (a._url) { URL.revokeObjectURL(a._url); a._url = null; } }
     } catch (e) {}
     if ("speechSynthesis" in window) { try { window.speechSynthesis.cancel(); } catch (e) {} }
   }, []);
@@ -102,13 +121,12 @@ function App() {
       if (!r.ok) throw new Error("tts " + r.status);
       const blob = await r.blob();
       const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      audio._url = url;
-      audioRef.current = audio;
-      audio.onended = () => { URL.revokeObjectURL(url); if (audioRef.current === audio) audioRef.current = null; };
-      await audio.play();
+      const a = getAudioEl();
+      if (a._url) URL.revokeObjectURL(a._url);
+      a._url = url; a.muted = false; a.src = url;
+      a.onended = () => { if (a._url) { URL.revokeObjectURL(a._url); a._url = null; } };
+      await a.play();
     } catch (e) {
-      // Fallback to the browser voice so "read aloud" still does something.
       try {
         if ("speechSynthesis" in window) {
           const u = new SpeechSynthesisUtterance(clean);
@@ -116,7 +134,7 @@ function App() {
         }
       } catch (_) {}
     }
-  }, [stopAudio]);
+  }, [stopAudio, getAudioEl]);
 
   // Lazily create (once per conversation) a real chat_threads row so the
   // streamed turns persist and carry context. Reset on New chat / select.
@@ -239,6 +257,7 @@ function App() {
 
   const handleSubmit = auseCallback(({ text, attachments }) => {
     if (inFlight) return;
+    if (t.readAloud) unlockAudio(); // unlock iOS audio during this tap so the reply can auto-read
     let composed = text;
     if (attachments && attachments.length) {
       const labels = attachments.map((a) => `[${a.kind}: ${a.name}]`).join(" ");
@@ -246,7 +265,15 @@ function App() {
     }
     if (!composed && !activeSkill) return;
     runTurn(composed || activeSkill.name + " — go.", attachments, activeSkill ? activeSkill.id : null);
-  }, [inFlight, activeSkill, runTurn]);
+  }, [inFlight, activeSkill, runTurn, t.readAloud, unlockAudio]);
+
+  // Toggle Read-aloud. Turning it ON is a user gesture — unlock iOS audio then
+  // so subsequent replies can auto-read without a separate tap.
+  const toggleReadAloud = auseCallback(() => {
+    const next = !t.readAloud;
+    if (next) unlockAudio();
+    setTweak("readAloud", next);
+  }, [t.readAloud, unlockAudio, setTweak]);
 
   const handleAction = auseCallback((arg) => {
     if (arg === "__regenerate__") {
@@ -314,7 +341,7 @@ function App() {
             <button className="ae-tb-btn" onClick={() => setSearchOpen(true)} title="Search (⌘K)" aria-label="Search">
               <Icon name="Search" size={16} />
             </button>
-            <button className={"ae-tb-btn" + (t.readAloud ? " ae-tb-btn--on" : "")} onClick={() => setTweak("readAloud", !t.readAloud)} title="Read replies aloud" aria-pressed={t.readAloud}>
+            <button className={"ae-tb-btn" + (t.readAloud ? " ae-tb-btn--on" : "")} onClick={toggleReadAloud} title="Read replies aloud" aria-pressed={t.readAloud}>
               <Icon name={t.readAloud ? "Volume2" : "VolumeX"} size={16} />
               {t.readAloud ? "Reading aloud" : "Read aloud"}
             </button>
@@ -361,7 +388,7 @@ function App() {
           <Composer
             disabled={inFlight} onSubmit={handleSubmit} onStop={handleStop}
             activeSkill={activeSkill} onClearSkill={() => setActiveSkillId(null)} onSetSkill={setActiveSkillId}
-            skills={skills} ttsOn={t.readAloud} onToggleTts={() => setTweak("readAloud", !t.readAloud)} />
+            skills={skills} ttsOn={t.readAloud} onToggleTts={toggleReadAloud} />
         </div>
         )}
       </div>
