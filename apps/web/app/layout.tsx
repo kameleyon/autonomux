@@ -35,6 +35,9 @@ export const metadata: Metadata = {
   metadataBase: resolveMetadataBase(),
   icons: {
     icon: "/logo.png",
+    // Shown when the site is added to the phone home screen (iOS/Android).
+    apple: "/home.png",
+    shortcut: "/home.png",
   },
   robots: {
     index: true,
