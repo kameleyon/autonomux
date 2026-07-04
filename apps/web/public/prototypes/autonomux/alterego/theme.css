@@ -924,10 +924,16 @@ button { font-family: inherit; }
   .chat-scroller { padding: var(--sp-16) var(--sp-20) var(--sp-8); }
   .ae-composer-band { padding: var(--sp-8) var(--sp-20) var(--sp-16); }
   .composer-card { padding: 12px 16px; }
-  /* Tighter vertical rhythm between turns on mobile (desktop keeps --sp-24). */
-  .chat-stream { gap: var(--sp-12); }
-  .chat-turn { gap: var(--sp-4); }
-  .chat-turn-body--assistant p { margin-bottom: var(--sp-6); }
+  /* Bring the TURNS closer together (desktop uses --sp-24) — but keep the text
+     INSIDE a reply comfortably spaced, not stacked like sardines. */
+  .chat-stream { gap: var(--sp-16); }
+  .chat-turn { gap: var(--sp-6); }
+  .chat-turn-body--assistant { line-height: 1.6; }
+  .chat-turn-body--assistant p { margin: 0 0 var(--sp-10); }
+  .chat-turn-body--assistant .ae-md-h { margin: var(--sp-16) 0 var(--sp-6); }
+  .chat-turn-body--assistant ul,
+  .chat-turn-body--assistant ol { margin: var(--sp-8) 0 var(--sp-10); padding-left: var(--sp-20); }
+  .chat-turn-body--assistant li { margin: var(--sp-6) 0; line-height: 1.55; }
   /* "/ for skills" hint was overlapping the char counter on narrow screens. */
   .composer-hint { display: none; }
   /* Keep the top bar below the status bar/notch and make its buttons

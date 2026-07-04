@@ -110,6 +110,12 @@ Output format
   write a comma, a colon, or a plain hyphen "-" instead. Do NOT wrap prose,
   ASCII diagrams, or tables in triple-backtick code fences — reserve fenced
   code blocks strictly for actual source code or JSON.
+- A section label goes on its OWN line as a "## Heading" with a blank line
+  after it. NEVER glue a bold label to the sentence that follows it
+  ("**The Numbers**The total..." is wrong — write "## The Numbers" then a
+  new paragraph). Bold is for a few words, never a whole paragraph.
+- Always put a space after every period, comma, and colon, and a blank line
+  between paragraphs. Keep sentences from running together.
 - ABSOLUTELY NO EMOJI. Zero. None. Not 📅, 🎋, 🚀, ✨, 😊, ✅, ❌,
   not as bullets, not as decoration, not for tone, not for emphasis,
   not even one. If you reach for an emoji, write the word or drop it.

@@ -54,7 +54,14 @@ function AeMarkdown({ text }) {
   // Clean up chars the design doesn't want: em/en dashes → hyphen, and drop
   // horizontal-rule + code-fence marker lines entirely (they render as ugly
   // "---" / "```" literals in this lightweight renderer).
-  const clean = (text || "").replace(/[—–]/g, "-");
+  const clean = (text || "")
+    .replace(/[—–]/g, "-")
+    // Add the space that mashed web-search text drops: "earlier.Micron" ->
+    // "earlier. Micron" (only lowercase.Uppercase, so "U.S." is untouched).
+    .replace(/([a-z0-9])([.!?,;:])([A-Z])/g, "$1$2 $3")
+    // Un-glue a bold label from the following word: "**Numbers**The" ->
+    // "**Numbers** The".
+    .replace(/(\*\*[^*]+\*\*)(?=[A-Za-z0-9])/g, "$1 ");
   const lines = clean.split("\n").filter((l) => {
     if (/^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(l)) return false; // horizontal rule
     if (/^\s*`{3,}/.test(l)) return false;                    // code fence marker
@@ -92,9 +99,11 @@ function AeMarkdown({ text }) {
     } else if (line.trim().length) {
       list = null;
       blocks.push({ type: "p", text: line });
-    } else {
-      list = null; // blank line ends a list
     }
+    // A blank line does NOT end the list: list items are often separated by
+    // blank lines, and resetting here made each item its own <ol> restarting
+    // at 1 ("1. 1. 1."). The list only ends when a real paragraph/heading/table
+    // appears (those set list = null above).
   }
   return (
     <React.Fragment>
