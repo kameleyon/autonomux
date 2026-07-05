@@ -115,7 +115,7 @@ Every Blocker and Critical is mapped to an owner, the exact code location, the C
 
 ### Criticals
 
-**Legend:** <span style="color:teal">✅ DONE</span> · ⏳ IN PROGRESS / next · 🟡 HALF (part shipped) · ⛔ BLOCKED (user) · ⏸️ DEFERRED (unbuilt surface). **Snapshot (2026-07-05):** done — CR2, CR3, CR4, CR5, CR6, CR7, CR9 (all code-fixable Phase-0 criticals closed, Jury-approved). Half — CR12. Blocked — CR15. Deferred (Treasurer/iOS/App-Store not built) — CR1, CR8, CR10, CR11, CR13, CR14.
+**Legend:** <span style="color:teal">✅ DONE</span> · ⏳ IN PROGRESS / next · 🟡 HALF (part shipped) · ⛔ BLOCKED (user) · ⏸️ DEFERRED (unbuilt surface). **Snapshot (2026-07-05):** done — CR2, CR3, CR4, CR5, CR6, CR7, CR9, CR14 (**every code-fixable critical closed, Jury-approved**). Half — CR12. Blocked — CR15. Deferred (need unbuilt Treasurer/iOS/App-Store surfaces) — CR1, CR8, CR10, CR11, CR13.
 
 | # | Item (file:line) | Fix | Enforcing CI gate | Owner | Deadline |
 |---|---|---|---|---|---|
@@ -132,7 +132,7 @@ Every Blocker and Critical is mapped to an owner, the exact code location, the C
 | CR11 | ⏸️ DEFERRED (App Store submission) — Nutrition-label falsehood | Correct it: **Financial Info is processed server-side, NOT on-device**; declare **transmission to a third-party AI provider (Anthropic) under a DPA**; **confirm the Anthropic DPA** is executed. False disclosure risks App Store removal. | Comply + Proof sign-off before App Store Connect submission; DPA on file. | Comply + Proof | Before ASC submission |
 | CR12 | 🟡 HALF — CA SB 942 + EU AI Act disclosure timing | **Web session-start AI disclosure shipped** (see B8). Remaining: iOS parity + confirm one in-session disclosure satisfies both at Phase 1 launch. | Phase 1 exit check. | Comply + Frontend | Phase 1 launch |
 | CR13 | ⏸️ DEFERRED (before 0016; Plaid schema unbuilt) — `plaid_items` RLS | Write **service-role-only RLS** (encrypted JSONB, `FORCE RLS`, anon-returns-zero proof test) **before any exchange code**; **Semgrep rule** fails CI on any user-scoped query against `plaid_items`. | anon-returns-zero test + Semgrep rule, required checks. | Shield + Data lead | Before migration 0016 |
-| CR14 | ⏳ IN PROGRESS — AlterEgo model-attribution | Add an **AI-generated model-attribution trust signal** to the assistant meta row on **every** chat turn (drive from `final_usage.model`, never a hardcoded string). | UI test asserts the meta row renders the attribution. | Frontend lead | Phase 1 |
+| CR14 | <span style="color:teal">✅ DONE</span> (Jury: PASS) — AlterEgo model-attribution | **[x] Done.** `final_usage` now carries the real `model` (orchestrator, all 3 emit sites); the prototype renders a persistent "AI-generated · Sonnet 4.6" tag under **every** assistant turn (always-visible, not hover-gated), driven by `final_usage.model` — never hardcoded. | UI test asserts the meta row renders the attribution. | Frontend lead | ~~Phase 1~~ **done** |
 | CR15 | ⛔ BLOCKED (user) — Willingness-to-pay unproven | Run WTP research with **20+ freelancers** before locking 29/79; specify a **trial or freemium** and a **slow-month usage pause**. PRD-is-canonical is not audience-fit evidence. | Billing lock is gated on the WTP write-up + Penny/Strategy sign-off. | Penny + Strategy | Before Phase 1 billing |
 
 ---
