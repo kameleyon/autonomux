@@ -3,9 +3,11 @@
  *
  * Upstash Redis rate limiter with three buckets.
  *
- *   auth:    5 attempts per 15min per (IP + email)  — defends sign-in / TOTP brute force
- *   api:     100 req/min per session                — generic abuse cap
- *   signup:  3 attempts per hour per IP             — sign-up spam cap
+ *   auth:      5 attempts per 15min per (IP + email)  — defends sign-in / TOTP brute force
+ *   api:       100 req/min per session                — generic abuse cap
+ *   signup:    3 attempts per hour per IP             — sign-up spam cap
+ *   chat_min:  20 req/min per user                    — CR3 chat burst cap
+ *   chat_hr:   200 req/hr per user                    — CR3 chat sustained cap
  *
  * Why these numbers:
  *   - auth=5/15min lines up with OWASP ASVS V11.1.1 ("≤ 10 attempts / 15min")
@@ -24,7 +26,12 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
-export type RateLimitBucket = "auth" | "api" | "signup";
+export type RateLimitBucket =
+  | "auth"
+  | "api"
+  | "signup"
+  | "chat_min"
+  | "chat_hr";
 
 export interface RateLimitResult {
   /** True when the request is within budget. */
@@ -43,6 +50,8 @@ interface RatelimiterSet {
   auth: Ratelimit;
   api: Ratelimit;
   signup: Ratelimit;
+  chat_min: Ratelimit;
+  chat_hr: Ratelimit;
 }
 
 function parseUpstashUrl(raw: string): { url: string; token: string } {
@@ -114,6 +123,19 @@ function buildLimiters(): RatelimiterSet | null {
       analytics: true,
       prefix: "rl:signup",
     }),
+    // CR3 chat caps — per-user. Both must pass for a stream to open.
+    chat_min: new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(20, "1 m"),
+      analytics: true,
+      prefix: "rl:chat:min",
+    }),
+    chat_hr: new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(200, "1 h"),
+      analytics: true,
+      prefix: "rl:chat:hr",
+    }),
   };
 }
 
@@ -161,6 +183,70 @@ export async function checkRateLimit(
     : Math.max(1, Math.ceil((reset - Date.now()) / 1000));
 
   return { success, limit, remaining, reset, retryAfterSeconds };
+}
+
+export interface ChatRateLimitDecision {
+  /** True when the request is within BOTH the per-minute and per-hour caps. */
+  allowed: boolean;
+  /** Seconds to wait before retrying — max of the two buckets' retry windows. */
+  retryAfterSeconds: number;
+  /** Which bucket tripped first (for the JSON body / logs), null when allowed. */
+  limitedBy: "chat_min" | "chat_hr" | null;
+  /**
+   * True when the limiter backend was unreachable and we FAILED OPEN. The
+   * caller should log this (a Redis outage silently disabling the cap is an
+   * operational signal), but must NOT block the request on it.
+   */
+  degradedOpen: boolean;
+}
+
+/**
+ * CR3 per-user chat rate limit: 20/min AND 200/hr. Both buckets are checked
+ * (minute first, so a burst trips the tighter window's Retry-After).
+ *
+ * FAIL-OPEN on backend errors: if the Redis-backed limiter throws (network
+ * blip, Upstash outage), we allow the request and flag `degradedOpen` rather
+ * than hard-blocking all chat. Rate limiting is an abuse guard, not a security
+ * boundary — a limiter outage must not take chat offline for every user. In
+ * dev (no REDIS_URL) the underlying checkRateLimit no-ops and returns success.
+ */
+export async function checkChatRateLimit(
+  userId: string,
+): Promise<ChatRateLimitDecision> {
+  try {
+    const minute = await checkRateLimit("chat_min", userId);
+    if (!minute.success) {
+      return {
+        allowed: false,
+        retryAfterSeconds: minute.retryAfterSeconds,
+        limitedBy: "chat_min",
+        degradedOpen: false,
+      };
+    }
+    const hour = await checkRateLimit("chat_hr", userId);
+    if (!hour.success) {
+      return {
+        allowed: false,
+        retryAfterSeconds: hour.retryAfterSeconds,
+        limitedBy: "chat_hr",
+        degradedOpen: false,
+      };
+    }
+    return {
+      allowed: true,
+      retryAfterSeconds: 0,
+      limitedBy: null,
+      degradedOpen: false,
+    };
+  } catch {
+    // Backend down — fail open (see doc-comment above).
+    return {
+      allowed: true,
+      retryAfterSeconds: 0,
+      limitedBy: null,
+      degradedOpen: true,
+    };
+  }
 }
 
 /**

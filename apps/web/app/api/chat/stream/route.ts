@@ -31,6 +31,8 @@ import { requireAuth, requireTenantId } from "@/lib/auth-helpers";
 import { createClient } from "@/lib/supabase/server";
 import { getSupabaseServiceClient } from "@/lib/supabase/service";
 import { buildAlterEgoRuntime } from "@/lib/orchestrator/factory";
+import { checkChatRateLimit } from "@/lib/rate-limit";
+import { checkMonthlyBudget } from "@/lib/chat/budget-preflight";
 
 import { composeSystemPrompt } from "@autonomux/orchestrator";
 import type { OrchestratorEvent } from "@autonomux/orchestrator";
@@ -45,6 +47,10 @@ import type {
 export const runtime = "nodejs";
 // Disable Next's default response caching for streaming responses.
 export const dynamic = "force-dynamic";
+/* CR3: a single orchestrated turn (LLM + sub-agent hops) can legitimately run
+ * long. Raise the Vercel function ceiling to 5 minutes so a slow-but-valid
+ * turn isn't killed mid-stream. */
+export const maxDuration = 300;
 
 type RuntimeMessage = { role: "user" | "assistant"; content: string };
 
@@ -119,6 +125,49 @@ export async function POST(request: NextRequest): Promise<Response> {
     });
   }
 
+  /* ── CR3 preflight — runs BEFORE any orchestrator/stream work. ──────────
+   * Two independent guards, both of which short-circuit with a NON-stream
+   * JSON error response so we never open the SSE channel on a rejected turn:
+   *   (1) per-user rate limit  → 429 + Retry-After
+   *   (2) per-tenant monthly LLM budget → 402
+   * Rate limit is checked first (cheap Redis op, no DB round-trip). */
+
+  // (1) Per-user rate limit: 20/min AND 200/hr (Redis-backed).
+  const rl = await checkChatRateLimit(userId);
+  if (rl.degradedOpen) {
+    // Backend down — we allowed the request. Surface it for ops (fail-open).
+    log.warn(
+      { user_id: userId },
+      "chat.stream rate-limit backend unavailable — allowed request (fail-open)",
+    );
+  }
+  if (!rl.allowed) {
+    log.warn(
+      {
+        user_id: userId,
+        tenant_id: tenantId,
+        limited_by: rl.limitedBy,
+        retry_after_s: rl.retryAfterSeconds,
+      },
+      "chat.stream rate limit exceeded",
+    );
+    return new Response(
+      JSON.stringify({
+        error: "Rate limit exceeded. Please slow down.",
+        code: "rate_limited",
+        limited_by: rl.limitedBy,
+        retry_after_seconds: rl.retryAfterSeconds,
+      }),
+      {
+        status: 429,
+        headers: {
+          "content-type": "application/json",
+          "retry-after": String(rl.retryAfterSeconds),
+        },
+      },
+    );
+  }
+
   /* Writes + thread-ownership check use the service-role client because
    * the user's JWT may have been issued before the access-token hook
    * fired (tenant_id claim absent → RLS denies everything). We've already
@@ -126,6 +175,40 @@ export async function POST(request: NextRequest): Promise<Response> {
    * to a `tenant_members` lookup, so it's safe to bypass RLS as long as
    * every query carries an explicit `tenant_id` predicate. */
   const service = getSupabaseServiceClient();
+
+  // (2) Per-tenant monthly LLM budget preflight (usage_meters.cost_usd_cents
+  //     for the current 'YYYY-MM' period vs. configured cap). Over cap → 402,
+  //     stream never opens. Fails OPEN on a metering read error (see helper).
+  const budget = await checkMonthlyBudget({
+    service,
+    tenantId,
+    log,
+  });
+  if (!budget.allowed) {
+    log.warn(
+      {
+        tenant_id: tenantId,
+        period: budget.period,
+        spent_usd_cents: budget.spentUsdCents,
+        cap_usd_cents: budget.capUsdCents,
+      },
+      "chat.stream monthly budget exceeded",
+    );
+    return new Response(
+      JSON.stringify({
+        error:
+          "Monthly usage budget reached. Upgrade your plan or wait for the next billing period.",
+        code: "budget_exceeded",
+        period: budget.period,
+        spent_usd_cents: budget.spentUsdCents,
+        cap_usd_cents: budget.capUsdCents,
+      }),
+      {
+        status: 402,
+        headers: { "content-type": "application/json" },
+      },
+    );
+  }
 
   // Verify thread belongs to tenant (explicit predicate, RLS-bypassed).
   const threadRes = await (
