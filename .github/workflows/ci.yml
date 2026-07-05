@@ -52,3 +52,22 @@ jobs:
       - name: Dependency audit (high)
         run: npm audit --audit-level=high
         continue-on-error: true
+
+  static-analysis:
+    name: semgrep (SAST)
+    runs-on: ubuntu-latest
+    # Semgrep's SARIF/CI runner. Uses the maintained rule packs for the
+    # stack; findings fail the job (blocking on real security smells).
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+      - name: Semgrep scan
+        run: semgrep ci
+        env:
+          SEMGREP_RULES: >-
+            p/typescript
+            p/react
+            p/nodejsscan
+            p/secrets
+            p/owasp-top-ten

@@ -595,6 +595,11 @@ button { font-family: inherit; }
   font-size: var(--fs-body-lg); color: rgba(255,242,228,0.84); margin: 0;
   max-width: 540px; text-shadow: 0 1px 3px rgba(0,0,0,0.3); line-height: 1.5;
 }
+/* AI-interaction disclosure (B8) — small muted line under the hero sub. */
+.chat-empty-disclosure {
+  font-size: var(--fs-body-sm); color: rgba(255,242,228,0.52); margin: 0;
+  max-width: 540px; line-height: 1.5; text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+}
 
 .ae-skill-grid {
   display: grid; grid-template-columns: repeat(2, minmax(0,1fr));
@@ -912,6 +917,7 @@ button { font-family: inherit; }
   .chat-empty { gap: var(--sp-20); padding: var(--sp-24) var(--sp-16); }
   .chat-empty-hero { font-size: 30px; }
   .chat-empty-sub { font-size: 14.5px; line-height: 1.5; }
+  .chat-empty-disclosure { font-size: 12.5px; line-height: 1.5; }
   .ae-skill-grid { gap: var(--sp-10); }
   .ae-skill-chip { padding: var(--sp-10) var(--sp-12); gap: var(--sp-10); }
   .ae-skill-mark { width: 26px; height: 26px; font-size: 12px; }

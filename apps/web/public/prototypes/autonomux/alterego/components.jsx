@@ -272,6 +272,10 @@ function EmptyState({ skills, onPickSkill, onPrompt }) {
           I'm you — with more time, a longer memory, and a way into your inbox, calendar,
           cards, and money. Ask me anything, think out loud, or hand me a task.
         </p>
+        <p className="chat-empty-disclosure">
+          AlterEgo is an AI. It can be wrong, so check anything that matters. It shares
+          general information, not professional financial, legal, or medical advice.
+        </p>
       </div>
     </div>
   );
