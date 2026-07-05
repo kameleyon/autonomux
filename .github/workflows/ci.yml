@@ -53,6 +53,24 @@ jobs:
         run: npm audit --audit-level=high
         continue-on-error: true
 
+  auth-config-drift:
+    name: supabase auth-config drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.18.0"
+      # Asserts the hardened Supabase auth baseline (B5) has not silently
+      # reverted. Skips gracefully if the secret isn't configured; fails the
+      # job on any drift when it is. Add SUPABASE_ACCESS_TOKEN +
+      # SUPABASE_PROJECT_REF as repo secrets to enforce.
+      - name: Check Supabase auth config drift
+        run: node scripts/check-supabase-auth-drift.mjs
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+
   static-analysis:
     name: semgrep (SAST)
     runs-on: ubuntu-latest
