@@ -13,7 +13,7 @@
  *      the error event is a structured object so the SSE bridge can
  *      strip provider-internal detail before sending to the browser.
  */
-import type { ContentBlock, StopReason, Usage } from "@autonomux/llm";
+import type { ContentBlock, ModelName, StopReason, Usage } from "@autonomux/llm";
 
 /** Stable error class identifiers (mirrors the worker side). */
 export type OrchestratorErrorClass =
@@ -97,6 +97,9 @@ export type OrchestratorEvent =
       readonly latency_ms: number;
       readonly stop_reason: StopReason;
       readonly tool_hops: number;
+      /** Model that produced this turn — drives the CR14 AI-attribution trust
+       *  signal on the assistant meta row (never a hardcoded UI string). */
+      readonly model: ModelName;
     }
   | {
       readonly type: "error";

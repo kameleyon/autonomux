@@ -478,6 +478,7 @@ export class AlterEgoRuntime {
         latency_ms: latency,
         stop_reason: finalStopReason,
         tool_hops: hops,
+        model: this.model,
       };
     } catch (err) {
       const latency = Date.now() - start;
@@ -663,6 +664,7 @@ export class AlterEgoRuntime {
         latency_ms: prior.replaySnapshot.durationMs,
         stop_reason: "end_turn",
         tool_hops: prior.replaySnapshot.toolsCalled.length,
+        model: this.model,
       };
     } else {
       yield {
@@ -673,6 +675,7 @@ export class AlterEgoRuntime {
         latency_ms: 0,
         stop_reason: "end_turn",
         tool_hops: 0,
+        model: this.model,
       };
     }
   }

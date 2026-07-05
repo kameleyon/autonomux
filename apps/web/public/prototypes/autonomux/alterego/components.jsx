@@ -486,8 +486,20 @@ function MessageTurn({ msg, skills, isStreamingTail, onAction, onCopy, onSpeak }
           ) : null}
         </div>
       ) : null}
+      {/* CR14: always-visible model attribution on every assistant turn (not
+          hover-gated like the action row above). */}
+      {!isUser && msg.model && !isStreamingTail ? (
+        <div className="msg-attribution" title="AI-generated response">AI-generated · {aeModelLabel(msg.model)}</div>
+      ) : null}
     </article>
   );
+}
+
+/* Format a raw model id ("sonnet-4.6") into a display label ("Sonnet 4.6").
+   CR14 trust signal — driven by final_usage.model, never a hardcoded string. */
+function aeModelLabel(m) {
+  if (!m) return "AI";
+  return String(m).split("-").map((p, i) => (i === 0 ? p.charAt(0).toUpperCase() + p.slice(1) : p)).join(" ");
 }
 
 function ThinkingTurn({ time }) {

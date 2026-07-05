@@ -238,6 +238,9 @@ function App() {
           } else if (ev.type === "sub_agent_result") {
             // Result folds into the model's own reply — no placeholder text.
             if (!wroteText) setStatus("Composing");
+          } else if (ev.type === "final_usage") {
+            // CR14: attach the real model attribution to this assistant turn.
+            if (ev.model) setMessages((p) => p.map((m) => m.id === aId ? { ...m, model: ev.model } : m));
           } else if (ev.type === "error") {
             setError(ev.message || "Something went wrong.");
           }

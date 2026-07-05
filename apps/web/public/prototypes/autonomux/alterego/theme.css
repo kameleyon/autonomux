@@ -560,6 +560,8 @@ button { font-family: inherit; }
 .chat-turn[data-role="user"] .msg-actions { justify-content: flex-end; }
 .chat-turn:hover .msg-actions, .chat-turn:focus-within .msg-actions { opacity: 1; }
 .msg-time { font-family: "DM Mono", monospace; font-size: 10px; letter-spacing: 0.06em; color: rgba(255,240,220,0.55); margin-right: 2px; white-space: nowrap; }
+/* CR14: persistent (non-hover) model attribution under each assistant turn. */
+.msg-attribution { font-family: "DM Mono", monospace; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,240,220,0.5); margin-top: var(--sp-4); white-space: nowrap; }
 .msg-action-btn {
   display: inline-flex; align-items: center; justify-content: center;
   width: 28px; height: 28px; background: transparent; border: none;
