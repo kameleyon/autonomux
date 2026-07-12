@@ -155,7 +155,7 @@ const AE_PROFILE_MENU = [
   { id: "admin", label: "Admin", icon: "ShieldCheck" },
 ];
 
-function Sidebar({ folders, openFolders, onToggleFolder, activeChatId, onSelectChat, onNewChat, activeNav, onNav, open, onClose, collapsed, onToggleCollapse }) {
+function Sidebar({ folders, recentThreads, threadsLoading, onSelectThread, openFolders, onToggleFolder, activeChatId, onSelectChat, onNewChat, activeNav, onNav, open, onClose, collapsed, onToggleCollapse }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
 
@@ -199,6 +199,27 @@ function Sidebar({ folders, openFolders, onToggleFolder, activeChatId, onSelectC
             </button>
           ))}
         </nav>
+
+        {(recentThreads && recentThreads.length > 0) ? (
+          <React.Fragment>
+            <div className="ae-rail-label">Recent</div>
+            <ul className="ae-recent">
+              {recentThreads.map((tr) => (
+                <li key={tr.id}>
+                  <button
+                    className={"ae-chat" + (tr.id === activeChatId ? " ae-chat--active" : "")}
+                    onClick={() => onSelectThread(tr.id)}
+                    title={tr.title}
+                  >
+                    <span className="ae-chat-status" aria-hidden="true" />
+                    <span className="ae-chat-title">{tr.title || "New conversation"}</span>
+                    <span className="ae-chat-date">{aeRelDate(tr.last_message_at)}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </React.Fragment>
+        ) : null}
 
         <div className="ae-rail-label">Library</div>
         <div className="ae-folders">

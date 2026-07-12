@@ -54,6 +54,23 @@ export const maxDuration = 300;
 
 type RuntimeMessage = { role: "user" | "assistant"; content: string };
 
+/* Default title a fresh thread is created with (see ../thread/route.ts). We
+ * only auto-title a thread whose title is STILL this sentinel, so the derived
+ * title is set once (from the first user message) and never clobbers a title
+ * the thread later earns. */
+const DEFAULT_THREAD_TITLE = "New conversation";
+
+/** First user message → a short, single-line thread title for the Recent list.
+ * Emoji are stripped so they never leak into the sidebar (the chat is a
+ * strictly no-emoji surface — same rule the client applies on render). */
+function deriveThreadTitle(message: string): string {
+  const noEmoji = message.replace(/\p{Extended_Pictographic}/gu, "");
+  const firstLine = noEmoji.split("\n").map((l) => l.trim()).find((l) => l.length > 0) ?? "";
+  const collapsed = firstLine.replace(/\s+/g, " ").trim();
+  if (collapsed.length <= 60) return collapsed;
+  return collapsed.slice(0, 57).trimEnd() + "…";
+}
+
 // ── Request validation ──────────────────────────────────────────────────
 
 interface ChatStreamBody {
@@ -210,17 +227,24 @@ export async function POST(request: NextRequest): Promise<Response> {
     );
   }
 
-  // Verify thread belongs to tenant (explicit predicate, RLS-bypassed).
+  /* Verify the thread belongs to this tenant AND this user (explicit
+   * predicate, RLS-bypassed). Scoping by user_id — not just tenant_id — is the
+   * security boundary: chat_threads rows are per-user (see thread/route.ts),
+   * and this gate passing is what authorises every write below (message
+   * insert, last_message_at touch, auto-title). Tenant-only would let a
+   * same-tenant user drive/rename another user's thread. */
   const threadRes = await (
     service as unknown as {
       from: (t: string) => {
         select: (cols: string) => {
           eq: (col: string, v: string) => {
             eq: (col: string, v: string) => {
-              maybeSingle: () => Promise<{
-                data: { id: string } | null;
-                error: { message: string } | null;
-              }>;
+              eq: (col: string, v: string) => {
+                maybeSingle: () => Promise<{
+                  data: { id: string } | null;
+                  error: { message: string } | null;
+                }>;
+              };
             };
           };
         };
@@ -231,6 +255,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     .select("id")
     .eq("id", body.threadId)
     .eq("tenant_id", tenantId)
+    .eq("user_id", userId)
     .maybeSingle();
 
   if (threadRes.error !== null || threadRes.data === null) {
@@ -271,16 +296,19 @@ export async function POST(request: NextRequest): Promise<Response> {
     );
   }
 
-  // Touch last_message_at so the thread list re-sorts.
+  // Touch last_message_at so the thread list re-sorts. Scoped to the owning
+  // user for the same reason as the gate above.
   await (
     service as unknown as {
       from: (t: string) => {
         update: (row: Record<string, unknown>) => {
           eq: (col: string, v: string) => {
-            eq: (
-              col: string,
-              v: string,
-            ) => Promise<{ error: { message: string } | null }>;
+            eq: (col: string, v: string) => {
+              eq: (
+                col: string,
+                v: string,
+              ) => Promise<{ error: { message: string } | null }>;
+            };
           };
         };
       };
@@ -289,7 +317,41 @@ export async function POST(request: NextRequest): Promise<Response> {
     .from("chat_threads")
     .update({ last_message_at: new Date().toISOString() })
     .eq("id", body.threadId)
-    .eq("tenant_id", tenantId);
+    .eq("tenant_id", tenantId)
+    .eq("user_id", userId);
+
+  /* Auto-title from the first user message. The extra `.eq('title',
+   * DEFAULT_THREAD_TITLE)` predicate means this only matches on the very first
+   * turn (while the title is still the sentinel) — later turns update zero
+   * rows, so a real title is never overwritten. Best-effort: a failure here
+   * must not block the stream, so we don't inspect the result. */
+  const derivedTitle = deriveThreadTitle(body.userMessage);
+  if (derivedTitle.length > 0) {
+    await (
+      service as unknown as {
+        from: (t: string) => {
+          update: (row: Record<string, unknown>) => {
+            eq: (col: string, v: string) => {
+              eq: (col: string, v: string) => {
+                eq: (col: string, v: string) => {
+                  eq: (
+                    col: string,
+                    v: string,
+                  ) => Promise<{ error: { message: string } | null }>;
+                };
+              };
+            };
+          };
+        };
+      }
+    )
+      .from("chat_threads")
+      .update({ title: derivedTitle })
+      .eq("id", body.threadId)
+      .eq("tenant_id", tenantId)
+      .eq("user_id", userId)
+      .eq("title", DEFAULT_THREAD_TITLE);
+  }
 
   // Load the last 50 messages of this thread to pass as conversation
   // context (we just persisted the new user turn, so it's included).

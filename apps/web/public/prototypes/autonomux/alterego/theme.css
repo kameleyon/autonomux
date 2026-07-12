@@ -244,6 +244,16 @@ button { font-family: inherit; }
 .ae-folder-count { font-family: "DM Mono", monospace; font-size: 10px; color: rgba(255,240,220,0.8); flex-shrink: 0; }
 
 .ae-folder-chats { list-style: none; display: flex; flex-direction: column; gap: 1px; margin: 1px 0 5px; padding-left: 22px; }
+/* Recent — real persisted conversations. Reuses .ae-chat item styling; capped
+   height so a long history scrolls instead of shoving the Library + account
+   footer off the rail. */
+.ae-recent {
+  list-style: none; display: flex; flex-direction: column; gap: 1px;
+  margin: 1px 0 6px; padding: 0 var(--sp-8);
+  max-height: 34vh; overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: transparent transparent;
+}
+.ae-sidebar--collapsed .ae-recent { display: none; }
 .ae-chat {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
   width: 100%; text-align: left; background: transparent; border: none; cursor: pointer;

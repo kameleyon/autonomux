@@ -7,6 +7,37 @@ const Icon = window.Icon;
 function aeNow() {
   return new Date().toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
 }
+// Message timestamp for a rehydrated (persisted) turn — matches aeNow()'s format.
+function aeTimeOf(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d)) return "";
+  return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+}
+// Short relative label for the Recent history list (Today time / weekday / Mon D).
+function aeRelDate(iso) {
+  if (!iso) return "";
+  const d = new Date(iso); if (isNaN(d)) return "";
+  const now = new Date();
+  const days = Math.floor((now.setHours(0,0,0,0) - new Date(iso).setHours(0,0,0,0)) / 86400000);
+  if (days <= 0) return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  if (days === 1) return "Yesterday";
+  if (days < 7) return d.toLocaleDateString(undefined, { weekday: "short" });
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+// Map a persisted chat_messages row (content_blocks) → the client message shape.
+function aeRowToMessage(row) {
+  const blocks = Array.isArray(row.content_blocks) ? row.content_blocks : [];
+  let text = "";
+  let result = null;
+  let skillId = null;
+  for (const b of blocks) {
+    if (b && b.type === "text") { text += (text ? "\n" : "") + (b.text || ""); }
+    else if (b && b.type === "sub_agent_result") { result = b.result || null; skillId = b.sub_agent || null; }
+  }
+  // Strip emoji on rehydrate so reloaded turns match the emoji-free live path.
+  return { id: row.id, role: row.role, text: aeStripEmoji(text), result, skillId, time: aeTimeOf(row.created_at) };
+}
 function aeStripEmoji(t) {
   return (t || "").replace(/\p{Extended_Pictographic}/gu, "").replace(/[ \t]{2,}/g, " ").replace(/ +([.,!?;:])/g, "$1").trim();
 }
@@ -28,6 +59,8 @@ function App() {
   const [folders] = auseState(window.AE.FOLDERS);
   const [openFolders, setOpenFolders] = auseState(["mailroom"]);
   const [activeChatId, setActiveChatId] = auseState(null);
+  const [threads, setThreads] = auseState([]);   // real chat_threads for the Recent list
+  const [threadsLoading, setThreadsLoading] = auseState(true);
   const [activeNav, setActiveNav] = auseState("home");
   const [navOpen, setNavOpen] = auseState(false);
   const [searchOpen, setSearchOpen] = auseState(false);
@@ -39,6 +72,7 @@ function App() {
   const scrollerRef = auseRef(null);
   const pinnedRef = auseRef(true);
   const threadRef = auseRef(null);   // real chat_threads id for this conversation
+  const loadSeqRef = auseRef(0);     // monotonic guard: any thread-load / new turn bumps this
   const abortRef = auseRef(null);    // AbortController for the active SSE fetch
   const audioRef = auseRef(null);    // currently-playing Lemonfox TTS audio
 
@@ -147,9 +181,52 @@ function App() {
     return threadRef.current;
   }, []);
 
+  // ── History list — real past conversations, newest first. ──
+  // Loaded on mount and refreshed after each completed turn so a freshly
+  // created (and now auto-titled) thread appears without a page reload.
+  const loadThreads = auseCallback(async () => {
+    try {
+      const r = await fetch("/api/chat/threads", { cache: "no-store", credentials: "same-origin" });
+      if (!r.ok) { setThreadsLoading(false); return; }
+      const j = await r.json();
+      setThreads(Array.isArray(j.threads) ? j.threads : []);
+    } catch (e) { /* offline / transient — leave prior list in place */ }
+    finally { setThreadsLoading(false); }
+  }, []);
+  auseEffect(() => { loadThreads(); }, [loadThreads]);
+
+  // Reopen a past conversation: rehydrate its messages from the DB.
+  const selectThread = auseCallback(async (id) => {
+    if (inFlight) { if (abortRef.current) abortRef.current.abort(); }
+    // Bump the load sequence. If anything else (another select, or a new turn
+    // via runTurn) bumps it again before our fetch resolves, we bail rather
+    // than clobber newer state with this now-stale DB snapshot.
+    const seq = ++loadSeqRef.current;
+    setError(null); setActiveSkillId(null); setNavOpen(false); setActiveNav(null);
+    setActiveChatId(id);
+    threadRef.current = id;
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    try {
+      const r = await fetch("/api/chat/messages?threadId=" + encodeURIComponent(id), { cache: "no-store", credentials: "same-origin" });
+      if (loadSeqRef.current !== seq) return; // superseded while fetching
+      if (!r.ok) throw new Error(r.status === 404 ? "That conversation could not be found." : "Could not load the conversation.");
+      const j = await r.json();
+      if (loadSeqRef.current !== seq) return; // superseded while parsing
+      const rows = Array.isArray(j.messages) ? j.messages : [];
+      setMessages(rows.map(aeRowToMessage).filter((m) => m.text || m.result));
+    } catch (e) {
+      if (loadSeqRef.current !== seq) return; // a newer action owns the view
+      setMessages([]);
+      setError(e.message || "Could not load the conversation.");
+    }
+  }, [inFlight]);
+
   // ── core send — streams a REAL reply from the orchestrator SSE endpoint ──
   const runTurn = auseCallback(async (userText, attachments) => {
     setError(null);
+    // Own the view: invalidate any in-flight selectThread rehydrate so its
+    // stale snapshot can't land on top of the turn we're about to start.
+    ++loadSeqRef.current;
     const tNow = aeNow();
 
     const userMsg = { id: `u-${Date.now()}`, role: "user", text: userText, attachments: attachments || [], time: tNow };
@@ -255,8 +332,12 @@ function App() {
       setStatus(null);
       if (abortRef.current === ac) abortRef.current = null;
       if (t.readAloud && target) speak(target);
+      // Persist-driven history: this thread now has a title + fresh
+      // last_message_at, so refresh the Recent list and highlight it.
+      if (threadRef.current) setActiveChatId(threadRef.current);
+      loadThreads();
     }
-  }, [t.readAloud, speak, ensureThread]);
+  }, [t.readAloud, speak, ensureThread, loadThreads]);
 
   const handleSubmit = auseCallback(({ text, attachments }) => {
     if (inFlight) return;
@@ -335,7 +416,7 @@ function App() {
 
   return (
     <div className="ae-shell">
-      <Sidebar folders={folders} openFolders={openFolders} onToggleFolder={toggleFolder} activeChatId={activeChatId} onSelectChat={selectChat} onNewChat={newChat} activeNav={activeNav} onNav={onNav} open={navOpen} onClose={() => setNavOpen(false)} collapsed={collapsed} onToggleCollapse={toggleCollapse} />
+      <Sidebar folders={folders} recentThreads={threads} threadsLoading={threadsLoading} onSelectThread={selectThread} openFolders={openFolders} onToggleFolder={toggleFolder} activeChatId={activeChatId} onSelectChat={selectChat} onNewChat={newChat} activeNav={activeNav} onNav={onNav} open={navOpen} onClose={() => setNavOpen(false)} collapsed={collapsed} onToggleCollapse={toggleCollapse} />
       <div className="ae-main">
         <header className="ae-topbar">
           <button className="ae-hamburger" aria-label="Open menu" onClick={() => setNavOpen(true)}><Icon name="Menu" size={18} /></button>
